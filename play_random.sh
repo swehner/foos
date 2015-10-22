@@ -1,4 +1,4 @@
 #!/bin/sh
 
-omxplayer $(ls goals | sort -R | tail -n 1)
+omxplayer goals/$(ls goals | sort -R | tail -n 1)
 
