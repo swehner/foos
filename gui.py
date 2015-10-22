@@ -43,23 +43,36 @@ class pyscope :
         # Render the screen
         pygame.display.update()
         pygame.mouse.set_visible(False)
-	self.bg = pygame.image.load("bg.png")
-	self.bg.convert()
+        self.bg_white = pygame.image.load("bg_white.png")
+        self.bg_white.convert()
+        self.bg_black = pygame.image.load("bg_black.png")
+        self.bg_black.convert()
  
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
  
     def clear(self):
-    	self.screen.blit(self.bg, (0,0))
+        pass
 
 
     def drawScore(self, score):
         self.clear()
-        font = pygame.font.Font(None, 144)
-        black = font.render(str(score["BLACK"]), True, (0, 0, 0))
-        yellow = font.render(str(score["WHITE"]), True, (0, 0, 0))
-        self.screen.blit(black, (300, 300))
-        self.screen.blit(yellow, (600, 300))
+        font = pygame.font.Font(None, 500)
+        top = score["BLACK"]
+        bottom = score["WHITE"]
+        bg = self.bg_black
+        if score["WHITE"] > score["BLACK"]:
+          (top, bottom) = (bottom, top)  
+          bg = self.bg_white
+
+    	self.screen.blit(bg, (0,0))
+        ttop = font.render(str(top), True, (255, 255, 255))
+        tbottom = font.render(str(bottom), True, (255, 255, 255))
+	
+        offsetx=-95
+        offsety=-190
+        self.screen.blit(ttop, (1170 + offsetx, 360 + offsety))
+        self.screen.blit(tbottom, (1170 + offsetx, 730 + offsety))
         # Update the display
         pygame.display.update()
   
