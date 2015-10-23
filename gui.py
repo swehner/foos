@@ -58,8 +58,8 @@ class pyscope :
     def drawScore(self, score):
         self.clear()
         font = pygame.font.Font(None, 500)
-        top = score["BLACK"]
-        bottom = score["WHITE"]
+        top = score["BLACK"] % 10
+        bottom = score["WHITE"] % 10
         bg = self.bg_black
         if score["WHITE"] > score["BLACK"]:
           (top, bottom) = (bottom, top)  
