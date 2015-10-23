@@ -68,8 +68,8 @@ def readArduino():
             scored()
 
 
-def replay(manual=False):
-  call(["./replay.sh", "manual" if manual else ""])
+def replay(manual=False, regenerate=True):
+  call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
 
 def upload():
   call(["./upload-latest.sh"])
@@ -113,6 +113,8 @@ while not stop:
         board.decrement("BLACK")
       if e.key == pygame.K_v:
         replay(True)
+      if e.key == pygame.K_n:
+        replay(True, False)
       if e.key == pygame.K_u:
         upload()
     elif e.type == pygame.USEREVENT:

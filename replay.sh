@@ -1,6 +1,7 @@
 #!/bin/sh
 
 [ "$1" = "manual" ] && mode="manual" || mode="auto"
+[ "$2" = "false" ] && regenerate="false" || regenerate="true"
 
 base_path=/tmp/replay
 fragments_path=$base_path/fragments
@@ -27,15 +28,21 @@ if [ "$mode" = "auto" ]; then
   #goal=`expr 1 + $RANDOM % 5`
   #./play-exclusive.sh goals/mp4/GOAL$goal.mp4
 
-  fragments=$short_fragments
-  generate_video
+  if [ "$regenerate" = "true" ]; then
+    fragments=$short_fragments
+    generate_video
+  fi
+
   ./play-exclusive.sh $replay_file
 fi
 
 # Always generate de long version, even if we only want to play the short one
 replay_file=$base_path/replay_long.mp4
-fragments=$long_fragments
-generate_video
+
+if [ "$regenerate" = "true" ]; then
+  fragments=$long_fragments
+  generate_video
+fi
 
 if [ "$mode" = "manual" ]; then
   ./play-exclusive.sh $replay_file
