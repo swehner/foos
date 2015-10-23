@@ -23,13 +23,16 @@ class ScoreBoard:
   def score(self, team):
     now = time.time()
     if now > (self.last_goal + self.min_goal_interval):
-      s = self.scores.get(team, 0)
-      self.scores[team] = s + 1
+      self.increment(team)
       self.last_goal = now
       self.last_team = team
       return True
 
     return False
+
+  def increment(self, team):
+    s = self.scores.get(team, 0)
+    self.scores[team] = s + 1
 
   def getScore(self):
      return self.scores
@@ -60,14 +63,9 @@ def readArduino():
 	    print board.getScore()
             scored()
 
-print("Run Arduino thread")
-t1 = threading.Thread(target=readArduino)
-t1.daemon = True
-t1.start()
 
-def replay():
-  call("./replay.sh")
-  pass
+def replay(manual=False):
+  call(["./replay.sh", "manual" if manual else ""])
 
 def scored():
   draw()
@@ -80,26 +78,37 @@ def draw():
 print("Run GUI")
 screen = gui.pyscope()
 draw()
+
+print("Run Arduino thread")
+t1 = threading.Thread(target=readArduino)
+t1.daemon = True
+t1.start()
+
 while not stop:
   events = pygame.event.get()
   for e in events:
     if e.type == pygame.QUIT:
       stop=True
-    elif e.type == pygame.KEYUP:
+    elif e.type == pygame.KEYDOWN:
       if e.key == pygame.K_PERIOD:
         stop=True
       if e.key == pygame.K_a:
         board.anull()
       if e.key == pygame.K_r:
         board.reset()
+      if e.key == pygame.K_o:
+        board.increment("WHITE")
+      if e.key == pygame.K_p:
+        board.increment("BLACK")
       if e.key == pygame.K_v:
-        replay()
+        replay(True)
     elif e.type == pygame.USEREVENT:
         replay()
 
   if len(events) > 0:
+    print events
     draw()
 
-  time.sleep(0.1)
+  time.sleep(0.01)
 
 pygame.quit()
