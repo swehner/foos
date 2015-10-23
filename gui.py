@@ -70,7 +70,7 @@ class pyscope :
         tbottom = font.render(str(bottom), True, (255, 255, 255))
 	
         offsetx=-95
-        offsety=-190
+        offsety=-160
         self.screen.blit(ttop, (1170 + offsetx, 360 + offsety))
         self.screen.blit(tbottom, (1170 + offsetx, 730 + offsety))
         # Update the display

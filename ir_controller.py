@@ -34,6 +34,10 @@ class ScoreBoard:
     s = self.scores.get(team, 0)
     self.scores[team] = s + 1
 
+  def decrement(self, team):
+    s = self.scores.get(team, 0)
+    self.scores[team] = max(s - 1, 0)
+
   def getScore(self):
      return self.scores
 
@@ -103,6 +107,10 @@ while not stop:
         board.increment("WHITE")
       if e.key == pygame.K_p:
         board.increment("BLACK")
+      if e.key == pygame.K_k:
+        board.decrement("WHITE")
+      if e.key == pygame.K_l:
+        board.decrement("BLACK")
       if e.key == pygame.K_v:
         replay(True)
       if e.key == pygame.K_u:
