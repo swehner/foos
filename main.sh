@@ -2,5 +2,5 @@
 
 while true; do
   sleep 5
-  python2 ir_controller.py
+  python2 foos.py
 done
