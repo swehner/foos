@@ -18,6 +18,7 @@ byte prev_btns = 0xFF;
 char* events[5][2]={{"A0", "A1"}, {"B0", "B1"}, {"C0", "C1"}, {"D0", "D1"}, {"E0", "E1"}};
 
 void processButtons(byte state) {
+  // TODO: use bits connected to buttons exclusively
   char changed = prev_btns ^ state;
 
   if (changed) {
@@ -51,6 +52,7 @@ unsigned long next_check = 0;
 void loop() {
   processLeds();
   unsigned long now = millis();
+  // TODO: handle millis overflow
   if (now > next_check) {
     next_check = now + BTN_INTERVAL;
     processButtons(PINB);
