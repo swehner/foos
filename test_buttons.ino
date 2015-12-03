@@ -1,4 +1,8 @@
-#define BTN_INTERVAL 50
+#include <IRremote.h>
+
+#define BTN_INTERVAL 10
+
+IRsend irsend;
 
 void setup() {
   //analog pins - button leds
@@ -6,10 +10,18 @@ void setup() {
   PORTC=0;
   
   //8-12 button inputs
-  DDRB &= 0b01111111;
+  DDRB=0x00;
   //enable pullups
   PORTB |= 0b01111111;
   Serial.begin(115200);
+
+  //set pin 4,5 to input
+  //DDRD&=0b11001111;
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+
+  irsend.enableIROut(38);
+  irsend.mark(0);
 }
 
 
@@ -48,8 +60,20 @@ void processLeds() {
   }
 }
 
+byte prevGoals = 0;
+void processGoals(byte state) {
+  if (((prevGoals & _BV(4)) == 0) && (state & _BV(4))) {
+    Serial.println("G4");
+  }
+  if (((prevGoals & _BV(5)) == 0) && (state &_BV(5))) {
+    Serial.println("G5");
+  }
+  prevGoals = state;
+}
+
 unsigned long next_check = 0;
 void loop() {
+  processGoals(PIND);
   processLeds();
   unsigned long now = millis();
   // TODO: handle millis overflow
