@@ -1,24 +1,31 @@
 #include <IRremote.h>
 
+//check buttons every X ms
 #define BTN_INTERVAL 10
 
 IRsend irsend;
 
+#define PIN_GOAL_BLACK 4
+#define PIN_GOAL_YELLOW 5
+#define GOAL_BLACK_STR "GB"
+#define GOAL_YELLOW_STR "GY"
+
+char* btnEvents[5][2] = {{"A0", "A1"}, {"B0", "B1"}, {"C0", "C1"}, {"D0", "D1"}, {"E0", "E1"}};
+
 void setup() {
   //analog pins - button leds
-  DDRC=0xFF;
-  PORTC=0;
+  DDRC = 0xFF;
+  PORTC = 0;
   
   //8-12 button inputs
-  DDRB=0x00;
+  DDRB = 0x00;
   //enable pullups
   PORTB |= 0b01111111;
   Serial.begin(115200);
 
   //set pin 4,5 to input
-  //DDRD&=0b11001111;
-  pinMode(4, INPUT);
-  pinMode(5, INPUT);
+  pinMode(PIN_GOAL_BLACK, INPUT);
+  pinMode(PIN_GOAL_YELLOW, INPUT);
 
   irsend.enableIROut(38);
   irsend.mark(0);
@@ -26,20 +33,17 @@ void setup() {
 
 
 // check for pressed buttons
-byte prev_btns = 0xFF;
-char* events[5][2]={{"A0", "A1"}, {"B0", "B1"}, {"C0", "C1"}, {"D0", "D1"}, {"E0", "E1"}};
-
+byte prevBtns = 0xFF;
 void processButtons(byte state) {
-  // TODO: use bits connected to buttons exclusively
-  char changed = prev_btns ^ state;
+  byte changed = prevBtns ^ (state & 0b00011111);
 
   if (changed) {
     // save new state
-    prev_btns = state; 
+    prevBtns = state; 
     // check which button has changed
     for(byte idx = 0; idx < 5; idx++) { 
       if (changed & 0x01) {
-        Serial.println(events[idx][state & 0x01]);
+        Serial.println(btnEvents[idx][state & 0x01]);
       }
       changed >>= 1;
       state >>= 1;
@@ -51,34 +55,35 @@ void processButtons(byte state) {
 void processLeds() {
   if (Serial.available()) {
     int data = Serial.read();
-    Serial.println(data);
-    if (data != '\n') {
+    if (data != '\n' && data > 0) {
+      // take printables ASCII character and shift down
       data = (data & 0xFF) - 32;
       PORTC = data;
-      Serial.println(data);
     }
   }
 }
 
+//process goal ir barriers
 byte prevGoals = 0;
 void processGoals(byte state) {
-  if (((prevGoals & _BV(4)) == 0) && (state & _BV(4))) {
-    Serial.println("G4");
+  // check for falling edge
+  if ((prevGoals & _BV(PIN_GOAL_BLACK)) && ((state & _BV(PIN_GOAL_BLACK)) == 0)) {
+    Serial.println(GOAL_BLACK_STR);
   }
-  if (((prevGoals & _BV(5)) == 0) && (state &_BV(5))) {
-    Serial.println("G5");
+  if ((prevGoals & _BV(PIN_GOAL_YELLOW)) && ((state &_BV(PIN_GOAL_YELLOW)) == 0)) {
+    Serial.println(GOAL_YELLOW_STR);
   }
+  
   prevGoals = state;
 }
 
-unsigned long next_check = 0;
+unsigned long nextBtnCheck = 0;
 void loop() {
   processGoals(PIND);
   processLeds();
   unsigned long now = millis();
-  // TODO: handle millis overflow
-  if (now > next_check) {
-    next_check = now + BTN_INTERVAL;
+  if ((long)(now - nextBtnCheck) >= 0) {
+    nextBtnCheck = now + BTN_INTERVAL;
     processButtons(PINB);
   }
 }
