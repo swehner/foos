@@ -1,18 +1,20 @@
 #include <IRremote.h>
 IRsend irsend;
 
-#include <TimerOne.h>
-
 //check buttons every X ms
 #define BTN_INTERVAL 10
-
+#define GOAL_DEBOUNCE_TIME 500
+#define PING_INTERVAL 5000
 
 #define PIN_GOAL_BLACK 4
 #define PIN_GOAL_YELLOW 5
-#define GOAL_BLACK_STR "GB"
-#define GOAL_YELLOW_STR "GY"
+#define GOAL_BLACK_STR "BG"
+#define GOAL_YELLOW_STR "YG"
 
-char* btnEvents[5][2] = {{"A0", "A1"}, {"B0", "B1"}, {"C0", "C1"}, {"D0", "D1"}, {"E0", "E1"}};
+#define TEST_LED_BLACK A0
+#define TEST_LED_YELLOW A2
+
+char* btnEvents[5][2] = {{"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"OK_D", "OK_U"}};
 
 void setup() {
   //analog pins - button leds
@@ -33,7 +35,6 @@ void setup() {
   irsend.mark(0);
 }
 
-
 // check for pressed buttons
 byte prevBtns = 0xFF;
 void processButtons(byte state) {
@@ -53,14 +54,22 @@ void processButtons(byte state) {
   }
 }
 
+byte testMode = 0;
 // read from serial port and set led status
-void processLeds() {
+void processInstructions() {
   if (Serial.available()) {
     int data = Serial.read();
-    if (data != '\n' && data > 0) {
+    // from A -> a 5 bits for LEDS
+    if (data >= 'A' && data <= ('A' + 32)) {
       // take printables ASCII character and shift down
-      data = (data & 0xFF) - 32;
+      data = (data & 0xFF) - 'A';
       PORTC = data;
+    } else  if (data == 't') {
+      testMode = 1;
+      Serial.println("TEST_MODE");
+    } else if (data == 'u') {
+      testMode = 0;
+      Serial.println("NORM_MODE");
     }
   }
 }
@@ -69,8 +78,7 @@ void processLeds() {
 #define RISING_EDGE(prev, now, pin) (((prev & _BV(pin)) == 0) && ((now & _BV(pin))))
 //process goal ir barriers
 byte prevGoals = 0;
-unsigned long min_next_goal_time = 0;
-void processGoals(byte state) {
+byte processGoals(byte state) {
   char* goal = NULL;
   // check for rising edge
   if (RISING_EDGE(prevGoals, state, PIN_GOAL_BLACK)) {
@@ -81,22 +89,35 @@ void processGoals(byte state) {
   }
   
   if (goal) {
-//    unsigned long now = millis();
-//    if ((long)(min_next_goal_time - now) >= 0) {
-      Serial.println(goal);
-//    } 
+    Serial.println(goal);
   }
   
   prevGoals = state;
+  return goal != NULL;
 }
 
 unsigned long nextBtnCheck = 0;
+unsigned long soonestNextGoalCheck = 0;
+unsigned long nextPing = 0;
 void loop() {
-  processGoals(PIND);
-  processLeds();
-  unsigned long now = millis();
-  if ((long)(now - nextBtnCheck) >= 0) {
-    nextBtnCheck = now + BTN_INTERVAL;
-    processButtons(PINB);
+  processInstructions();
+  if (testMode) {
+    digitalWrite(TEST_LED_BLACK, digitalRead(PIN_GOAL_BLACK));
+    digitalWrite(TEST_LED_YELLOW, digitalRead(PIN_GOAL_YELLOW));
+  } else {
+    unsigned long now = millis();
+    if (soonestNextGoalCheck == 0 || ((long)(now - soonestNextGoalCheck) >= 0)) {
+      if (processGoals(PIND)) {
+        soonestNextGoalCheck = now + GOAL_DEBOUNCE_TIME;
+      }
+    }
+    if ((long)(now - nextBtnCheck) >= 0) {
+      nextBtnCheck = now + BTN_INTERVAL;
+      processButtons(PINB);
+    }
+    if ((long)(now - nextPing) >= 0) {
+      nextPing = now + PING_INTERVAL;
+      Serial.println("P");
+    }
   }
 }
