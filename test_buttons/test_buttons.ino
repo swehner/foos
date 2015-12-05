@@ -1,9 +1,11 @@
 #include <IRremote.h>
+IRsend irsend;
+
+#include <TimerOne.h>
 
 //check buttons every X ms
 #define BTN_INTERVAL 10
 
-IRsend irsend;
 
 #define PIN_GOAL_BLACK 4
 #define PIN_GOAL_YELLOW 5
@@ -63,15 +65,26 @@ void processLeds() {
   }
 }
 
+
+#define RISING_EDGE(prev, now, pin) (((prev & _BV(pin)) == 0) && ((now & _BV(pin))))
 //process goal ir barriers
 byte prevGoals = 0;
+unsigned long min_next_goal_time = 0;
 void processGoals(byte state) {
-  // check for falling edge
-  if ((prevGoals & _BV(PIN_GOAL_BLACK)) && ((state & _BV(PIN_GOAL_BLACK)) == 0)) {
-    Serial.println(GOAL_BLACK_STR);
+  char* goal = NULL;
+  // check for rising edge
+  if (RISING_EDGE(prevGoals, state, PIN_GOAL_BLACK)) {
+    goal = GOAL_BLACK_STR;
   }
-  if ((prevGoals & _BV(PIN_GOAL_YELLOW)) && ((state &_BV(PIN_GOAL_YELLOW)) == 0)) {
-    Serial.println(GOAL_YELLOW_STR);
+  if (RISING_EDGE(prevGoals, state, PIN_GOAL_YELLOW)) {
+    goal = GOAL_YELLOW_STR;
+  }
+  
+  if (goal) {
+//    unsigned long now = millis();
+//    if ((long)(min_next_goal_time - now) >= 0) {
+      Serial.println(goal);
+//    } 
   }
   
   prevGoals = state;
