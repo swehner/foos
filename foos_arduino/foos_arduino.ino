@@ -113,6 +113,8 @@ void processInstructions() {
       Serial.println("TEST_MODE");
     } else if (data == 'u') {
       testMode = 0;
+      //disable all leds
+      PORTC=0;
       Serial.println("NORM_MODE");
     }
   }
