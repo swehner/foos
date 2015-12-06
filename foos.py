@@ -8,6 +8,7 @@ import pygame
 import sys
 import getopt
 from functools import partial
+from collections import namedtuple
 
 
 def getTTY(baud=115200):
@@ -57,46 +58,67 @@ class ScoreBoard:
 
 class Buttons:
     # Class to manage the state of the buttons and the needed logic
-    buttons = {
-        'white_minus': 'down',
-        'white_plus': 'down',
-        'black_minus': 'down',
-        'black_plus': 'down',
-        'replay': 'down'
-    }
+    event_table = {}
 
-    def event(self, board, what):
-        button, state = what.split('#')
-        print "Button {} is now {}".format(button, state)
+    def event(self, board, event):
+        print "New event:", event, self.event_table
 
-        if state == 'up':
-            if button == 'white_minus':
-                board.decrement('WHITE')
-            elif button == 'white_plus':
-                board.increment('WHITE')
-            elif button == 'black_minus':
-                board.decrement('BLACK')
-            elif button == 'black_plus':
-                board.increment('BLACK')
-            elif button == 'replay':
+        now = time.time()
+        if event.state == 'down':
+            # Actions are executed on button release
+            self.event_table[event.action] = now
+            return
+
+        if event.action not in self.event_table:
+            # No press action => ignore
+            return
+
+        delta = now - self.event_table[event.action]
+        print "Press duration:", delta
+
+        if event.action != 'ok':
+            color, what = event.action.split('_')
+
+            if color == 'yellow':
+                # Double press for reset?
+                if 'yellow_minus' in self.event_table and 'yellow_plus' in self.event_table:
+                    board.reset()
+                    del self.event_table['yellow_minus']
+                    del self.event_table['yellow_plus']
+                    return
+
+            if what == 'minus':
+                action = board.decrement
+            else:
+                action = board.increment
+
+            action(color)
+        else:
+            if delta < 1:
                 replay(True)
+            else:
+                upload()
 
-teams = ["BLACK", "WHITE"]
+        del self.event_table[event.action]
+
+teams = ['black', 'yellow']
 board = ScoreBoard(teams)
 buttons = Buttons()
 
-button_events = [
-    'white_minus#down',
-    'white_minus#up',
-    'white_plus#down',
-    'white_plus#up',
-    'black_minus#down',
-    'black_minus#up',
-    'black_plus#down',
-    'black_plus#up',
-    'replay#down',
-    'replay#up'
-]
+ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
+
+button_events = {
+    'YD_D': ButtonEvent('yellow_minus', 'down'),
+    'YD_U': ButtonEvent('yellow_minus', 'up'),
+    'YI_D': ButtonEvent('yellow_plus', 'down'),
+    'YI_U': ButtonEvent('yellow_plus', 'up'),
+    'BD_D': ButtonEvent('black_minus', 'down'),
+    'BD_U': ButtonEvent('black_minus', 'up'),
+    'BI_D': ButtonEvent('black_plus', 'down'),
+    'BI_U': ButtonEvent('black_plus', 'up'),
+    'OK_D': ButtonEvent('ok', 'down'),
+    'OK_U': ButtonEvent('ok', 'up')
+}
 
 
 def readArduino():
@@ -109,9 +131,9 @@ def readArduino():
         print("ARD: ", line)
 
         if line in button_events:
-            buttons.event(board, line)
+            buttons.event(board, button_events[line])
 
-        if line == 'black_goal' or line == 'white_goal':
+        if line == 'BG' or line == 'YG':
             team = line.split('_')[0].upper()
             board.score(team)
             print board.getScore()
@@ -162,25 +184,27 @@ if arduino:
     t1.daemon = True
     t1.start()
 
+# Keyboard control (to be deleted when the button code is working properly)
 key_map = {
     pygame.K_PERIOD: partial(sys.exit, 0),
     pygame.K_a: board.anull,
     pygame.K_r: board.reset,
-    pygame.K_o: partial(board.increment, "WHITE"),
-    pygame.K_p: partial(board.increment, "BLACK"),
-    pygame.K_k: partial(board.decrement, "WHITE"),
-    pygame.K_l: partial(board.decrement, "BLACK"),
+    pygame.K_o: partial(board.increment, "yellow"),
+    pygame.K_p: partial(board.increment, "black"),
+    pygame.K_k: partial(board.decrement, "yellow"),
+    pygame.K_l: partial(board.decrement, "black"),
     pygame.K_v: partial(replay, True),
     pygame.K_n: partial(replay, True, False),
     pygame.K_u: upload
 }
 
+# Simulate button actions with the keyboard
 buttons_map = {
-    pygame.K_KP1: 'white_minus',
-    pygame.K_KP3: 'white_plus',
-    pygame.K_KP7: 'black_minus',
-    pygame.K_KP9: 'black_plus',
-    pygame.K_KP5: 'replay'
+    pygame.K_KP1: ButtonEvent('yellow_minus', None),
+    pygame.K_KP3: ButtonEvent('yellow_plus', None),
+    pygame.K_KP7: ButtonEvent('black_minus', None),
+    pygame.K_KP9: ButtonEvent('black_plus', None),
+    pygame.K_KP5: ButtonEvent('ok', None)
 }
 
 while not time.sleep(0.01):
@@ -192,11 +216,11 @@ while not time.sleep(0.01):
             if e.key in key_map:
                 key_map[e.key]()
             if e.key in buttons_map:
-                event = buttons_map[e.key] + '#down'
+                event = buttons_map[e.key]._replace(state = 'down')
                 buttons.event(board, event)
         elif e.type == pygame.KEYUP:
             if e.key in buttons_map:
-                event = buttons_map[e.key] + '#up'
+                event = buttons_map[e.key]._replace(state = 'up')
                 buttons.event(board, event)
         elif e.type == pygame.USEREVENT:
             replay()

@@ -42,8 +42,8 @@ class pyscope:
         # Render the screen
         pygame.display.update()
         pygame.mouse.set_visible(False)
-        self.bg_white = pygame.image.load("bg_white.png")
-        self.bg_white.convert()
+        self.bg_yellow = pygame.image.load("bg_yellow.png")
+        self.bg_yellow.convert()
         self.bg_black = pygame.image.load("bg_black.png")
         self.bg_black.convert()
 
@@ -53,12 +53,12 @@ class pyscope:
     def drawScore(self, score):
         self.clear()
         font = pygame.font.Font(None, 500)
-        top = score["BLACK"] % 10
-        bottom = score["WHITE"] % 10
+        top = score["black"] % 10
+        bottom = score["yellow"] % 10
         bg = self.bg_black
-        if score["WHITE"] > score["BLACK"]:
+        if score["yellow"] > score["black"]:
             top, bottom = bottom, top
-            bg = self.bg_white
+            bg = self.bg_yellow
 
         self.screen.blit(bg, (0, 0))
         ttop = font.render(str(top), True, (255, 255, 255))
