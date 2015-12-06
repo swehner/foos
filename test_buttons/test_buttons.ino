@@ -13,23 +13,23 @@
 #define TEST_LED_BLACK A0
 #define TEST_LED_YELLOW A2
 
-#define BTN_MASK_B 0b00011101
-#define BTN_MASK_D 0b10000000
+#define BTN_MASK_D 0b11110000
+#define BTN_MASK_B 0b00000001
+#define BTN_MASK   0b00011111
 
-
+// btn events
 char* btnEvents[5][2] = {{"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"OK_D", "OK_U"}};
 
 void setup() {
-  //analog pins - button leds
+  //analog pins for button leds as output
   DDRC = 0xFF;
   PORTC = 0;
 
-  //8-12 button inputs, except 9 (PWM) and 13 because it has a led 
-  DDRB = 0b00100010;
-  //enable pullups, except pin 9
-  PORTB |= BTN_MASK_B;
-  pinMode(7, INPUT_PULLUP);
-  Serial.begin(115200);
+  //Pin 8 button input 
+  pinMode(8, INPUT_PULLUP);
+  // 4,5,6,7 input and pullup
+  DDRD &= !BTN_MASK_D;
+  PORTD |= BTN_MASK_D;
 
   //set pin 2,3 to input
   pinMode(PIN_GOAL_BLACK, INPUT);
@@ -40,6 +40,9 @@ void setup() {
   // setup signal for IR Led
   Timer1.initialize(26);  // 26 us = 38 kHz
   Timer1.pwm(9, 512);
+
+  // setup serial
+  Serial.begin(115200);
 }
 
 byte goalsEnabled = 1;
@@ -60,34 +63,24 @@ void goalYellow() {
   goal(GOAL_YELLOW_STR);
 }
 
-inline void checkButton(byte changed, byte state, byte bit, byte idx) {
-  if (changed & _BV(bit)) {
-    Serial.println(btnEvents[idx][((state & _BV(bit)) != 0)]);
+inline void checkButton(byte changed, byte state, byte idx) {
+  if (changed & _BV(idx)) {
+    Serial.println(btnEvents[idx][((state & _BV(idx)) != 0)]);
   }
 }
 
 // check for pressed buttons
-byte prevBtnsB = BTN_MASK_B;
-byte prevBtnsD = BTN_MASK_D;
-void processButtons(byte stateB, byte stateD) {
-  byte changedB = prevBtnsB ^ (stateB & BTN_MASK_B);
-  byte changedD = prevBtnsD ^ (stateD & BTN_MASK_D);
+byte prevBtns = BTN_MASK;
+void processButtons(byte state) {
+  byte changed = prevBtns ^ (state & BTN_MASK);
 
-  if (changedB) {
+  if (changed) {
     // save new state
-    prevBtnsB = stateB;
+    prevBtns = state;
     // check which button has changed
-    checkButton(changedB, stateB, 0, 0);
-    checkButton(changedB, stateB, 2, 1);
-    checkButton(changedB, stateB, 3, 2);
-    checkButton(changedB, stateB, 4, 3);
-  }
-  if (changedD) {
-    // save new state
-    prevBtnsD = stateD;
-    // check which button has changed
-    checkButton(changedD, stateD, 7, 4);
-  }
+    for (byte idx=0; idx < 5; idx++)
+      checkButton(changed, state, idx);
+    }
 }
 
 byte testMode = 0;
@@ -95,13 +88,15 @@ byte testMode = 0;
 void processInstructions() {
   if (Serial.available()) {
     int data = Serial.read();
-    // from A -> a 5 bits for LEDS
+    // from A -> '`' inclusive 5 bits for LEDS
     if (data >= 'A' && data <= ('A' + 32)) {
       // take printables ASCII character and shift down
       data = (data & 0xFF) - 'A';
       PORTC = data;
     } else  if (data == 't') {
       testMode = 1;
+      //disable all leds
+      PORTC=0;
       Serial.println("TEST_MODE");
     } else if (data == 'u') {
       testMode = 0;
@@ -126,7 +121,7 @@ void loop() {
     }
     if ((long)(now - nextBtnCheck) >= 0) {
       nextBtnCheck = now + BTN_INTERVAL;
-      processButtons(PINB, PIND);
+      processButtons(PIND >> 4 | ((PINB & 0x01)<< 4));
     }
     if ((long)(now - nextPing) >= 0) {
       nextPing = now + PING_INTERVAL;
