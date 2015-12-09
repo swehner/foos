@@ -155,21 +155,17 @@ def draw():
 
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "fd")
+    opts, args = getopt.getopt(sys.argv[1:], "f")
 except getopt.GetoptError:
-    print 'usage: python2 ir_controller [-f] [-d]'
+    print 'usage: python2 ir_controller [-f]'
     print '-f: Fullscreen mode'
-    print '-d: Debug mode (instead of serial port)'
     sys.exit(2)
 
 fullscreen = False
-debug = False
 
 for opt, arg in opts:
     if opt == '-f':
         fullscreen = True
-    elif opt == '-d':
-        debug = True
 
 print("Run GUI")
 screen = gui.pyscope(fullscreen)
@@ -198,10 +194,7 @@ buttons_map = {
     pygame.K_KP5: ButtonEvent('ok', None)
 }
 
-if debug:
-    io = IODebug()
-else:
-    io = IOSerial()
+io_handlers = [IOSerial(), IODebug()]
 
 while not time.sleep(0.01):
     events = pygame.event.get()
@@ -225,6 +218,7 @@ while not time.sleep(0.01):
         print events
         draw()
 
-    command = io.readline()
-    if command:
-        process_command(command)
+    for io in io_handlers:
+        command = io.readline()
+        if command:
+            process_command(command)
