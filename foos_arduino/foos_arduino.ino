@@ -8,8 +8,8 @@
 #define PING_INTERVAL 5000
 
 // Pin for goals (interrupt pins)
-#define PIN_GOAL_BLACK 2
-#define PIN_GOAL_YELLOW 3
+#define PIN_GOAL_YELLOW 2
+#define PIN_GOAL_BLACK 3
 
 #define TEST_LED_BLACK A0
 #define TEST_LED_YELLOW A2
@@ -21,7 +21,7 @@
 #define BTN_MASK   0b00011111
 
 // btn events
-char* btnEvents[5][2] = {{"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"OK_D", "OK_U"}};
+char* btnEvents[5][2] = {{"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"OK_D", "OK_U"}};
 #define GOAL_BLACK_STR "BG"
 #define GOAL_YELLOW_STR "YG"
 
