@@ -5,16 +5,14 @@ import time
 import threading
 import gui
 import pygame
+import os
 import sys
 import getopt
+import serial
 from functools import partial
 from collections import namedtuple
-
-
-def getTTY(baud=115200):
-    tty = check_output("ls /dev/ttyACM[0-9]", shell=True).strip()
-    call(["/bin/stty", "-F", tty, "%d" % baud])
-    return tty
+from iohandler.io_serial import IOSerial
+from iohandler.io_debug import IODebug
 
 
 class ScoreBoard:
@@ -121,28 +119,26 @@ button_events = {
 }
 
 
-def readArduino():
-#    tty = getTTY()
-#    with open(tty, "r") as f:
-    for line in sys.stdin:
-        line = line.strip()
-        if len(line) <= 0:
-            continue
-        print("ARD: ", line)
+def process_command(command):
+    print("COMMAND: ", command)
 
-        if line in button_events:
-            buttons.event(board, button_events[line])
-            draw()
+    if command in button_events:
+        buttons.event(board, button_events[command])
+        print "Redrawing..."
+        draw()
 
-        if line == 'BG' or line == 'YG':
-            team = line.split('_')[0].upper()
-            board.score(team)
-            print board.getScore()
-            scored()
+    if command == 'BG' or command == 'YG':
+        if command == 'BG':
+            board.score('black')
+        if command == 'YG':
+            board.score('yellow')
+        print board.getScore()
+        scored()
 
 
 def replay(manual=False, regenerate=True):
-    call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
+    #call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
+    return
 
 
 def upload():
@@ -159,31 +155,25 @@ def draw():
 
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "fa")
+    opts, args = getopt.getopt(sys.argv[1:], "fd")
 except getopt.GetoptError:
-    print 'usage: python2 ir_controller [-f] [-a]'
+    print 'usage: python2 ir_controller [-f] [-d]'
     print '-f: Fullscreen mode'
-    print '-a: Arduino mode (read commands from serial port)'
+    print '-d: Debug mode (instead of serial port)'
     sys.exit(2)
 
 fullscreen = False
-arduino = False
+debug = False
 
 for opt, arg in opts:
     if opt == '-f':
         fullscreen = True
-    elif opt == '-a':
-        arduino = True
+    elif opt == '-d':
+        debug = True
 
 print("Run GUI")
 screen = gui.pyscope(fullscreen)
 draw()
-
-if arduino:
-    print("Run Arduino thread")
-    t1 = threading.Thread(target=readArduino)
-    t1.daemon = True
-    t1.start()
 
 # Keyboard control (to be deleted when the button code is working properly)
 key_map = {
@@ -208,6 +198,11 @@ buttons_map = {
     pygame.K_KP5: ButtonEvent('ok', None)
 }
 
+if debug:
+    io = IODebug()
+else:
+    io = IOSerial()
+
 while not time.sleep(0.01):
     events = pygame.event.get()
     for e in events:
@@ -229,3 +224,7 @@ while not time.sleep(0.01):
     if len(events) > 0:
         print events
         draw()
+
+    command = io.readline()
+    if command:
+        process_command(command)
