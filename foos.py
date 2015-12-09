@@ -132,6 +132,7 @@ def readArduino():
 
         if line in button_events:
             buttons.event(board, button_events[line])
+            draw()
 
         if line == 'BG' or line == 'YG':
             team = line.split('_')[0].upper()
