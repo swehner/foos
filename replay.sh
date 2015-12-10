@@ -15,7 +15,11 @@ short_fragments=`echo "$long_fragments" | tail -n$short_chunks`
 
 
 generate_video() {
-  cat $fragments | ffmpeg -loglevel quiet -i - -codec:v copy -f mp4 -y $replay_file
+  cat $fragments > $replay_file
+}
+
+generate_mp4() {
+  ffmpeg -loglevel quiet -i $h264 -codec:v copy -f mp4 -y $replay_file
 }
 
 #generate_video_with_intro() {
@@ -23,7 +27,7 @@ generate_video() {
 #}
 
 if [ "$mode" = "auto" ]; then
-  replay_file=$base_path/replay_short.mp4
+  replay_file=$base_path/replay_short.h264
 
   #goal=`expr 1 + $RANDOM % 5`
   #./play-exclusive.sh goals/mp4/GOAL$goal.mp4
@@ -37,7 +41,7 @@ if [ "$mode" = "auto" ]; then
 fi
 
 # Always generate de long version, even if we only want to play the short one
-replay_file=$base_path/replay_long.mp4
+replay_file=$base_path/replay_long.h264
 
 if [ "$regenerate" = "true" ]; then
   fragments=$long_fragments

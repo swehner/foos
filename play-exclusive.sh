@@ -5,6 +5,6 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-pkill omxplayer.bin 2> /dev/null
+pkill hello_video.bin 2> /dev/null
 
-omxplayer $1 > /dev/null 2>&1 &
+./hello_video.bin $1 > /dev/null 2>&1 &
