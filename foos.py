@@ -14,6 +14,7 @@ from collections import namedtuple
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 
+ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
 class ScoreBoard:
     def __init__(self, teams, min_goal_interval=3):
@@ -44,6 +45,16 @@ class ScoreBoard:
     def getScore(self):
         return self.scores
 
+    def getInfo(self):
+        if self.last_goal:
+            now = time.time()
+            delta = int(now - self.last_goal)
+            time_goal = time.strftime('Last goal: %M:%S', time.gmtime(delta))
+        else:
+            time_goal = ''
+
+        return ScoreInfo(self.scores['yellow'], self.scores['black'], time_goal)
+
     def anull(self):
         if self.last_team:
             score = min(self.scores[self.last_team] - 1, 0)
@@ -59,36 +70,37 @@ class Buttons:
     event_table = {}
 
     def event(self, board, event):
-        print "New event:", event, self.event_table
+        et = self.event_table
+        print "New event:", event, et
 
         now = time.time()
         if event.state == 'down':
             # Actions are executed on button release
-            self.event_table[event.action] = now
+            et[event.action] = now
             return
 
-        if event.action not in self.event_table:
+        if event.action not in et:
             # No press action => ignore
             return
 
-        delta = now - self.event_table[event.action]
+        delta = now - et[event.action]
         print "Press duration:", delta
 
         if event.action != 'ok':
             color, what = event.action.split('_')
 
-            if color == 'yellow':
+            if ('yellow_minus' in et and 'yellow_plus' in et) or ('black_minus' in et and 'black_plus' in et):
                 # Double press for reset?
-                if 'yellow_minus' in self.event_table and 'yellow_plus' in self.event_table:
-                    board.reset()
-                    del self.event_table['yellow_minus']
-                    del self.event_table['yellow_plus']
-                    return
+                board.reset()
+                for key in ['yellow_minus', 'yellow_plus', 'black_minus', 'black_plus']:
+                        if key in et:
+                            del et[key]
+                return
 
             if what == 'minus':
                 action = board.decrement
             else:
-                action = board.increment
+                action = board.score
 
             action(color)
         else:
@@ -97,7 +109,7 @@ class Buttons:
             else:
                 upload()
 
-        del self.event_table[event.action]
+        del et[event.action]
 
 teams = ['black', 'yellow']
 board = ScoreBoard(teams)
@@ -132,7 +144,7 @@ def process_command(command):
             board.score('black')
         if command == 'YG':
             board.score('yellow')
-        print board.getScore()
+        print board.getInfo()
         scored()
 
 
@@ -151,7 +163,7 @@ def scored():
 
 
 def draw():
-    screen.drawScore(board.getScore())
+    screen.drawScore(board.getInfo())
 
 
 try:
@@ -196,7 +208,8 @@ buttons_map = {
 
 io_handlers = [IOSerial(), IODebug()]
 
-while not time.sleep(0.01):
+while not time.sleep(0.1):
+    draw()
     events = pygame.event.get()
     for e in events:
         if e.type == pygame.QUIT:

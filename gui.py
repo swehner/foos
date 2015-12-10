@@ -50,13 +50,13 @@ class pyscope:
     def clear(self):
         pass
 
-    def drawScore(self, score):
+    def drawScore(self, info):
         self.clear()
         font = pygame.font.Font(None, 500)
-        top = score["black"] % 10
-        bottom = score["yellow"] % 10
+        top = info.black_goals % 10
+        bottom = info.yellow_goals % 10
         bg = self.bg_black
-        if score["yellow"] > score["black"]:
+        if info.yellow_goals > info.black_goals:
             top, bottom = bottom, top
             bg = self.bg_yellow
 
@@ -68,5 +68,10 @@ class pyscope:
         offsety = -160
         self.screen.blit(ttop, (1170 + offsetx, 360 + offsety))
         self.screen.blit(tbottom, (1170 + offsetx, 730 + offsety))
+
+        small_font = pygame.font.Font(None, 100)
+        last_goal = small_font.render(str(info.time_goal), True, (255, 255, 255))
+        self.screen.blit(last_goal, (700, 70))
+
         # Update the display
         pygame.display.update()
