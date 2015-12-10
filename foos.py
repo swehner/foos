@@ -207,13 +207,13 @@ buttons_map = {
 }
 
 io_handlers = [IOSerial(), IODebug()]
-
+clock = pygame.time.Clock()
 count = 0
-while not time.sleep(0.1):
+while True:
+    clock.tick(10)
     if count%10 == 0:
         draw()
     count += 1
-
     events = pygame.event.get()
     for e in events:
         if e.type == pygame.QUIT:
@@ -237,5 +237,6 @@ while not time.sleep(0.1):
 
     for io in io_handlers:
         command = io.readline()
-        if command:
+        while command:
             process_command(command)
+            command = io.readline()
