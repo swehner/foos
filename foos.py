@@ -210,12 +210,13 @@ io_handlers = [IOSerial(), IODebug()]
 clock = pygame.time.Clock()
 count = 0
 while True:
+    doDraw = False
     clock.tick(10)
-    if count%10 == 0:
-        draw()
+    if count%5 == 0:
+        doDraw = True
+
     count += 1
     events = pygame.event.get()
-    doDraw = False
     for e in events:
         if e.type == pygame.QUIT:
             sys.exit(0)
