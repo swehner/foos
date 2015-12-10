@@ -215,6 +215,7 @@ while True:
         draw()
     count += 1
     events = pygame.event.get()
+    doDraw = False
     for e in events:
         if e.type == pygame.QUIT:
             sys.exit(0)
@@ -233,10 +234,14 @@ while True:
 
     if len(events) > 0:
         print events
-        draw()
+        doDraw = True
 
     for io in io_handlers:
         command = io.readline()
         while command:
+            doDraw = True
             process_command(command)
             command = io.readline()
+
+    if doDraw:
+        draw()
