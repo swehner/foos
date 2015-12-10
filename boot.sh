@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd /root/hmu27
+cd /root/foos
 ./run-camera.sh &
 ./main.sh &
