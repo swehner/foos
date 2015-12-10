@@ -149,7 +149,7 @@ def process_command(command):
 
 
 def replay(manual=False, regenerate=True):
-    #call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
+    call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
     return
 
 
@@ -208,8 +208,12 @@ buttons_map = {
 
 io_handlers = [IOSerial(), IODebug()]
 
+count = 0
 while not time.sleep(0.1):
-    draw()
+    if count%10 == 0:
+        draw()
+    count += 1
+
     events = pygame.event.get()
     for e in events:
         if e.type == pygame.QUIT:
