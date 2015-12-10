@@ -17,7 +17,7 @@ from iohandler.io_debug import IODebug
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
 class ScoreBoard:
-    def __init__(self, teams, min_goal_interval=3):
+    def __init__(self, teams, min_goal_interval=0):
         self.last_goal = 0
         self.min_goal_interval = min_goal_interval
         self.teams = teams
@@ -136,8 +136,6 @@ def process_command(command):
 
     if command in button_events:
         buttons.event(board, button_events[command])
-        print "Redrawing..."
-        draw()
 
     if command == 'BG' or command == 'YG':
         if command == 'BG':
@@ -158,7 +156,6 @@ def upload():
 
 
 def scored():
-    draw()
     pygame.event.post(pygame.event.Event(pygame.USEREVENT, {}))
 
 
@@ -211,8 +208,8 @@ clock = pygame.time.Clock()
 count = 0
 while True:
     doDraw = False
-    clock.tick(10)
-    if count%5 == 0:
+    clock.tick(20)
+    if count % 10 == 0:
         doDraw = True
 
     count += 1
