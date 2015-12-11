@@ -17,16 +17,19 @@ from iohandler.io_debug import IODebug
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
 class ScoreBoard:
-    def __init__(self, teams, min_goal_interval=0):
+    def __init__(self, teams, min_goal_interval=3):
         self.last_goal = 0
         self.min_goal_interval = min_goal_interval
         self.teams = teams
         self.scores = dict([(t, 0) for t in self.teams])
         self.last_team = None
 
-    def score(self, team):
+    def score(self, team, goal_guard=False):
         now = time.time()
-        if now > (self.last_goal + self.min_goal_interval):
+        last_ref = self.last_goal
+        if goal_guard:
+            last_ref += self.min_goal_interval
+        if now > last_ref:
             self.increment(team)
             self.last_goal = now
             self.last_team = team
@@ -139,9 +142,9 @@ def process_command(command):
 
     if command == 'BG' or command == 'YG':
         if command == 'BG':
-            board.score('black')
+            board.score('black', True)
         if command == 'YG':
-            board.score('yellow')
+            board.score('yellow', True)
         print board.getInfo()
         scored()
 
