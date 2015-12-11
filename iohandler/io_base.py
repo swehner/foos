@@ -18,10 +18,10 @@ class IOBase:
         self.writer.daemon = True
         self.writer.start()
 
-    def reader(self):
+    def reader_thread(self):
         raise NotImplementedError()
 
-    def writer(self):
+    def writer_thread(self):
         raise NotImplementedError()
 
     def writeline(self, line):
