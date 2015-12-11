@@ -24,13 +24,11 @@ class ScoreBoard:
         self.teams = teams
         self.scores = dict([(t, 0) for t in self.teams])
         self.last_goal = None
-        self.last_team = None
         self.last_goal_clock = Clock('last_goal_clock', event_queue)
 
     def score(self, team):
         self.increment(team)
         self.last_goal_clock.reset()
-        self.last_team = team
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -50,11 +48,6 @@ class ScoreBoard:
             time_goal = ''
 
         return ScoreInfo(self.scores['yellow'], self.scores['black'], time_goal)
-
-    def anull(self):
-        if self.last_team:
-            score = min(self.scores[self.last_team] - 1, 0)
-            self.scores[self.last_team] = score
 
     def reset(self):
         for k in self.scores:
