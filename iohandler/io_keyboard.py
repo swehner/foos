@@ -20,9 +20,7 @@ class IOKeyboard(IOBase):
     def reader_thread(self):
         while True:
             e = pygame.event.wait()
-            if e.type == pygame.QUIT:
-                self.read_queue.put({'type': 'quit'})
-            elif e.type == pygame.KEYDOWN or e.type == pygame.KEYUP:
+            if e.type == pygame.KEYDOWN or e.type == pygame.KEYUP:
                 if e.key in self.key_map:
                     command = self.key_map[e.key]
                     if e.type == pygame.KEYDOWN:
@@ -30,6 +28,8 @@ class IOKeyboard(IOBase):
                     else:
                         command += '_U'
                     self.read_queue.put({'type': 'input_command', 'source': 'keyboard', 'value': command})
+                elif e.key == pygame.K_PERIOD and e.type == pygame.KEYUP:
+                    self.read_queue.put({'type': 'quit'})
 
     def writer_thread(self):
         while True:
