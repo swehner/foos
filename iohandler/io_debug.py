@@ -1,3 +1,4 @@
+import pygame
 import time
 import os
 from iohandler.io_base import IOBase
@@ -21,9 +22,8 @@ class IODebug(IOBase):
                 line = f.readline()
                 if not line:
                     break
-                self.read_lock.acquire()
-                self.read_queue.append(line.strip())
-                self.read_lock.release()
+                line = line.strip()
+                pygame.fastevent.post(pygame.event.Event(pygame.USEREVENT, event_type='input_command', source='debug', value=line))
 
     def writer_thread(self):
         fifo_file = "/tmp/foos-debug.out"

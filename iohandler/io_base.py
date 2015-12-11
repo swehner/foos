@@ -4,9 +4,7 @@ class IOBase:
     reader = None
     writer = None
     serial = None
-    read_queue = []
     write_queue = []
-    read_lock = None
     write_lock = None
 
     def __init__(self):
@@ -24,15 +22,6 @@ class IOBase:
 
     def writer(self):
         raise NotImplementedError()
-
-    def readline(self):
-        if len(self.read_queue):
-            self.read_lock.acquire()
-            line = self.read_queue.pop(0)
-            self.read_lock.release()
-            return line
-        else:
-            return None
 
     def writeline(self, line):
         self.write_lock.acquire()

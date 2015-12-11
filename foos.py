@@ -156,7 +156,7 @@ def upload():
 
 
 def scored():
-    pygame.event.post(pygame.event.Event(pygame.USEREVENT, {}))
+    pygame.fastevent.post(pygame.event.Event(pygame.USEREVENT, event_type='goal'))
 
 
 def draw():
@@ -203,7 +203,9 @@ buttons_map = {
     pygame.K_KP5: ButtonEvent('ok', None)
 }
 
+pygame.fastevent.init()
 io_handlers = [IOSerial(), IODebug()]
+
 clock = pygame.time.Clock()
 count = 0
 while True:
@@ -213,7 +215,7 @@ while True:
         doDraw = True
 
     count += 1
-    events = pygame.event.get()
+    events = pygame.fastevent.get()
     for e in events:
         if e.type == pygame.QUIT:
             sys.exit(0)
@@ -228,18 +230,14 @@ while True:
                 event = buttons_map[e.key]._replace(state = 'up')
                 buttons.event(board, event)
         elif e.type == pygame.USEREVENT:
-            replay()
+            if e.event_type == 'goal':
+                replay()
+            elif e.event_type == 'input_command':
+                process_command(e.value)
 
     if len(events) > 0:
         print events
         doDraw = True
-
-    for io in io_handlers:
-        command = io.readline()
-        while command:
-            doDraw = True
-            process_command(command)
-            command = io.readline()
 
     if doDraw:
         draw()
