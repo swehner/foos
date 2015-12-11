@@ -13,7 +13,7 @@ class IOSerial(IOBase):
                 self.open_serial()
             try:
                 line = self.ser.readline().strip()
-                self.read_queue.put({'type': 'input_command', 'source': 'serial', 'value': line))
+                self.read_queue.put({'type': 'input_command', 'source': 'serial', 'value': line})
             except serial.SerialException:
                 self.open_serial()
 

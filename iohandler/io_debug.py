@@ -22,7 +22,7 @@ class IODebug(IOBase):
                 if not line:
                     break
                 line = line.strip()
-                self.read_queue.put({'event_type': 'input_command', 'source': 'debug', 'value': line})
+                self.read_queue.put({'type': 'input_command', 'source': 'debug', 'value': line})
 
     def writer_thread(self):
         fifo_file = "/tmp/foos-debug.out"
