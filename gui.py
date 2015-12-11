@@ -46,6 +46,10 @@ class pyscope:
         self.bg_yellow.convert()
         self.bg_black = pygame.image.load("bg_black.png")
         self.bg_black.convert()
+        bg = self.bg_black
+        self.screen.blit(bg, (0, 0))
+        pygame.display.update()
+
 
     def clear(self):
         pass
@@ -56,18 +60,22 @@ class pyscope:
         top = info.black_goals % 10
         bottom = info.yellow_goals % 10
         bg = self.bg_black
-        if info.yellow_goals > info.black_goals:
-            top, bottom = bottom, top
-            bg = self.bg_yellow
+        offsetx = -95
+        offsety = -160
 
-        self.screen.blit(bg, (0, 0))
+        # Clean background area
+        x, y = (1170 + offsetx, 360 + offsety)
+        self.screen.blit(bg, (x, y), (x, y, 190, 290))
+        x2, y2 = (1170 + offsetx, 730 + offsety)
+        self.screen.blit(bg, (x2, y2), (x2, y2, 190, 290))
+        x3, y3 = (700, 70)
+        self.screen.blit(bg, (x3 + 400, y3), (x3 + 400, y3, 300, 70))
+
         ttop = font.render(str(top), True, (255, 255, 255))
         tbottom = font.render(str(bottom), True, (255, 255, 255))
 
-        offsetx = -95
-        offsety = -160
-        self.screen.blit(ttop, (1170 + offsetx, 360 + offsety))
-        self.screen.blit(tbottom, (1170 + offsetx, 730 + offsety))
+        self.screen.blit(ttop, (x, y))
+        self.screen.blit(tbottom, (x2, y2))
 
         small_font = pygame.font.Font(None, 100)
         last_goal = small_font.render(str(info.time_goal), True, (255, 255, 255))
