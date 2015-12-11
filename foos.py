@@ -10,7 +10,8 @@ import getopt
 import serial
 from functools import partial
 from collections import namedtuple
-from multiprocessing import Queue
+import multiprocessing
+import Queue
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
@@ -185,25 +186,21 @@ screen = gui.pyscope(fullscreen)
 draw()
 
 
-event_queue = Queue()
-#IOSerial(event_queue)
+event_queue = multiprocessing.Queue()
+IOSerial(event_queue)
 IODebug(event_queue)
 IOKeyboard(event_queue)
 
 while True:
     try:
         e = event_queue.get(True, 1)
-    except:
-        continue
-
-    if e['type'] == 'quit':
-        sys.exit(0)
-    elif e['type'] == 'input_command':
-        print("Received command {0} from {1}".format(e['value'], e['source']))
-        process_command(e['value'])
+        if e['type'] == 'quit':
+            sys.exit(0)
+        elif e['type'] == 'input_command':
+            print("Received command {0} from {1}".format(e['value'], e['source']))
+            process_command(e['value'])
+    except Queue.Empty:
+        pass
 
     draw()
 
-
-while True:
-    command = input_queue.get()
