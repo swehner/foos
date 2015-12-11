@@ -15,29 +15,22 @@ import Queue
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
+from clock import Clock
 
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
 class ScoreBoard:
-    def __init__(self, teams, min_goal_interval=3):
-        self.last_goal = 0
-        self.min_goal_interval = min_goal_interval
+    def __init__(self, teams, event_queue):
         self.teams = teams
         self.scores = dict([(t, 0) for t in self.teams])
+        self.last_goal = None
         self.last_team = None
+        self.last_goal_clock = Clock('last_goal_clock', event_queue)
 
-    def score(self, team, goal_guard=False):
-        now = time.time()
-        last_ref = self.last_goal
-        if goal_guard:
-            last_ref += self.min_goal_interval
-        if now > last_ref:
-            self.increment(team)
-            self.last_goal = now
-            self.last_team = team
-            return True
-
-        return False
+    def score(self, team):
+        self.increment(team)
+        self.last_goal_clock.reset()
+        self.last_team = team
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -51,10 +44,8 @@ class ScoreBoard:
         return self.scores
 
     def getInfo(self):
-        if self.last_goal:
-            now = time.time()
-            delta = int(now - self.last_goal)
-            time_goal = time.strftime('Last goal: %M:%S', time.gmtime(delta))
+        if self.scores[self.teams[0]] > 0 or self.scores[self.teams[1]] > 0:
+            time_goal = time.strftime('Last goal: %M:%S', time.gmtime(self.last_goal))
         else:
             time_goal = ''
 
@@ -68,6 +59,9 @@ class ScoreBoard:
     def reset(self):
         for k in self.scores:
             self.scores[k] = 0
+
+    def update_last_goal(self, seconds):
+        self.last_goal = seconds
 
 
 class Buttons:
@@ -117,8 +111,6 @@ class Buttons:
         del et[event.action]
 
 teams = ['black', 'yellow']
-board = ScoreBoard(teams)
-buttons = Buttons()
 
 ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
 
@@ -135,6 +127,7 @@ button_events = {
     'OK_U': ButtonEvent('ok', 'up')
 }
 
+last_goal_time = 0
 
 def process_command(command):
     print("COMMAND: ", command)
@@ -143,12 +136,19 @@ def process_command(command):
         buttons.event(board, button_events[command])
 
     if command == 'BG' or command == 'YG':
-        if command == 'BG':
-            board.score('black', True)
-        if command == 'YG':
-            board.score('yellow', True)
-        print board.getInfo()
-        scored()
+        now = time.time()
+        global last_goal_time
+        guard_interval = 3
+        if now > last_goal_time+guard_interval:
+            last_goal_time = now
+            if command == 'BG':
+                board.score('black')
+            if command == 'YG':
+                board.score('yellow')
+            print board.getInfo()
+            scored()
+        else:
+            print("Ignoring goal command {} happening too soon".format(command))
 
 
 def replay(manual=False, regenerate=True):
@@ -183,24 +183,29 @@ for opt, arg in opts:
 
 print("Run GUI")
 screen = gui.pyscope(fullscreen)
-draw()
-
 
 event_queue = multiprocessing.Queue()
+
+board = ScoreBoard(teams, event_queue)
+buttons = Buttons()
+
 IOSerial(event_queue)
 IODebug(event_queue)
 IOKeyboard(event_queue)
 
+draw()
+
 while True:
-    try:
-        e = event_queue.get(True, 1)
-        if e['type'] == 'quit':
-            sys.exit(0)
-        elif e['type'] == 'input_command':
-            print("Received command {0} from {1}".format(e['value'], e['source']))
-            process_command(e['value'])
-    except Queue.Empty:
-        pass
+    e = event_queue.get(True)
+    if e['type'] == 'quit':
+        sys.exit(0)
+    elif e['type'] == 'input_command':
+        print("Received command {0} from {1}".format(e['value'], e['source']))
+        process_command(e['value'])
+    elif e['type'] == 'clock':
+        seconds = e['value']
+        if e['name'] == 'last_goal_clock':
+            board.update_last_goal(seconds)
 
     draw()
 
