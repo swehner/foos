@@ -1,21 +1,22 @@
 import threading
+from multiprocessing import Queue
 
 class IOBase:
     reader = None
     writer = None
     serial = None
-    write_queue = []
-    write_lock = None
+    read_queue = None
+    write_queue = None
 
-    def __init__(self):
+    def __init__(self, read_queue):
+        self.read_queue = read_queue
+        self.write_queue = Queue()
         self.reader = threading.Thread(target=self.reader_thread)
         self.reader.daemon = True
         self.reader.start()
         self.writer = threading.Thread(target=self.writer_thread)
         self.writer.daemon = True
         self.writer.start()
-        self.read_lock = threading.Lock()
-        self.write_lock = threading.Lock()
 
     def reader(self):
         raise NotImplementedError()
@@ -24,6 +25,4 @@ class IOBase:
         raise NotImplementedError()
 
     def writeline(self, line):
-        self.write_lock.acquire()
-        self.write_queue.append(line + '\n')
-        self.write_lock.release()
+        self.write_queue.put(line + '\n')

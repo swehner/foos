@@ -4,15 +4,16 @@ from subprocess import check_output, call
 import time
 import threading
 import gui
-import pygame
 import os
 import sys
 import getopt
 import serial
 from functools import partial
 from collections import namedtuple
+from multiprocessing import Queue
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
+from iohandler.io_keyboard import IOKeyboard
 
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
@@ -159,7 +160,7 @@ def upload():
 
 
 def scored():
-    pygame.fastevent.post(pygame.event.Event(pygame.USEREVENT, event_type='goal'))
+    replay()
 
 
 def draw():
@@ -183,64 +184,26 @@ print("Run GUI")
 screen = gui.pyscope(fullscreen)
 draw()
 
-# Keyboard control (to be deleted when the button code is working properly)
-key_map = {
-    pygame.K_PERIOD: partial(sys.exit, 0),
-    pygame.K_a: board.anull,
-    pygame.K_r: board.reset,
-    pygame.K_o: partial(board.increment, "yellow"),
-    pygame.K_p: partial(board.increment, "black"),
-    pygame.K_k: partial(board.decrement, "yellow"),
-    pygame.K_l: partial(board.decrement, "black"),
-    pygame.K_v: partial(replay, True),
-    pygame.K_n: partial(replay, True, False),
-    pygame.K_u: upload
-}
 
-# Simulate button actions with the keyboard
-buttons_map = {
-    pygame.K_KP1: ButtonEvent('yellow_minus', None),
-    pygame.K_KP3: ButtonEvent('yellow_plus', None),
-    pygame.K_KP7: ButtonEvent('black_minus', None),
-    pygame.K_KP9: ButtonEvent('black_plus', None),
-    pygame.K_KP5: ButtonEvent('ok', None)
-}
+event_queue = Queue()
+#IOSerial(event_queue)
+IODebug(event_queue)
+IOKeyboard(event_queue)
 
-pygame.fastevent.init()
-io_handlers = [IOSerial(), IODebug()]
-
-clock = pygame.time.Clock()
-count = 0
 while True:
-    doDraw = False
-    clock.tick(20)
-    if count % 10 == 0:
-        doDraw = True
+    try:
+        e = event_queue.get(True, 1)
+    except:
+        continue
 
-    count += 1
-    events = pygame.fastevent.get()
-    for e in events:
-        if e.type == pygame.QUIT:
-            sys.exit(0)
-        elif e.type == pygame.KEYDOWN:
-            if e.key in key_map:
-                key_map[e.key]()
-            if e.key in buttons_map:
-                event = buttons_map[e.key]._replace(state = 'down')
-                buttons.event(board, event)
-        elif e.type == pygame.KEYUP:
-            if e.key in buttons_map:
-                event = buttons_map[e.key]._replace(state = 'up')
-                buttons.event(board, event)
-        elif e.type == pygame.USEREVENT:
-            if e.event_type == 'goal':
-                replay()
-            elif e.event_type == 'input_command':
-                process_command(e.value)
+    if e['type'] == 'quit':
+        sys.exit(0)
+    elif e['type'] == 'input_command':
+        print("Received command {0} from {1}".format(e['value'], e['source']))
+        process_command(e['value'])
 
-    if len(events) > 0:
-        print events
-        doDraw = True
+    draw()
 
-    if doDraw:
-        draw()
+
+while True:
+    command = input_queue.get()

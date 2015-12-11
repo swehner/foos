@@ -1,10 +1,11 @@
 import time
+from multiprocessing import Queue
 from iohandler.io_debug import IODebug
 
-io = IODebug()
+q = Queue()
+io = IODebug(q)
 while True:
-    line = io.readline()
-    if line:
-        print(line)
-        io.writeline("Response: " + line)
+    line = q.get()
+    print(line['value'])
+    io.writeline("Response: " + line['value'])
     time.sleep(0.1)
