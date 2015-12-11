@@ -73,8 +73,8 @@ class pyscope:
         self.screen.blit(bg, (x, y), (x, y, 190, 290))
         x2, y2 = (1170 + offsetx, 730 + offsety)
         self.screen.blit(bg, (x2, y2), (x2, y2, 190, 290))
-        x3, y3 = (700, 70)
-        self.screen.blit(bg, (x3 + 400, y3), (x3 + 400, y3, 300, 70))
+        x3, y3 = 1030, 75
+        self.screen.blit(bg, (x3, y3), (x3, y3, 180, 60))
 
         ttop = font.render(str(top), True, (255, 255, 255))
         tbottom = font.render(str(bottom), True, (255, 255, 255))
