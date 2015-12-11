@@ -1,5 +1,6 @@
 import os
 import pygame
+import time
 
 
 class pyscope:
@@ -12,7 +13,7 @@ class pyscope:
             print "I'm running under X display = {0}".format(disp_no)
 
         # Check which frame buffer drivers are available
-        drivers = ['fbcon', 'x11']
+        drivers = ['dispmanx','directfb', 'fbcon', 'x11']
         found = False
         for driver in drivers:
             # Make sure that SDL_VIDEODRIVER is set
@@ -29,6 +30,7 @@ class pyscope:
         if not found:
             raise Exception('No suitable video driver found!')
 
+
         if fullscreen:
             size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
             print "Framebuffer size: %d x %d" % (size[0], size[1])
@@ -37,6 +39,8 @@ class pyscope:
             size = 1920, 1080
 
         self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN if fullscreen else 0)
+        print('Driver: Using {0} as SDL driver'.format(pygame.display.get_driver()))
+        print pygame.display.Info()
         # Initialise font support
         pygame.font.init()
         # Render the screen
@@ -55,6 +59,7 @@ class pyscope:
         pass
 
     def drawScore(self, info):
+        t1 = time.time()
         self.clear()
         font = pygame.font.Font(None, 500)
         top = info.black_goals % 10
@@ -83,3 +88,5 @@ class pyscope:
 
         # Update the display
         pygame.display.update()
+        t2 = time.time()
+        print("BG redraw time: %f" % (t2-t1))

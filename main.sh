@@ -1,6 +1,8 @@
 #!/bin/sh
 
-while true; do
-  sleep 5
-  python2 foos.py
-done
+#while true; do
+#  sleep 5
+#  python2 foos.py
+#done
+
+python2 foos.py
