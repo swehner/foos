@@ -25,9 +25,8 @@ def mangleDisplay(display):
     old = display._loop_begin
     from pyxlib import xlib, x
 
-    # register for all key events and disbale autorepeat
+    # register for all key events
     xlib.XSelectInput(display.opengl.d, display.opengl.window, x.KeyPressMask | x.KeyReleaseMask)
-    xlib.XAutoRepeatOff(display.opengl.d)
 
     def my_begin(self):
         n = xlib.XEventsQueued(self.opengl.d, xlib.QueuedAfterFlush)
