@@ -1,9 +1,7 @@
 import threading
-import multiprocessing
 import Queue
 
 class Clock:
-
     name = None
     event_queue = None
     clock_queue = None
@@ -12,11 +10,14 @@ class Clock:
     def __init__(self, name, event_queue):
         self.name = name
         self.event_queue = event_queue
-        self.clock_queue = multiprocessing.Queue()
+        self.clock_queue = Queue.Queue()
         self.seconds = 0
         self.thread = threading.Thread(target=self.clock_thread)
         self.thread.daemon = True
         self.thread.start()
+
+    def get(self):
+        return self.seconds
 
     def clock_thread(self):
         while True:

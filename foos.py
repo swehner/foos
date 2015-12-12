@@ -1,17 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
-from subprocess import check_output, call
-import time
-import threading
 import gui
-import os
 import sys
-import getopt
-import serial
-from functools import partial
-from collections import namedtuple
-import multiprocessing
+import time
 import Queue
+import getopt
+from collections import namedtuple
+from subprocess import check_output, call
+
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
@@ -20,15 +16,26 @@ from clock import Clock
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
 
 class ScoreBoard:
-    def __init__(self, teams, event_queue):
-        self.teams = teams
-        self.scores = dict([(t, 0) for t in self.teams])
-        self.last_goal = None
-        self.last_goal_clock = Clock('last_goal_clock', event_queue)
+    event_queue = None
+    last_goal_clock = None
+
+    def __init__(self, event_queue):
+        self.event_queue = event_queue
+        self.reset()
 
     def score(self, team):
+        if self.last_goal() <= 3:
+            print("Ignoring goal command {} happening too soon".format(command))
+            return
+
         self.increment(team)
         self.last_goal_clock.reset()
+        replay()
+        # Ignore events any event while replaying
+        q = self.event_queue
+        while not q.empty():
+            q.get_nowait()
+            q.task_done()
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -38,23 +45,24 @@ class ScoreBoard:
         s = self.scores.get(team, 0)
         self.scores[team] = max(s - 1, 0)
 
-    def getScore(self):
-        return self.scores
-
     def getInfo(self):
-        if self.scores[self.teams[0]] > 0 or self.scores[self.teams[1]] > 0:
-            time_goal = time.strftime('Last goal: %M:%S', time.gmtime(self.last_goal))
+        if sum(self.scores.values()):
+            last_goal = self.last_goal_clock.get()
+            time_goal = time.strftime('Last goal: %M:%S', time.gmtime(last_goal))
         else:
             time_goal = ''
 
         return ScoreInfo(self.scores['yellow'], self.scores['black'], time_goal)
 
     def reset(self):
-        for k in self.scores:
-            self.scores[k] = 0
+        self.scores = {'black': 0, 'yellow': 0}
+        if self.last_goal_clock:
+            self.last_goal_clock.reset()
+        else:
+            self.last_goal_clock = Clock('last_goal_clock', self.event_queue)
 
-    def update_last_goal(self, seconds):
-        self.last_goal = seconds
+    def last_goal(self):
+        return self.last_goal_clock.get()
 
 
 class Buttons:
@@ -92,7 +100,7 @@ class Buttons:
             if what == 'minus':
                 action = board.decrement
             else:
-                action = board.score
+                action = board.increment
 
             action(color)
         else:
@@ -102,8 +110,6 @@ class Buttons:
                 upload()
 
         del et[event.action]
-
-teams = ['black', 'yellow']
 
 ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
 
@@ -120,30 +126,6 @@ button_events = {
     'OK_U': ButtonEvent('ok', 'up')
 }
 
-last_goal_time = 0
-
-def process_command(command):
-    print("COMMAND: ", command)
-
-    if command in button_events:
-        buttons.event(board, button_events[command])
-
-    if command == 'BG' or command == 'YG':
-        now = time.time()
-        global last_goal_time
-        guard_interval = 3
-        if now > last_goal_time+guard_interval:
-            last_goal_time = now
-            if command == 'BG':
-                board.score('black')
-            if command == 'YG':
-                board.score('yellow')
-            print board.getInfo()
-            scored()
-        else:
-            print("Ignoring goal command {} happening too soon".format(command))
-
-
 def replay(manual=False, regenerate=True):
     call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
     return
@@ -151,10 +133,6 @@ def replay(manual=False, regenerate=True):
 
 def upload():
     call(["./upload-latest.sh"])
-
-
-def scored():
-    replay()
 
 
 def draw():
@@ -177,9 +155,9 @@ for opt, arg in opts:
 print("Run GUI")
 screen = gui.pyscope(fullscreen)
 
-event_queue = multiprocessing.Queue()
+event_queue = Queue.Queue()
 
-board = ScoreBoard(teams, event_queue)
+board = ScoreBoard(event_queue)
 buttons = Buttons()
 
 IOSerial(event_queue)
@@ -190,15 +168,20 @@ draw()
 
 while True:
     e = event_queue.get(True)
+    print "Received event", e
     if e['type'] == 'quit':
         sys.exit(0)
     elif e['type'] == 'input_command':
-        print("Received command {0} from {1}".format(e['value'], e['source']))
-        process_command(e['value'])
+        command = e['value']
+
+        if command in button_events:
+            buttons.event(board, button_events[command])
+
+        if command == 'BG' or command == 'YG':
+            command2team = {'BG': 'black', 'YG': 'yellow'}
+            board.score(command2team[command])
     elif e['type'] == 'clock':
-        seconds = e['value']
-        if e['name'] == 'last_goal_clock':
-            board.update_last_goal(seconds)
-
+        # No need to do anything, we just need the redraw
+        pass
     draw()
-
+    event_queue.task_done()
