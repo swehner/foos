@@ -37,7 +37,7 @@ class Gui():
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
                                           background=(0.0, 0.0, 0.0, 1.0))
 
-        self.DISPLAY.frames_per_second = frames
+        self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
