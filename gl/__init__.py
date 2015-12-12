@@ -1,0 +1,1 @@
+all = ['foos_gui']
