@@ -9,90 +9,143 @@ import random
 import threading
 import time
 import sys
-
-#read scaling factor from argv if set, 2 means half the size
-sf=1
-frames=0
-if len(sys.argv) > 1:
-  sf = int(sys.argv[1]) 
-#optionally set the fps to limit CPU usage
-if len(sys.argv) > 2:
-  frames = int(sys.argv[2])
-
-path = os.path.dirname(os.path.realpath(__file__))
-
-w, h=(1920//sf, 1080//sf)
-
-DISPLAY = pi3d.Display.create(x=0, y=0, w=w, h=h, background=(0.0, 0.0, 0.0, 1.0))
-DISPLAY.frames_per_second = frames
-CAMERA = pi3d.Camera(is_3d=False, scale=1/sf)
-shader = pi3d.Shader("uv_flat")
-
-bg = pi3d.ImageSprite(os.path.join(path, "foosball.jpg"), shader, w=1920, h=1080, z=10)
-sprite = pi3d.ImageSprite(os.path.join(path, "pattern.png"), shader, w=100.0, h=100.0, z=5.0)
-yellow = pi3d.ImageSprite(os.path.join(path, "yellow.jpg"), shader, x=400, y=200, w=300.0, h=300.0, z=5.0)
-black = pi3d.ImageSprite(os.path.join(path, "black.jpg"), shader, x=-400, y=200, w=300.0, h=300.0, z=5.0)
-
-mykeys = pi3d.Keyboard()
-
-#stuff for the floating thingy
-xloc = 100.0
-dx = 2.1
-yloc = 100.0
-dy = 1.13
-
-def getTime():
-  return "Now: "+ datetime.datetime.now().strftime("%H:%M:%S.%f")
-
-arialFont = pi3d.Font("UbuntuMono-B.ttf", (0,0,0,255), font_size=60)
-mystring = pi3d.String(font=arialFont, string=getTime(), is_3d=False, y=400, z=6.0)
-mystring.set_shader(shader)
-
-ynumbers=[pi3d.ImageSprite(os.path.join(path, "numbers/%d.png" % i), shader, w=300, h=444, x=400, y=-200, z=5) for i in range(0,6)]
-bnumbers=[pi3d.ImageSprite(os.path.join(path, "numbers/%d.png" % i), shader, w=300, h=444, x=-400, y=-200, z=5) for i in range(0,6)]
-
-yScore=0
-bScore=0
-
-def randomScore():
-  global yScore, bScore
-  while True:
-    time.sleep(1)
-    yScore=random.randint(0,5)
-    bScore=random.randint(0,5)
-
-threading.Thread(target=randomScore, daemon=True).start()
-
-try:
-
-  while DISPLAY.loop_running():
-    bg.draw()
-    ynumbers[yScore].draw()  
-    bnumbers[bScore].draw()  
-    mystring.draw()
-    mystring.quick_change(getTime())
-    yellow.draw()
-    black.draw()
-    sprite.draw()
-    sprite.rotateIncZ(1)
-    #floating thingy stuff
-    sprite.position(xloc, yloc, 5.0)
-    if xloc > 300.0:
-      dx = -2.1
-    elif xloc < -300.0:
-      dx = 2.1
-    if yloc > 300.0:
-      dy = -1.13
-    elif yloc < -300.0:
-      dy = 1.13
-    xloc += dx
-    yloc += dy
-  
-    if mykeys.read() == 27:
-      break
-except:
- pass
+from functools import partial
+import traceback
 
 
-mykeys.close()
-DISPLAY.destroy()
+class GuiState():
+    def __init__(self, yScore=0, bScore=0, lastGoal=None):
+        self.yScore = yScore
+        self.bScore = bScore
+        self.lastGoal = lastGoal
+
+
+class Gui():
+    def __init__(self, scaling_factor, fps):
+        self.do_replay = False
+        self.state = GuiState()
+        self.__init_display(scaling_factor, fps)
+        self.__setup_sprites()
+
+    def __init_display(self, sf, fps):
+        if sf == 0:
+            #adapt to screen size
+            self.DISPLAY = pi3d.Display.create(background=(0.0, 0.0, 0.0, 1.0))
+            sf = 1920 / self.DISPLAY.width
+        else:
+            print("Forcing size")
+            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
+                                          background=(0.0, 0.0, 0.0, 1.0))
+
+        self.DISPLAY.frames_per_second = frames
+        print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
+
+        self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
+
+    def __setup_sprites(self):
+        flat = pi3d.Shader("uv_flat")
+        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
+        self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=5.0)
+        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
+        self.black = pi3d.ImageSprite("black.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
+
+        font = pi3d.Font("UbuntuMono-B.ttf", (0, 0, 0, 255), font_size=60)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=400, z=6.0)
+        self.goal_time.set_shader(flat)
+
+        # TODO: reuse the sprites/images for yellow and black somehow?
+        self.ynumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
+                                          w=300, h=444, x=400, y=-200, z=5)
+                         for i in range(0, 10)]
+        self.bnumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
+                                          w=300, h=444, x=-400, y=-200, z=5)
+                         for i in range(0, 10)]
+
+    def run(self):
+        try:
+            print("Running")
+            while self.DISPLAY.loop_running():
+                if self.do_replay:
+                    self.__replay()
+                    self.do_replay = False
+
+                self.bg.draw()
+                self.yellow.draw()
+                self.black.draw()
+                self.ynumbers[self.state.yScore].draw()
+                self.bnumbers[self.state.bScore].draw()
+                self.goal_time.draw()
+                self.goal_time.quick_change(self.__get_time_since_last_goal())
+
+            print("Loop finished")
+
+        except:
+            traceback.print_exc()
+
+    def __get_time_since_last_goal(self):
+        if self.state.lastGoal:
+            diff = time.time() - self.state.lastGoal
+            fract = diff - int(diff)
+            timestr = "%s.%d" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))
+        else:
+            timestr = "--:--.-"
+
+        return "Last Goal: %s" % timestr
+
+    def set_state(self, state):
+        self.state = self.__validate(state)
+
+    def __validate(self, state):
+        return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
+
+    def __replay(self):
+        print("Replay now!")
+
+    def request_replay(self):
+        self.do_replay = True
+
+    def cleanup(self):
+        self.DISPLAY.destroy()
+
+    def stop(self):
+        self.DISPLAY.stop()
+
+
+class RandomScore(threading.Thread):
+    def __init__(self, gui):
+        super(RandomScore, self).__init__(daemon=True)
+        self.gui = gui
+
+    def run(self):
+        state = GuiState()
+        while True:
+            if random.random() < 0.2:
+                who = random.randint(0, 1)
+                if who == 0:
+                    state.yScore += 1
+                else:
+                    state.bScore += 1
+
+                state.lastGoal = time.time()
+                self.gui.set_state(state)
+                self.gui.request_replay()
+            time.sleep(1)
+
+
+if __name__ == "__main__":
+    #read scaling factor from argv if set, 2 means half the size, 0 means adapt automatically
+    sf = 0
+    frames = 0
+    if len(sys.argv) > 1:
+        sf = int(sys.argv[1])
+
+    #optionally set the fps to limit CPU usage
+    if len(sys.argv) > 2:
+        frames = int(sys.argv[2])
+
+    gui = Gui(sf, frames)
+
+    RandomScore(gui).start()
+
+    gui.run()
+    gui.cleanup()
