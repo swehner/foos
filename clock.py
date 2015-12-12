@@ -8,6 +8,9 @@ class Clock:
     def __init__(self, name):
         self.name = name
 
+    def set(self, seconds):
+        self.seconds = seconds
+
     def get(self):
         return self.time
 
