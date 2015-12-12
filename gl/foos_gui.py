@@ -12,14 +12,19 @@ import sys
 
 #read scaling factor from argv if set, 2 means half the size
 sf=1
+frames=0
 if len(sys.argv) > 1:
   sf = int(sys.argv[1]) 
+#optionally set the fps to limit CPU usage
+if len(sys.argv) > 2:
+  frames = int(sys.argv[2])
 
 path = os.path.dirname(os.path.realpath(__file__))
 
 w, h=(1920//sf, 1080//sf)
 
 DISPLAY = pi3d.Display.create(x=0, y=0, w=w, h=h, background=(0.0, 0.0, 0.0, 1.0))
+DISPLAY.frames_per_second = frames
 CAMERA = pi3d.Camera(is_3d=False, scale=1/sf)
 shader = pi3d.Shader("uv_flat")
 
@@ -37,10 +42,10 @@ yloc = 100.0
 dy = 1.13
 
 def getTime():
-  return "Now: "+ datetime.datetime.now().strftime("%H:%M:%S")
+  return "Now: "+ datetime.datetime.now().strftime("%H:%M:%S.%f")
 
-arialFont = pi3d.Font("UbuntuMono-B.ttf", (255,255,255,255), font_size=60)
-mystring = pi3d.String(font=arialFont, string=getTime(), is_3d=False, z=6.0)
+arialFont = pi3d.Font("UbuntuMono-B.ttf", (0,0,0,255), font_size=60)
+mystring = pi3d.String(font=arialFont, string=getTime(), is_3d=False, y=400, z=6.0)
 mystring.set_shader(shader)
 
 ynumbers=[pi3d.ImageSprite(os.path.join(path, "numbers/%d.png" % i), shader, w=300, h=444, x=400, y=-200, z=5) for i in range(0,6)]
