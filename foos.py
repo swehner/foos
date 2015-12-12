@@ -1,12 +1,14 @@
 #!/usr/bin/python2
 
-import gui
+from gl.foos_gui import Gui, GuiState
 import sys
 import time
-import Queue
+import queue
 import getopt
 from collections import namedtuple
 from subprocess import check_output, call
+import os
+import threading
 
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
@@ -14,6 +16,7 @@ from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
 
 ScoreInfo = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'time_goal'])
+
 
 class ScoreBoard:
     event_queue = None
@@ -24,8 +27,9 @@ class ScoreBoard:
         self.reset()
 
     def score(self, team):
-        if self.last_goal() <= 3:
-            print("Ignoring goal command {} happening too soon".format(command))
+        d = self.last_goal_clock.get_diff()
+        if d and d <= 3:
+            print("Ignoring goal command {} happening too soon".format(team))
             return
 
         self.increment(team)
@@ -36,14 +40,17 @@ class ScoreBoard:
         while not q.empty():
             q.get_nowait()
             q.task_done()
+        self.pushState()
 
     def increment(self, team):
         s = self.scores.get(team, 0)
         self.scores[team] = s + 1
+        self.pushState()
 
     def decrement(self, team):
         s = self.scores.get(team, 0)
         self.scores[team] = max(s - 1, 0)
+        self.pushState()
 
     def getInfo(self):
         if sum(self.scores.values()):
@@ -59,10 +66,16 @@ class ScoreBoard:
         if self.last_goal_clock:
             self.last_goal_clock.reset()
         else:
-            self.last_goal_clock = Clock('last_goal_clock', self.event_queue)
+            self.last_goal_clock = Clock('last_goal_clock')
+        self.pushState()
 
     def last_goal(self):
         return self.last_goal_clock.get()
+
+    def pushState(self):
+        gui.set_state(GuiState(self.scores['yellow'],
+                               self.scores['black'],
+                               self.last_goal()))
 
 
 class Buttons:
@@ -71,7 +84,7 @@ class Buttons:
 
     def event(self, board, event):
         et = self.event_table
-        print "New event:", event, et
+        print("New event:", event, et)
 
         now = time.time()
         if event.state == 'down':
@@ -84,7 +97,7 @@ class Buttons:
             return
 
         delta = now - et[event.action]
-        print "Press duration:", delta
+        print("Press duration:", delta)
 
         if event.action != 'ok':
             color, what = event.action.split('_')
@@ -126,7 +139,9 @@ button_events = {
     'OK_U': ButtonEvent('ok', 'up')
 }
 
+
 def replay(manual=False, regenerate=True):
+    #TODO: where to move this?
     call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
     return
 
@@ -135,53 +150,58 @@ def upload():
     call(["./upload-latest.sh"])
 
 
-def draw():
-    screen.drawScore(board.getInfo())
-
-
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "f")
+    opts, args = getopt.getopt(sys.argv[1:], "s:f:")
 except getopt.GetoptError:
-    print 'usage: python2 ir_controller [-f]'
-    print '-f: Fullscreen mode'
+    print('usage: python2 ir_controller [-s]')
+    print('-s: scale')
+    print('-f: framerate')
     sys.exit(2)
 
 fullscreen = False
 
+sf = 0
+frames = 0
 for opt, arg in opts:
     if opt == '-f':
-        fullscreen = True
+        frames = int(arg)
+    if opt == '-s':
+        sf = int(arg)
 
 print("Run GUI")
-screen = gui.pyscope(fullscreen)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
+gui = Gui(sf, frames)
 
-event_queue = Queue.Queue()
+event_queue = queue.Queue()
 
 board = ScoreBoard(event_queue)
 buttons = Buttons()
 
 IOSerial(event_queue)
 IODebug(event_queue)
-IOKeyboard(event_queue)
+if gui.is_x11():
+    print("Running Keyboard")
+    IOKeyboard(event_queue)
 
-draw()
 
-while True:
-    e = event_queue.get(True)
-    print "Received event", e
-    if e['type'] == 'quit':
-        sys.exit(0)
-    elif e['type'] == 'input_command':
-        command = e['value']
+def processEvents():
+    while True:
+        e = event_queue.get(True)
+        print("Received event", e)
+        if e['type'] == 'quit':
+            gui.stop()
+        elif e['type'] == 'input_command':
+            command = e['value']
 
-        if command in button_events:
-            buttons.event(board, button_events[command])
+            if command in button_events:
+                buttons.event(board, button_events[command])
 
-        if command == 'BG' or command == 'YG':
-            command2team = {'BG': 'black', 'YG': 'yellow'}
-            board.score(command2team[command])
-    elif e['type'] == 'clock':
-        # No need to do anything, we just need the redraw
-        pass
-    draw()
-    event_queue.task_done()
+            if command == 'BG' or command == 'YG':
+                command2team = {'BG': 'black', 'YG': 'yellow'}
+                board.score(command2team[command])
+
+        event_queue.task_done()
+
+threading.Thread(target=processEvents, daemon=True).start()
+gui.run()
+gui.cleanup()

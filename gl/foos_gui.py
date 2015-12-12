@@ -20,11 +20,35 @@ class GuiState():
         self.lastGoal = lastGoal
 
 
+def mangleDisplay(display):
+    print("Careful! Mangling pi3d stuff")
+    old = display._loop_begin
+    from pyxlib import xlib, x
+
+    # register for all key events and disbale autorepeat
+    xlib.XSelectInput(display.opengl.d, display.opengl.window, x.KeyPressMask | x.KeyReleaseMask)
+    xlib.XAutoRepeatOff(display.opengl.d)
+
+    def my_begin(self):
+        n = xlib.XEventsQueued(self.opengl.d, xlib.QueuedAfterFlush)
+        for i in range(0, n):
+            if xlib.XCheckMaskEvent(self.opengl.d, x.KeyPressMask | x.KeyReleaseMask, self.ev):
+                self.event_list.append(self.ev)
+
+        # continue with the old code (which processes events - so this might not work 100%
+        old()
+
+    display._loop_begin = partial(my_begin, display)
+
+
 class Gui():
     def __init__(self, scaling_factor, fps):
         self.do_replay = False
         self.state = GuiState()
         self.__init_display(scaling_factor, fps)
+        if self.is_x11():
+            mangleDisplay(self.DISPLAY)
+
         self.__setup_sprites()
 
     def __init_display(self, sf, fps):
@@ -109,6 +133,9 @@ class Gui():
 
     def stop(self):
         self.DISPLAY.stop()
+
+    def is_x11(self):
+        return pi3d.PLATFORM != pi3d.PLATFORM_PI and pi3d.PLATFORM != pi3d.PLATFORM_ANDROID
 
 
 class RandomScore(threading.Thread):
