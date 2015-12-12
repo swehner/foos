@@ -8,6 +8,7 @@ import queue
 import getopt
 import atexit
 import pickle
+import hipbot
 from collections import namedtuple
 from subprocess import check_output, call
 import os
@@ -81,9 +82,9 @@ class ScoreBoard:
         return self.last_goal_clock.get()
 
     def pushState(self):
-        gui.set_state(GuiState(self.scores['yellow'],
-                               self.scores['black'],
-                               self.last_goal()))
+        state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal()))
+        gui.set_state(state)
+        bot.send_info(state)
 
 
 class Buttons:
@@ -178,6 +179,7 @@ for opt, arg in opts:
 print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 gui = Gui(sf, frames)
+bot = hipbot.HipBot()
 
 event_queue = queue.Queue()
 
@@ -190,6 +192,7 @@ buttons = Buttons()
 
 IOSerial(event_queue)
 IODebug(event_queue)
+
 if gui.is_x11():
     print("Running Keyboard")
     IOKeyboard(event_queue)
