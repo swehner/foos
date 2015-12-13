@@ -40,6 +40,8 @@ def mangleDisplay(display):
     display._loop_begin = partial(my_begin, display)
 
 
+
+
 class Gui():
     def __init__(self, scaling_factor, fps):
         self.do_replay = False
@@ -69,8 +71,8 @@ class Gui():
         flat = pi3d.Shader("uv_flat")
         self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
         self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=5.0)
-        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
-        self.black = pi3d.ImageSprite("black.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
+        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
+        self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
 
         font = pi3d.Font("UbuntuMono-B.ttf", (0, 0, 0, 255), font_size=60)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=400, z=6.0)
@@ -78,10 +80,10 @@ class Gui():
 
         # TODO: reuse the sprites/images for yellow and black somehow?
         self.ynumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
-                                          w=300, h=444, x=400, y=-200, z=5)
+                                          w=300, h=444, x=-400, y=-200, z=5)
                          for i in range(0, 10)]
         self.bnumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
-                                          w=300, h=444, x=-400, y=-200, z=5)
+                                          w=300, h=444, x=400, y=-200, z=5)
                          for i in range(0, 10)]
 
     def run(self):
