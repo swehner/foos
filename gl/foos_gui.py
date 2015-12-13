@@ -47,8 +47,7 @@ class Counter():
             Counter.textures = [pi3d.Texture("numbers/%d.png" % i)
                                    for i in range(0, 10)]
         self.value = value
-        self.numbers = [pi3d.ImageSprite(Counter.textures[i], shader, **kwargs)
-                        for i in range(0, 10)]
+        self.number = pi3d.ImageSprite(Counter.textures[value], shader, **kwargs)
         self.anim_start = None
         self.speed = 5
         self.maxAngle = 5
@@ -56,16 +55,13 @@ class Counter():
 
     def draw(self):
         now = time.time()
-        s = self.numbers[self.value]
-
-        #print(self.anim_start, now, (now - self.anim_start) if self.anim_start else None)
+        s = self.number
+        s.set_textures([Counter.textures[self.value]])
 
         if self.anim_start and (now - self.anim_start) <= self.time:
             angle = self.animValue(now) * self.maxAngle
-            #print("Angle: %d" % angle)
             s.rotateToZ(angle)
         else:
-            #print("Reset animation")
             s.rotateToZ(0)
             self.anim_start = None
 
