@@ -21,6 +21,7 @@ class IOKeyboard(IOBase):
         from pyxlib import x
         display = Display.INSTANCE
         while True:
+            time.sleep(0.01)
             while len(display.event_list) > 0:
                 e = display.event_list.pop()
                 if e.type == x.KeyPress or e.type == x.KeyRelease:
