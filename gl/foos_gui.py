@@ -100,22 +100,25 @@ class Gui():
         self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
 
-        self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
+        at = 0, 0, 0
+        eye = 0, 0, -70
+        self.CAMERA = pi3d.Camera(is_3d=True, at=at, eye=eye, scale=1 / sf)
+
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
-        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
-        self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=5.0)
-        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
-        self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
+        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=151)
+        self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=150)
+        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=150)
+        self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=150)
 
-        font = pi3d.Font("UbuntuMono-B.ttf", (0, 0, 0, 255), font_size=60)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=400, z=6.0)
+        font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=60)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=320, z=80)
         self.goal_time.set_shader(flat)
 
         # TODO: reuse the sprites/images for yellow and black somehow?
-        self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=5)
-        self.bCounter = Counter(0, flat, w=300, h=444, x=400, y=-200, z=5)
+        self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=150)
+        self.bCounter = Counter(0, flat, w=300, h=444, x=400, y=-200, z=150)
 
     def run(self):
         try:

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 from gl.foos_gui import Gui, GuiState
 import sys
