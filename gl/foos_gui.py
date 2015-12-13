@@ -47,8 +47,8 @@ class Counter():
                         for i in range(0, 10)]
         self.anim_start = None
         self.speed = 5
-        self.maxAngle = 10
-        self.time = 1
+        self.maxAngle = 5
+        self.time = 0.8
 
     def draw(self):
         now = time.time()
@@ -74,7 +74,7 @@ class Counter():
 
     def animValue(self, now):
         x = now - self.anim_start
-        return math.sin(2 * math.pi * x * self.speed) * math.pow(2, -x * x)
+        return math.sin(2 * math.pi * x * self.speed) * math.pow(100., -x * x)
 
 
 class Gui():
@@ -105,7 +105,6 @@ class Gui():
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
         self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
-        self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=5.0)
         self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
         self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
 
