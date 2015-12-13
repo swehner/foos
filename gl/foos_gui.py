@@ -46,7 +46,7 @@ class Counter():
         self.numbers = [pi3d.ImageSprite("numbers/%d.png" % i, shader, **kwargs)
                         for i in range(0, 10)]
         self.anim_start = None
-        self.speed = 3
+        self.speed = 5
         self.maxAngle = 10
         self.time = 1
 
@@ -150,8 +150,8 @@ class Gui():
 
     def set_state(self, state):
         self.state = self.__validate(state)
-        self.yCounter.setValue(state.yScore)
-        self.bCounter.setValue(state.bScore)
+        self.yCounter.setValue(self.state.yScore)
+        self.bCounter.setValue(self.state.bScore)
 
     def __validate(self, state):
         return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
