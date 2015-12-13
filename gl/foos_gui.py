@@ -11,7 +11,7 @@ import time
 import sys
 from functools import partial
 import traceback
-
+import math
 
 class GuiState():
     def __init__(self, yScore=0, bScore=0, lastGoal=None):
@@ -40,6 +40,41 @@ def mangleDisplay(display):
     display._loop_begin = partial(my_begin, display)
 
 
+class Counter():
+    def __init__(self, value, shader, **kwargs):
+        self.value = value
+        self.numbers = [pi3d.ImageSprite("numbers/%d.png" % i, shader, **kwargs)
+                        for i in range(0, 10)]
+        self.anim_start = None
+        self.speed = 3
+        self.maxAngle = 10
+        self.time = 1
+
+    def draw(self):
+        now = time.time()
+        s = self.numbers[self.value]
+
+        #print(self.anim_start, now, (now - self.anim_start) if self.anim_start else None)
+
+        if self.anim_start and (now - self.anim_start) <= self.time:
+            angle = self.animValue(now) * self.maxAngle
+            #print("Angle: %d" % angle)
+            s.rotateToZ(angle)
+        else:
+            #print("Reset animation")
+            s.rotateToZ(0)
+            self.anim_start = None
+
+        s.draw()
+
+    def setValue(self, value):
+        if self.value != value:
+            self.value = value
+            self.anim_start = time.time()
+
+    def animValue(self, now):
+        x = now - self.anim_start
+        return math.sin(2 * math.pi * x * self.speed) * math.pow(2, -x * x)
 
 
 class Gui():
@@ -79,12 +114,8 @@ class Gui():
         self.goal_time.set_shader(flat)
 
         # TODO: reuse the sprites/images for yellow and black somehow?
-        self.ynumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
-                                          w=300, h=444, x=-400, y=-200, z=5)
-                         for i in range(0, 10)]
-        self.bnumbers = [pi3d.ImageSprite("numbers/%d.png" % i, flat,
-                                          w=300, h=444, x=400, y=-200, z=5)
-                         for i in range(0, 10)]
+        self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=5)
+        self.bCounter = Counter(0, flat, w=300, h=444, x=400, y=-200, z=5)
 
     def run(self):
         try:
@@ -97,8 +128,8 @@ class Gui():
                 self.bg.draw()
                 self.yellow.draw()
                 self.black.draw()
-                self.ynumbers[self.state.yScore].draw()
-                self.bnumbers[self.state.bScore].draw()
+                self.yCounter.draw()
+                self.bCounter.draw()
                 self.goal_time.draw()
                 self.goal_time.quick_change(self.__get_time_since_last_goal())
 
@@ -119,6 +150,8 @@ class Gui():
 
     def set_state(self, state):
         self.state = self.__validate(state)
+        self.yCounter.setValue(state.yScore)
+        self.bCounter.setValue(state.bScore)
 
     def __validate(self, state):
         return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
