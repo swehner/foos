@@ -13,13 +13,14 @@ from collections import namedtuple
 from subprocess import check_output, call
 import os
 import threading
+import traceback
 
 from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
 
-State = namedtuple('ScoreInfo', ['yellow_goals', 'black_goals', 'last_goal'])
+State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 
 
 class ScoreBoard:
@@ -60,17 +61,19 @@ class ScoreBoard:
     def load_info(self):
         try:
             if os.path.isfile(self.status_file):
-                with open(self.status_file, 'r') as f:
+                with open(self.status_file, 'rb') as f:
                     state = pickle.load(f)
                     self.scores['yellow'] = state.yellow_goals
                     self.scores['black'] = state.black_goals
                     self.last_goal_clock.set(state.last_goal)
+                    self.pushState()
         except:
             print("State loading failed")
+            traceback.print_exc()
 
     def save_info(self):
         state = State(self.scores['yellow'], self.scores['black'], self.last_goal())
-        with open(self.status_file, 'w') as f:
+        with open(self.status_file, 'wb') as f:
             pickle.dump(state, f)
 
     def reset(self):

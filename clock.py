@@ -2,14 +2,12 @@ import time
 
 
 class Clock:
-    name = None
-    time = None
-
     def __init__(self, name):
         self.name = name
-
-    def set(self, seconds):
-        self.seconds = seconds
+        self.time = None
+        
+    def set(self, ts):
+        self.time = ts
 
     def get(self):
         return self.time
