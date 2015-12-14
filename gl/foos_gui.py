@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 """ Example showing what can be left out. ESC to quit"""
 import pi3d
+from pi3d.Display import Display
+from pi3d.Light import Light
 import os
 import datetime
 import random
@@ -12,6 +14,7 @@ import sys
 from functools import partial
 import traceback
 import math
+import operator
 
 class GuiState():
     def __init__(self, yScore=0, bScore=0, lastGoal=None):
@@ -46,9 +49,9 @@ class Counter():
         self.numbers = [pi3d.ImageSprite("numbers/%d.png" % i, shader, **kwargs)
                         for i in range(0, 10)]
         self.anim_start = None
-        self.speed = 5
-        self.maxAngle = 10
-        self.time = 1
+        self.speed = 6
+        self.maxAngle = 6
+        self.time = 0.6
 
     def draw(self):
         now = time.time()
@@ -59,10 +62,10 @@ class Counter():
         if self.anim_start and (now - self.anim_start) <= self.time:
             angle = self.animValue(now) * self.maxAngle
             #print("Angle: %d" % angle)
-            s.rotateToZ(angle)
+            s.rotateToY(angle)
         else:
             #print("Reset animation")
-            s.rotateToZ(0)
+            s.rotateToY(0)
             self.anim_start = None
 
         s.draw()
@@ -77,6 +80,28 @@ class Counter():
         return math.sin(2 * math.pi * x * self.speed) * math.pow(2, -x * x)
 
 
+class Flash():
+    def __init__(self, light):
+        self.light = light
+        self.init_color = light.lightcol
+        self.flash_color =  0, 0, 0
+        self.speed =4400
+        self.turns = 0
+        self.step = tuple(map(lambda x: x / 50, map(operator.sub, self.flash_color, self.init_color)))
+
+    def flash(self):
+        self.light.lightcol = self.flash_color
+        self.turns = 50
+
+    def update(self):
+        if self.turns:
+            color = tuple(map(operator.sub, self.light.lightcol, self.step))
+            self.light.lightcol = color
+            self.turns -= 1
+            print(color)
+
+
+
 class Gui():
     def __init__(self, scaling_factor, fps):
         self.do_replay = False
@@ -86,34 +111,45 @@ class Gui():
             mangleDisplay(self.DISPLAY)
 
         self.__setup_sprites()
+        self.last_black = 0
 
     def __init_display(self, sf, fps):
-        if sf == 0:
-            #adapt to screen size
-            self.DISPLAY = pi3d.Display.create(background=(0.0, 0.0, 0.0, 1.0))
-            sf = 1920 / self.DISPLAY.width
-        else:
-            print("Forcing size")
-            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
-                                          background=(0.0, 0.0, 0.0, 1.0))
-
+#        if sf == 0:
+#            #adapt to screen size
+#            self.DISPLAY = pi3d.Display.create(background=(0.0, 0.0, 0.0, 1.0))
+#            sf = 1920 / self.DISPLAY.width
+#        else:
+#            print("Forcing size")
+#            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
+#                                          background=(0.0, 0.0, 0.0, 1.0))
+#        self.DISPLAY = DISPLAY = pi3d.Display.create()
+        self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1680, h=1050, background=(0.0, 0.0, 0.0, 1.0))
         self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
 
         at = 0, 0, 0
-        eye = 0, 0, -70
-        self.CAMERA = pi3d.Camera(is_3d=True, at=at, eye=eye, scale=1 / sf)
-
+        eye = 0, 0, -500
+        ratio = Display.INSTANCE.width / Display.INSTANCE.height
+        fov = 28
+        lens = [Display.INSTANCE.near, Display.INSTANCE.far, fov, ratio]
+        self.CAMERA = pi3d.Camera(is_3d=True, at=at, eye=eye, lens=lens, scale=1 / sf)
+        lightcol = 2, 2, 2
+        self.light = Light(lightcol=lightcol)
+        self.flash = Flash(self.light)
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
-        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=151)
+        light = pi3d.Shader("uv_light")
+        self.bg = pi3d.ImageSprite("foosball.jpg", light, w=1920, h=1080, sx=1.5, sy=1.5, z=400)
         self.sprite = pi3d.ImageSprite("pattern.png", flat, w=100.0, h=100.0, z=150)
         self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=150)
         self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=150)
+        self.bg.set_light(self.light, 0)
+        self.yellow.set_light(self.light, 0)
+        self.black.set_light(self.light, 0)
 
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=60)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=320, z=80)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=500, z=150)
         self.goal_time.set_shader(flat)
 
         # TODO: reuse the sprites/images for yellow and black somehow?
@@ -135,6 +171,8 @@ class Gui():
                 self.bCounter.draw()
                 self.goal_time.draw()
                 self.goal_time.quick_change(self.__get_time_since_last_goal())
+                self.flash.update()
+                self.bg.set_light(self.light, 0)
 
             print("Loop finished")
 
@@ -155,6 +193,10 @@ class Gui():
         self.state = self.__validate(state)
         self.yCounter.setValue(self.state.yScore)
         self.bCounter.setValue(self.state.bScore)
+        if self.last_black != self.state.bScore:
+            print("FLASH")
+            self.flash.flash()
+        self.last_black = self.state.bScore
 
     def __validate(self, state):
         return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
