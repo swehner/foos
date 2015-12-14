@@ -58,12 +58,15 @@ class ScoreBoard:
         self.pushState()
 
     def load_info(self):
-        if os.path.isfile(self.status_file):
-            with open(self.status_file, 'r') as f:
-                state = pickle.load(f)
-                self.scores['yellow'] = state.yellow_goals
-                self.scores['black'] = state.black_goals
-                selg.last_goal_clock.set(state.last_goal)
+        try:
+            if os.path.isfile(self.status_file):
+                with open(self.status_file, 'r') as f:
+                    state = pickle.load(f)
+                    self.scores['yellow'] = state.yellow_goals
+                    self.scores['black'] = state.black_goals
+                    self.last_goal_clock.set(state.last_goal)
+        except:
+            print("State loading failed")
 
     def save_info(self):
         state = State(self.scores['yellow'], self.scores['black'], self.last_goal())
