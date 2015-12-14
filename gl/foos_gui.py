@@ -107,8 +107,8 @@ class Gui():
         self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
         self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
         self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
-        font = pi3d.Font("UbuntuMono-B.ttf", (0, 0, 0, 255), font_size=60)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=400, z=6.0)
+        font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=450, z=6.0)
         self.goal_time.set_shader(flat)
 
         self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=5)
@@ -139,7 +139,7 @@ class Gui():
         if self.state.lastGoal:
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
-            timestr = "%s.%d" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))
+            timestr = ("%s.%d" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))).replace("0", "O")
         else:
             timestr = "--:--.-"
 
