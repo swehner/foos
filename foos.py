@@ -82,7 +82,7 @@ class ScoreBoard:
         return self.last_goal_clock.get()
 
     def pushState(self):
-        state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal()))
+        state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal())
         gui.set_state(state)
         bot.send_info(state)
 
