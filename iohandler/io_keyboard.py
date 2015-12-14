@@ -8,12 +8,21 @@ class IOKeyboard(IOBase):
         79: 'YI',
         89: 'BD',
         81: 'BI',
-        84: 'OK'
+        84: 'OK',
+
+        24: 'YI', # Q
+        26: 'BI', # E
+        39: 'OK', # S
+        52: 'YD', # Z
+        54: 'BD', # C
     }
 
     goal_map = {
         83: 'YG',
         85: 'BG',
+
+        38: 'YG', # A
+        40: 'BG', # D
     }
 
     def reader_thread(self):
