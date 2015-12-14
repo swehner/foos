@@ -12,7 +12,7 @@ class IOSerial(IOBase):
             if not self.ser:
                 self.open_serial()
             try:
-                line = self.ser.readline().strip()
+                line = self.ser.readline().strip().decode('utf-8')
                 self.read_queue.put({'type': 'input_command', 'source': 'serial', 'value': line})
             except serial.SerialException:
                 self.open_serial()
