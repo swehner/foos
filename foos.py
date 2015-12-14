@@ -38,15 +38,14 @@ class ScoreBoard:
             print("Ignoring goal command {} happening too soon".format(team))
             return
 
-        self.increment(team)
         self.last_goal_clock.reset()
+        self.increment(team)
         replay()
         # Ignore events any event while replaying
         q = self.event_queue
         while not q.empty():
             q.get_nowait()
             q.task_done()
-        self.pushState()
 
     def increment(self, team):
         s = self.scores.get(team, 0)
