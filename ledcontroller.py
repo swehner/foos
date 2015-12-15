@@ -5,10 +5,10 @@ from threading import Thread
 import queue
 import collections
 
-BD=0b00001
-BI=0b00010
-YD=0b00100
-YI=0b01000
+YD=0b00001
+YI=0b00010
+BD=0b00100
+BI=0b01000
 OK=0b10000
 
 names = {BD: "BD", BI: "BI", YD: "YD", YI: "YI", OK: "OK"}

@@ -41,7 +41,7 @@ class ScoreBoard:
 
         self.last_goal_clock.reset()
         self.increment(team)
-        leds.setMode(pat_demo)
+        leds.setMode(pat_goal)
         replay()
         # Ignore events any event while replaying
         q = self.event_queue

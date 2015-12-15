@@ -20,13 +20,13 @@ class IOSerial(IOBase):
     def writer_thread(self):
         while True:
             line = self.write_queue.get()
-            while True:
-                if not self.ser:
-                    # Wait until the reader thread opens the serial line again
-                    # FIXME: What if the queue fills up?
-                    time.sleep(1)
-                    continue
-                self.ser.write(line)
+            if not self.ser:
+                # Wait until the reader thread opens the serial line again
+                # FIXME: What if the queue fills up?
+                time.sleep(1)
+                continue
+
+            self.ser.write(bytes(line, "ascii"))
 
     def open_serial(self):
         while True:
