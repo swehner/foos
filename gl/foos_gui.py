@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-""" Example showing what can be left out. ESC to quit"""
 import pi3d
 import os
 import datetime
@@ -13,6 +12,7 @@ from functools import partial
 import traceback
 import math
 
+
 class GuiState():
     def __init__(self, yScore=0, bScore=0, lastGoal=None):
         self.yScore = yScore
@@ -21,7 +21,7 @@ class GuiState():
 
 
 def mangleDisplay(display):
-    print("Careful! Mangling pi3d stuff")
+    print("Careful! Mangling pi3d X stuff")
     old = display._loop_begin
     from pyxlib import xlib, x
 
@@ -42,10 +42,11 @@ def mangleDisplay(display):
 
 class Counter():
     textures = None
+
     def __init__(self, value, shader, **kwargs):
         if not Counter.textures:
             Counter.textures = [pi3d.Texture("numbers/%d.png" % i)
-                                   for i in range(0, 10)]
+                                for i in range(0, 10)]
         self.value = value
         self.number = pi3d.ImageSprite(Counter.textures[value], shader, **kwargs)
         self.anim_start = None
@@ -79,7 +80,6 @@ class Counter():
 
 class Gui():
     def __init__(self, scaling_factor, fps):
-        self.do_replay = False
         self.state = GuiState()
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
@@ -95,7 +95,7 @@ class Gui():
         else:
             print("Forcing size")
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
-                                          background=(0.0, 0.0, 0.0, 1.0))
+                                               background=(0.0, 0.0, 0.0, 1.0))
 
         self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
@@ -118,10 +118,6 @@ class Gui():
         try:
             print("Running")
             while self.DISPLAY.loop_running():
-                if self.do_replay:
-                    self.__replay()
-                    self.do_replay = False
-
                 self.bg.draw()
                 self.yellow.draw()
                 self.black.draw()
@@ -153,12 +149,6 @@ class Gui():
     def __validate(self, state):
         return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
 
-    def __replay(self):
-        print("Replay now!")
-
-    def request_replay(self):
-        self.do_replay = True
-
     def cleanup(self):
         self.DISPLAY.destroy()
 
@@ -186,7 +176,6 @@ class RandomScore(threading.Thread):
 
                 state.lastGoal = time.time()
                 self.gui.set_state(state)
-                self.gui.request_replay()
             time.sleep(1)
 
 
