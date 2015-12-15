@@ -25,9 +25,13 @@ class IOBase:
     def writer_thread(self):
         raise NotImplementedError()
 
-    def writeline(self, line):
+    def convert_data(self, data):
+        return data
+
+    def write_data(self, data):
         try:
-            self.write_queue.put_nowait(line + '\n')
+            data = self.convert_data(data)
+            self.write_queue.put_nowait(data)
         except queue.Full:
             #TODO alert somehow without flooding?
             pass

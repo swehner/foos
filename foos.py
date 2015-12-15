@@ -200,8 +200,7 @@ buttons = Buttons()
 serial = IOSerial(event_queue)
 debug = IODebug(event_queue)
 
-leds = LedController(serial, debug)
-leds.start()
+leds = LedController([serial, debug])
 
 if gui.is_x11():
     print("Running Keyboard")

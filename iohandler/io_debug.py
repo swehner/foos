@@ -2,7 +2,10 @@ import time
 import os
 from iohandler.io_base import IOBase
 
+
 class IODebug(IOBase):
+    def convert_data(self, data):
+        return ("Leds: %s\n" % ', '.join(data))
 
     def reader_thread(self):
         fifo_file = "/tmp/foos-debug.in"
@@ -45,4 +48,3 @@ class IODebug(IOBase):
                         print("Error opening fifo file " + fifo_file)
                         time.sleep(5)
                     continue
-

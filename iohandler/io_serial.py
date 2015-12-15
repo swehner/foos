@@ -6,13 +6,27 @@ from iohandler.io_base import IOBase
 class IOSerial(IOBase):
 
     ser = None
+    bitmap = {
+        "YD": 0b00001,
+        "YI": 0b00010,
+        "BD": 0b00100,
+        "BI": 0b01000,
+        "OK": 0b10000
+    }
+
+    def __getArduinoValueFor(self, leds):
+        value = sum(map(lambda x: IOSerial.bitmap.get(x, 0), leds))
+        return chr(value + ord('A'))
+
+    def convert_data(self, data):
+        return (self.__getArduinoValueFor(data) + "\n").encode("ascii")
 
     def reader_thread(self):
         while True:
             if not self.ser:
                 self.open_serial()
             try:
-                line = self.ser.readline().strip().decode('utf-8')
+                line = self.ser.readline().strip().decode('ascii')
                 self.read_queue.put({'type': 'input_command', 'source': 'serial', 'value': line})
             except serial.SerialException:
                 self.open_serial()
@@ -37,4 +51,3 @@ class IOSerial(IOBase):
             else:
                 self.ser = serial.Serial(tty_list[0], 115200)
                 return
-
