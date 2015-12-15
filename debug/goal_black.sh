@@ -1,3 +1,3 @@
 #!/bin/sh
 
-echo -ne "BG\n" > /tmp/foos-debug.in
+echo "BG" > /tmp/foos-debug.in

@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo -ne "YD_D\n" > /tmp/foos-debug.in
+echo "YD_D" > /tmp/foos-debug.in
 sleep 0.2
-echo -ne "YD_U\n" > /tmp/foos-debug.in
+echo "YD_U" > /tmp/foos-debug.in

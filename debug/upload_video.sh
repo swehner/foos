@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo -ne "OK_D\n" > /tmp/foos-debug.in
+echo "OK_D" > /tmp/foos-debug.in
 sleep 1.2
-echo -ne "OK_U\n" > /tmp/foos-debug.in
+echo "OK_U" > /tmp/foos-debug.in
