@@ -19,6 +19,7 @@ from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
+from ledcontroller import LedController, pat_goal, pat_reset, pat_demo
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 
@@ -40,6 +41,7 @@ class ScoreBoard:
 
         self.last_goal_clock.reset()
         self.increment(team)
+        leds.setMode(pat_demo)
         replay()
         # Ignore events any event while replaying
         q = self.event_queue
@@ -195,8 +197,11 @@ atexit.register(board.save_info)
 
 buttons = Buttons()
 
-IOSerial(event_queue)
-IODebug(event_queue)
+serial = IOSerial(event_queue)
+debug = IODebug(event_queue)
+
+leds = LedController(serial, debug)
+leds.start()
 
 if gui.is_x11():
     print("Running Keyboard")

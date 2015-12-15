@@ -1,5 +1,6 @@
 import threading
 from multiprocessing import Queue
+import queue
 
 class IOBase:
     reader = None
@@ -10,7 +11,7 @@ class IOBase:
 
     def __init__(self, read_queue):
         self.read_queue = read_queue
-        self.write_queue = Queue()
+        self.write_queue = Queue(10)
         self.reader = threading.Thread(target=self.reader_thread)
         self.reader.daemon = True
         self.reader.start()
@@ -25,4 +26,8 @@ class IOBase:
         raise NotImplementedError()
 
     def writeline(self, line):
-        self.write_queue.put(line + '\n')
+        try:
+            self.write_queue.put_nowait(line + '\n')
+        except queue.Full:
+            #TODO alert somehow without flooding?
+            pass
