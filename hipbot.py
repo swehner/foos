@@ -12,7 +12,6 @@ class HipBot(object):
         except:
             pass
 
-
     def send_message(self, msg, color='yellow', notify=False):
         self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
 
@@ -21,7 +20,7 @@ class HipBot(object):
             if state.bScore == state.yScore == 0:
                 msg = "New match!"
             else:
-                msg = "Goal! Score: Black {} - {} Yellow".format(state.bScore, state.yScore)
+                msg = "Goal! Score: Yellow {} - {} Black".format(state.yScore, state.bScore)
             self.send_message(msg)
         except:
             pass
