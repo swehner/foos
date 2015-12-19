@@ -1,0 +1,5 @@
+pi3d
+numpy
+Pillow
+python-simple-hipchat
+pyserial
