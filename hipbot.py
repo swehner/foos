@@ -1,19 +1,18 @@
-# Dependency: pip install python-simple-hipchat
 import config
 import hipchat
+import traceback
 from gl.foos_gui import GuiState
 
 class HipBot(object):
     def __init__(self):
-        try:
-            self.hc = hipchat.HipChat(token=config.hipchat_token)
-            self.room = config.hipchat_room
-            self.name = 'FoosBot'
-        except:
-            pass
+        self.hc = hipchat.HipChat(token=config.hipchat_token)
+        self.room = config.hipchat_room
+        self.name = 'FoosBot'
 
     def send_message(self, msg, color='yellow', notify=False):
-        self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
+        print("Sending Hipchat message:", msg)
+        if config.hipchat_enabled:
+            self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
 
     def send_info(self, state):
         try:
@@ -23,4 +22,5 @@ class HipBot(object):
                 msg = "Goal! Score: Yellow {} - {} Black".format(state.yScore, state.bScore)
             self.send_message(msg)
         except:
-            pass
+            print("Error sending hipchat message")
+            traceback.print_exc()
