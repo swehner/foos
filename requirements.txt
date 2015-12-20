@@ -3,3 +3,4 @@ numpy
 Pillow
 python-simple-hipchat
 pyserial
+google-api-python-client

@@ -21,6 +21,7 @@ from clock import Clock
 from ledcontroller import LedController, pat_goal, pat_reset, pat_upload
 from soundcontroller import SoundController
 import config
+import upload
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 
@@ -166,6 +167,7 @@ def replay(manual=False, regenerate=True):
 
 def upload():
     if config.upload_enabled:
+        #upload.upload('/tmp/replay/replay_long.h264')
         leds.setMode(pat_upload)
         call(["./upload-latest.sh"])
 
