@@ -1,3 +1,5 @@
 hipchat_enabled = False
+upload_enabled = False
+replay_enabled = False
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'

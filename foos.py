@@ -11,7 +11,6 @@ import pickle
 import hipbot
 from collections import namedtuple
 from subprocess import check_output, call
-import os
 import threading
 import traceback
 
@@ -19,10 +18,11 @@ from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
-from ledcontroller import LedController, pat_goal, pat_reset, pat_demo
+from ledcontroller import LedController, pat_goal, pat_reset, pat_upload
+from soundcontroller import SoundController
+import config
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
-
 
 class ScoreBoard:
     event_queue = None
@@ -31,6 +31,7 @@ class ScoreBoard:
 
     def __init__(self, event_queue):
         self.event_queue = event_queue
+        self.sound = SoundController()
         self.reset()
 
     def score(self, team):
@@ -51,7 +52,7 @@ class ScoreBoard:
 
     def increment(self, team):
         s = self.scores.get(team, 0)
-        self.scores[team] = s + 1
+        self.scores[team] = (s + 1) % 10
         self.pushState()
 
     def decrement(self, team):
@@ -92,6 +93,7 @@ class ScoreBoard:
         state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal())
         gui.set_state(state)
         bot.send_info(state)
+        self.sound.send_info(state)
 
 
 class Buttons:
@@ -105,7 +107,8 @@ class Buttons:
         now = time.time()
         if event.state == 'down':
             # Actions are executed on button release
-            et[event.action] = now
+            if event.action not in et:
+                et[event.action] = now
             return
 
         if event.action not in et:
@@ -157,13 +160,14 @@ button_events = {
 
 
 def replay(manual=False, regenerate=True):
-    #TODO: where to move this?
-    call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
-    return
-
+    if config.replay_enabled:
+        #TODO: where to move this?
+        call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
 
 def upload():
-    call(["./upload-latest.sh"])
+    if config.upload_enabled:
+        leds.setMode(pat_upload)
+        call(["./upload-latest.sh"])
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")

@@ -77,6 +77,10 @@ pat_goal = 2 * [3 * [Pattern(0.2, ["BI", "BD", "OK", "YI", "YD"]),
                  Pattern(0.2, ["OK"]),
                  Pattern(0.2, ["BI", "YI"])]]
 
+pat_upload = 3 * [Pattern(0.1, ["OK"]),
+                  Pattern(0.1)]
+
+
 pat_demo = [Pattern(1, ["BD"]),
             Pattern(1, ["BI"]),
             Pattern(1, ["YD"]),
@@ -96,4 +100,6 @@ if __name__ == "__main__":
     controller.setMode(pat_poweredoff, loop=True)
     time.sleep(5)
     controller.setMode(pat_goal)
+    time.sleep(5)
+    controller.setMode(pat_upload)
     time.sleep(5)

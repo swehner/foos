@@ -147,7 +147,7 @@ class Gui():
         self.bCounter.setValue(self.state.bScore)
 
     def __validate(self, state):
-        return GuiState(state.yScore % 10, state.bScore % 10, state.lastGoal)
+        return GuiState(state.yScore, state.bScore, state.lastGoal)
 
     def cleanup(self):
         self.DISPLAY.destroy()
