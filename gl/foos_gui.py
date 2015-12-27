@@ -8,9 +8,11 @@ import random
 import threading
 import time
 import sys
-from functools import partial
 import traceback
 import math
+from gl import monkeypatch
+
+monkeypatch.patch()
 
 
 class GuiState():
@@ -18,26 +20,6 @@ class GuiState():
         self.yScore = yScore
         self.bScore = bScore
         self.lastGoal = lastGoal
-
-
-def mangleDisplay(display):
-    print("Careful! Mangling pi3d X stuff")
-    old = display._loop_begin
-    from pyxlib import xlib, x
-
-    # register for all key events
-    xlib.XSelectInput(display.opengl.d, display.opengl.window, x.KeyPressMask | x.KeyReleaseMask)
-
-    def my_begin(self):
-        n = xlib.XEventsQueued(self.opengl.d, xlib.QueuedAfterFlush)
-        for i in range(0, n):
-            if xlib.XCheckMaskEvent(self.opengl.d, x.KeyPressMask | x.KeyReleaseMask, self.ev):
-                self.event_list.append(self.ev)
-
-        # continue with the old code (which processes events - so this might not work 100%)
-        old()
-
-    display._loop_begin = partial(my_begin, display)
 
 
 class Counter():
@@ -86,19 +68,20 @@ class Gui():
         self.show_leds = show_leds
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
-            mangleDisplay(self.DISPLAY)
+            monkeypatch.fixX11KeyEvents(self.DISPLAY)
 
         self.__setup_sprites()
 
     def __init_display(self, sf, fps):
+        bgcolor = (0.0, 0.0, 0.0, 0.0)
         if sf == 0:
             #adapt to screen size
-            self.DISPLAY = pi3d.Display.create(background=(0.0, 0.0, 0.0, 1.0))
+            self.DISPLAY = pi3d.Display.create(background=bgcolor)
             sf = 1920 / self.DISPLAY.width
         else:
             print("Forcing size")
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
-                                               background=(0.0, 0.0, 0.0, 1.0))
+                                               background=bgcolor)
 
         self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
@@ -107,15 +90,16 @@ class Gui():
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
-        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
-        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=-400, y=200, w=300.0, h=300.0, z=5.0)
-        self.black = pi3d.ImageSprite("black.jpg", flat, x=400, y=200, w=300.0, h=300.0, z=5.0)
-        font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=450, z=6.0)
+        posx = 750
+        posy = 450
+        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=posx - 120, y=posy, w=60, h=66, z=5.0)
+        self.black = pi3d.ImageSprite("black.jpg", flat, x=posx + 120, y=posy, w=60, h=66, z=5.0)
+        font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=40)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, x=posx, y=posy - 100, z=6.0)
         self.goal_time.set_shader(flat)
 
-        self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=5)
-        self.bCounter = Counter(0, flat, w=300, h=444, x=400, y=-200, z=5)
+        self.yCounter = Counter(0, flat, w=60, h=88, x=posx - 40, y=posy, z=5)
+        self.bCounter = Counter(0, flat, w=60, h=88, x=posx + 40, y=posy, z=5)
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -142,7 +126,6 @@ class Gui():
         try:
             print("Running")
             while self.DISPLAY.loop_running():
-                self.bg.draw()
                 self.yellow.draw()
                 self.black.draw()
                 self.yCounter.draw()
@@ -174,7 +157,7 @@ class Gui():
         else:
             timestr = "--:--.-"
 
-        return "Last Goal: %s" % timestr
+        return "LG: %s" % timestr
 
     def set_state(self, state):
         self.state = self.__validate(state)
