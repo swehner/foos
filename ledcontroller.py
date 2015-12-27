@@ -71,15 +71,17 @@ pat_reset = 3 * [Pattern(0.2, ["BI", "BD", "YI", "YD"]),
 pat_poweredoff = [Pattern(0.5, ["OK"]),
                   Pattern(1)]
 
-pat_goal = 2 * [3 * [Pattern(0.2, ["BI", "BD", "OK", "YI", "YD"]),
-                     Pattern(0.2)],
-                [Pattern(0.2, ["BD", "YD"]),
-                 Pattern(0.2, ["OK"]),
-                 Pattern(0.2, ["BI", "YI"])]]
+pat_goal = [[Pattern(0.1, ["BD", "YD"]),
+             Pattern(0.1, ["OK"]),
+             Pattern(0.1, ["BI", "YI"])],
+            3 * [Pattern(0.1),
+                 Pattern(0.1, ["BI", "BD", "OK", "YI", "YD"])]]
 
 pat_upload = 3 * [Pattern(0.1, ["OK"]),
                   Pattern(0.1)]
 
+pat_error = 2 * [Pattern(0.3, ["YD", "BD"]),
+                  Pattern(0.3)]
 
 pat_demo = [Pattern(1, ["BD"]),
             Pattern(1, ["BI"]),

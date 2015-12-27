@@ -34,7 +34,7 @@ def mangleDisplay(display):
             if xlib.XCheckMaskEvent(self.opengl.d, x.KeyPressMask | x.KeyReleaseMask, self.ev):
                 self.event_list.append(self.ev)
 
-        # continue with the old code (which processes events - so this might not work 100%
+        # continue with the old code (which processes events - so this might not work 100%)
         old()
 
     display._loop_begin = partial(my_begin, display)

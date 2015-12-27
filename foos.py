@@ -18,12 +18,13 @@ from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
-from ledcontroller import LedController, pat_goal, pat_reset, pat_upload
+from ledcontroller import LedController, pat_goal, pat_reset, pat_upload, pat_error
 from soundcontroller import SoundController
 import config
 import upload
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
+
 
 class ScoreBoard:
     event_queue = None
@@ -165,11 +166,13 @@ def replay(manual=False, regenerate=True):
         #TODO: where to move this?
         call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
 
+
 def upload():
     if config.upload_enabled:
-        #upload.upload('/tmp/replay/replay_long.h264')
-        leds.setMode(pat_upload)
         call(["./upload-latest.sh"])
+        leds.setMode(pat_upload)
+    else:
+        leds.setMode(pat_error)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:l")
@@ -179,8 +182,6 @@ except getopt.GetoptError:
     print('-f: framerate (default: 25)')
     print('-l: show leds on-screen (default: False)')
     sys.exit(2)
-
-fullscreen = False
 
 sf = 0
 frames = 25
