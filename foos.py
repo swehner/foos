@@ -32,9 +32,12 @@ class ScoreBoard:
     status_file = '.status'
 
     def __init__(self, event_queue):
+        self.last_goal_clock = Clock('last_goal_clock')
+        self.scores = {'black': 0, 'yellow': 0}
         self.event_queue = event_queue
         self.sound = SoundController()
-        self.reset()
+        if not self.__load_info():
+            self.reset()
 
     def score(self, team):
         d = self.last_goal_clock.get_diff()
@@ -62,7 +65,8 @@ class ScoreBoard:
         self.scores[team] = max(s - 1, 0)
         self.pushState()
 
-    def load_info(self):
+    def __load_info(self):
+        loaded = False
         try:
             if os.path.isfile(self.status_file):
                 with open(self.status_file, 'rb') as f:
@@ -71,9 +75,12 @@ class ScoreBoard:
                     self.scores['black'] = state.black_goals
                     self.last_goal_clock.set(state.last_goal)
                     self.pushState()
+                    loaded = True
         except:
             print("State loading failed")
             traceback.print_exc()
+
+        return loaded
 
     def save_info(self):
         state = State(self.scores['yellow'], self.scores['black'], self.last_goal())
@@ -82,10 +89,7 @@ class ScoreBoard:
 
     def reset(self):
         self.scores = {'black': 0, 'yellow': 0}
-        if self.last_goal_clock:
-            self.last_goal_clock.reset()
-        else:
-            self.last_goal_clock = Clock('last_goal_clock')
+        self.last_goal_clock.reset()
         self.pushState()
 
     def last_goal(self):
@@ -198,8 +202,7 @@ bot = hipbot.HipBot()
 event_queue = queue.Queue()
 
 board = ScoreBoard(event_queue)
-# Load status and register save status on exit
-board.load_info()
+# Register save status on exit
 atexit.register(board.save_info)
 
 buttons = Buttons()
