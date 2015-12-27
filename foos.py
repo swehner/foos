@@ -18,7 +18,7 @@ from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
-from ledcontroller import LedController, pat_goal, pat_reset, pat_upload, pat_error
+from ledcontroller import LedController, pat_goal, pat_reset, pat_ok, pat_error, Pattern
 from soundcontroller import SoundController
 import config
 import upload
@@ -106,6 +106,9 @@ class Buttons:
     # Class to manage the state of the buttons and the needed logic
     event_table = {}
 
+    def __init__(self, upload_delay=1):
+        self.upload_delay = upload_delay
+
     def event(self, board, event):
         et = self.event_table
         print("New event:", event, et)
@@ -115,6 +118,9 @@ class Buttons:
             # Actions are executed on button release
             if event.action not in et:
                 et[event.action] = now
+                if event.action == 'ok':
+                    schedule_upload_confirmation(self.upload_delay)
+
             return
 
         if event.action not in et:
@@ -131,8 +137,8 @@ class Buttons:
                 # Double press for reset?
                 board.reset()
                 for key in ['yellow_minus', 'yellow_plus', 'black_minus', 'black_plus']:
-                        if key in et:
-                            del et[key]
+                    if key in et:
+                        del et[key]
                 return
 
             if what == 'minus':
@@ -142,7 +148,8 @@ class Buttons:
 
             action(color)
         else:
-            if delta < 1:
+            reset_upload_confirmation()
+            if delta < self.upload_delay:
                 replay(True)
             else:
                 upload()
@@ -171,10 +178,18 @@ def replay(manual=False, regenerate=True):
         call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
 
 
+def schedule_upload_confirmation(delay):
+    leds.setMode([Pattern(delay, []), Pattern(0.1, ["OK"])])
+
+
+def reset_upload_confirmation():
+    leds.setMode([])
+
+
 def upload():
     if config.upload_enabled:
         call(["./upload-latest.sh"])
-        leds.setMode(pat_upload)
+        leds.setMode(pat_ok)
     else:
         leds.setMode(pat_error)
 
@@ -205,7 +220,7 @@ board = ScoreBoard(event_queue)
 # Register save status on exit
 atexit.register(board.save_info)
 
-buttons = Buttons()
+buttons = Buttons(upload_delay=0.6)
 
 serial = IOSerial(event_queue)
 debug = IODebug(event_queue)

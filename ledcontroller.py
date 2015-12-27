@@ -77,11 +77,10 @@ pat_goal = [[Pattern(0.1, ["BD", "YD"]),
             3 * [Pattern(0.1),
                  Pattern(0.1, ["BI", "BD", "OK", "YI", "YD"])]]
 
-pat_upload = 3 * [Pattern(0.1, ["OK"]),
-                  Pattern(0.1)]
+pat_ok = [Pattern(0.3, ["OK"])]
 
 pat_error = 2 * [Pattern(0.3, ["YD", "BD"]),
-                  Pattern(0.3)]
+                 Pattern(0.3)]
 
 pat_demo = [Pattern(1, ["BD"]),
             Pattern(1, ["BI"]),
