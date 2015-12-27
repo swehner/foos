@@ -172,26 +172,30 @@ def upload():
         call(["./upload-latest.sh"])
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "s:f:")
+    opts, args = getopt.getopt(sys.argv[1:], "s:f:l")
 except getopt.GetoptError:
-    print('usage: python2 ir_controller [-s]')
+    print('usage: python2 ir_controller [-sfl]')
     print('-s: scale')
-    print('-f: framerate')
+    print('-f: framerate (default: 25)')
+    print('-l: show leds on-screen (default: False)')
     sys.exit(2)
 
 fullscreen = False
 
 sf = 0
-frames = 0
+frames = 25
+show_leds = 0
 for opt, arg in opts:
     if opt == '-f':
         frames = int(arg)
     if opt == '-s':
         sf = int(arg)
+    if opt == '-l':
+        show_leds = True
 
 print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
-gui = Gui(sf, frames)
+gui = Gui(sf, frames, show_leds=show_leds)
 bot = hipbot.HipBot()
 
 event_queue = queue.Queue()
@@ -206,7 +210,7 @@ buttons = Buttons()
 serial = IOSerial(event_queue)
 debug = IODebug(event_queue)
 
-leds = LedController([serial, debug])
+leds = LedController([serial, debug, gui])
 
 if gui.is_x11():
     print("Running Keyboard")

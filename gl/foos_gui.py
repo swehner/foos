@@ -57,7 +57,7 @@ class Counter():
     def draw(self):
         now = time.time()
         s = self.number
-        s.set_textures([Counter.textures[self.value]])
+        s.set_textures([Counter.textures[self.value % 10]])
 
         if self.anim_start and (now - self.anim_start) <= self.time:
             angle = self.animValue(now) * self.maxAngle
@@ -79,8 +79,9 @@ class Counter():
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps):
+    def __init__(self, scaling_factor, fps, show_leds=False):
         self.state = GuiState()
+        self.show_leds = show_leds
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
             mangleDisplay(self.DISPLAY)
@@ -114,6 +115,23 @@ class Gui():
         self.yCounter = Counter(0, flat, w=300, h=444, x=-400, y=-200, z=5)
         self.bCounter = Counter(0, flat, w=300, h=444, x=400, y=-200, z=5)
 
+        self.ledShapes = {
+            "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
+            "YI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
+            "OK": pi3d.shape.Disk.Disk(radius=50, sides=12, x=0, y=-400, z=0, rx=90),
+            "BD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
+            "BI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
+        }
+        red = (255, 0, 0, 0)
+        green = (0, 255, 0, 0)
+        self.blackColor = (0, 0, 0, 0)
+        self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
+        self.leds = []
+
+    def write_data(self, data):
+        """LED writer implementation"""
+        self.leds = data
+
     def run(self):
         try:
             print("Running")
@@ -125,11 +143,22 @@ class Gui():
                 self.bCounter.draw()
                 self.goal_time.draw()
                 self.goal_time.quick_change(self.__get_time_since_last_goal())
+                if self.show_leds:
+                    self.__draw_leds()
 
             print("Loop finished")
 
         except:
             traceback.print_exc()
+
+    def __draw_leds(self):
+        for name, s in self.ledShapes.items():
+            color = self.blackColor
+            if name in self.leds:
+                color = self.ledColors[name]
+
+            s.set_material(color)
+            s.draw()
 
     def __get_time_since_last_goal(self):
         if self.state.lastGoal:
