@@ -41,8 +41,8 @@ def get_authenticated_service():
     credentials = storage.get()
 
     if credentials is None or credentials.invalid:
-        flags = argparser.parse_args(args=[])
-    credentials = run_flow(flow, storage, flags)
+        flags = argparser.parse_args(args=['--noauth_local_webserver'])
+        credentials = run_flow(flow, storage, flags)
 
     return build('youtube', 'v3', http=credentials.authorize(httplib2.Http()))
 
