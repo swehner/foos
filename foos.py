@@ -190,7 +190,7 @@ def upload():
     if config.upload_enabled:
         call(["./upload-latest.sh"])
         leds.setMode(pat_ok)
-        youtube_uploader.upload('/tmp/replay/replay_long.mp4')
+        youtube_uploader.async_upload('/tmp/replay/replay_long.mp4', bot)
     else:
         leds.setMode(pat_error)
 

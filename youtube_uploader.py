@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import time
+import threading
 
 from apiclient.discovery import build
 from apiclient.errors import HttpError
@@ -37,7 +38,7 @@ CLIENT_SECRETS_FILE = "client_secrets.json"
 def get_authenticated_service():
     upload_scope = 'https://www.googleapis.com/auth/youtube.upload'
     flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE, scope=upload_scope)
-    storage = Storage("/tmp/%s-oauth2.json" % sys.argv[0])
+    storage = Storage("%s-oauth2.json" % sys.argv[0])
     credentials = storage.get()
 
     if credentials is None or credentials.invalid:
@@ -69,7 +70,7 @@ def initialize_upload(youtube, file):
         # value for better recovery on less reliable connections.
         media_body=MediaFileUpload(file, chunksize=-1, resumable=True))
 
-    resumable_upload(insert_request)
+    return resumable_upload(insert_request)
 
 # This method implements an exponential backoff strategy to resume a
 # failed upload.
@@ -82,6 +83,7 @@ def resumable_upload(insert_request):
             status, response = insert_request.next_chunk()
             if 'id' in response:
                 print("Video id '%s' was successfully uploaded." % response['id'])
+                return response['id']
             else:
                 print("The upload failed with an unexpected response: %s" % response)
                 return False
@@ -96,22 +98,30 @@ def resumable_upload(insert_request):
         if error is not None:
             print(error)
             retry += 1
-        if retry > MAX_RETRIES:
-            print("No longer attempting to retry.")
+            if retry > MAX_RETRIES:
+                print("No longer attempting to retry.")
 
-        max_sleep = 2 ** retry
-        sleep_seconds = random.random() * max_sleep
-        print("Sleeping %f seconds and then retrying..." % sleep_seconds)
-        time.sleep(sleep_seconds)
+            max_sleep = 2 ** retry
+            sleep_seconds = random.random() * max_sleep
+            print("Sleeping %f seconds and then retrying..." % sleep_seconds)
+            time.sleep(sleep_seconds)
 
 
-def upload(file):
+def upload(file, bot = None):
     youtube = get_authenticated_service()
+    video_id = None
     try:
-        initialize_upload(youtube, file)
+        video_id = initialize_upload(youtube, file)
     except HttpError as e:
         print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
 
+    if bot and video_id:
+        url = 'http://www.youtube.com/watch?v={}'.format(video_id)
+        bot.send_message("New replay uploaded:", url)
+
+def async_upload(file, bot):
+    t = threading.Thread(target=upload, args=(file, bot), daemon=True)
+    t.start()
 
 if __name__ == '__main__':
     file = sys.argv[1]
