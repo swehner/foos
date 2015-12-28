@@ -117,7 +117,7 @@ def upload(file, bot = None):
 
     if bot and video_id:
         url = 'http://www.youtube.com/watch?v={}'.format(video_id)
-        bot.send_message("New replay uploaded:", url)
+        bot.send_message("New replay uploaded: " + url)
 
 def async_upload(file, bot):
     t = threading.Thread(target=upload, args=(file, bot), daemon=True)
