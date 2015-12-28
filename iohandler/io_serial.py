@@ -40,7 +40,7 @@ class IOSerial(IOBase):
                 time.sleep(1)
                 continue
 
-            self.ser.write(bytes(line, "ascii"))
+            self.ser.write(line)
 
     def open_serial(self):
         while True:
