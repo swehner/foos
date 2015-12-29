@@ -122,7 +122,7 @@ class Buttons:
     def process_event(self, ev):
         if ev.name != 'button_event' or 'state' not in ev.data:
             return
-        
+
         event = ButtonEvent(ev.data['btn'], ev.data['state'])
 
         et = self.event_table
@@ -225,14 +225,14 @@ atexit.register(board.save_info)
 
 buttons = Buttons(bus, board, upload_delay=0.6)
 
-serial = IOSerial(event_queue, bus)
-debug = IODebug(event_queue, bus)
+serial = IOSerial(bus)
+debug = IODebug(bus)
 
 leds = LedController(bus)
 
 if gui.is_x11():
     print("Running Keyboard")
-    IOKeyboard(None, bus)
+    IOKeyboard(bus)
 
 gui.run()
 gui.cleanup()

@@ -2,15 +2,9 @@ import threading
 from multiprocessing import Queue
 import queue
 
-class IOBase:
-    reader = None
-    writer = None
-    serial = None
-    read_queue = None
-    write_queue = None
 
-    def __init__(self, read_queue, bus):
-        self.read_queue = read_queue
+class IOBase:
+    def __init__(self, bus):
         self.write_queue = Queue(10)
         self.reader = threading.Thread(target=self.reader_thread)
         self.reader.daemon = True
