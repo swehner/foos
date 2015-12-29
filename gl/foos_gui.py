@@ -79,8 +79,10 @@ class Counter():
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps, show_leds=False):
+    def __init__(self, scaling_factor, fps, bus, show_leds=False):
         self.state = GuiState()
+        self.bus = bus
+        self.bus.subscribe(self.process_event)
         self.show_leds = show_leds
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
@@ -128,9 +130,9 @@ class Gui():
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
 
-    def write_data(self, data):
-        """LED writer implementation"""
-        self.leds = data
+    def process_event(self, ev):
+        if ev.name == "leds_enabled":
+            self.leds = ev.data
 
     def run(self):
         try:

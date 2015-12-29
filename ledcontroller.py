@@ -4,7 +4,7 @@ import sys
 import threading
 import queue
 import collections
-
+from bus import Event
 
 class Pattern:
     def __init__(self, time, leds=[]):
@@ -22,9 +22,9 @@ def flatten(l):
 
 
 class LedController:
-    def __init__(self, writers):
+    def __init__(self, bus):
         self.queue = queue.Queue()
-        self.writers = writers
+        self.bus = bus
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
@@ -55,8 +55,7 @@ class LedController:
         return self.queue.empty()
 
     def setLeds(self, leds=[]):
-        for w in self.writers:
-            w.write_data(leds)
+        self.bus.notify(Event("leds_enabled", leds))
 
     def setMode(self, mode, loop=False):
         self.stop = True
@@ -90,6 +89,7 @@ pat_demo = [Pattern(1, ["BD"]),
 
 
 if __name__ == "__main__":
+    # TODO: fix sample with bus usage
     class DemoWriter():
         def write_data(self, leds):
             print("\r", end="")

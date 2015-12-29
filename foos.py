@@ -22,6 +22,7 @@ from ledcontroller import LedController, pat_goal, pat_reset, pat_ok, pat_error,
 from soundcontroller import SoundController
 import config
 import youtube_uploader
+import bus
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 
@@ -212,7 +213,8 @@ for opt, arg in opts:
 
 print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
-gui = Gui(sf, frames, show_leds=config.onscreen_leds_enabled)
+bus = bus.Bus()
+gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
 bot = hipbot.HipBot()
 
 event_queue = queue.Queue()
@@ -223,14 +225,14 @@ atexit.register(board.save_info)
 
 buttons = Buttons(upload_delay=0.6)
 
-serial = IOSerial(event_queue)
-debug = IODebug(event_queue)
+serial = IOSerial(event_queue, bus)
+debug = IODebug(event_queue, bus)
 
-leds = LedController([serial, debug, gui])
+leds = LedController(bus)
 
 if gui.is_x11():
     print("Running Keyboard")
-    IOKeyboard(event_queue)
+    IOKeyboard(event_queue, bus)
 
 
 def processEvents():
