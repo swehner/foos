@@ -1,6 +1,6 @@
 import time
 from iohandler.io_base import IOBase
-
+from bus import Event
 
 class IOKeyboard(IOBase):
     key_map = {
@@ -46,7 +46,7 @@ class IOKeyboard(IOBase):
                     if command:
                         self.read_queue.put({'type': 'input_command', 'source': 'keyboard', 'value': command})
                     if code == 60:  # PERIOD
-                        self.read_queue.put({'type': 'quit'})
+                        self.bus.notify(Event('quit'))
 
     def writer_thread(self):
         while True:

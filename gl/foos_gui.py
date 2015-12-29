@@ -133,7 +133,9 @@ class Gui():
     def process_event(self, ev):
         if ev.name == "leds_enabled":
             self.leds = ev.data
-
+        if ev.name == "quit":
+            self.stop()
+            
     def run(self):
         try:
             print("Running")

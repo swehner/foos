@@ -239,9 +239,7 @@ def processEvents():
     while True:
         e = event_queue.get(True)
         print("Received event", e)
-        if e['type'] == 'quit':
-            gui.stop()
-        elif e['type'] == 'input_command':
+        if e['type'] == 'input_command':
             command = e['value']
 
             if command in button_events:
