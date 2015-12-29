@@ -32,11 +32,13 @@ class ScoreBoard:
     last_goal_clock = None
     status_file = '.status'
 
-    def __init__(self, event_queue):
+    def __init__(self, event_queue, bus):
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
         self.event_queue = event_queue
         self.sound = SoundController()
+        self.bus = bus
+        self.bus.subscribe(self.process_event, thread=True)
         if not self.__load_info():
             self.reset()
 
@@ -102,15 +104,30 @@ class ScoreBoard:
         bot.send_info(state)
         self.sound.send_info(state)
 
+    def process_event(self, ev):
+        command2team = {'BG': 'black', 'YG': 'yellow'}
+        if ev.name == 'button_event':
+            # process goals
+            btn = ev.data['btn']
+            if btn in command2team:
+                board.score(command2team[btn])
 
 class Buttons:
     # Class to manage the state of the buttons and the needed logic
     event_table = {}
 
-    def __init__(self, upload_delay=1):
+    def __init__(self, bus, board, upload_delay=1):
         self.upload_delay = upload_delay
+        self.bus = bus
+        self.board = board
+        self.bus.subscribe(self.process_event, thread=True)
 
-    def event(self, board, event):
+    def process_event(self, ev):
+        if ev.name != 'button_event' or 'state' not in ev.data:
+            return
+        
+        event = ButtonEvent(ev.data['btn'], ev.data['state'])
+
         et = self.event_table
         print("New event:", event, et)
 
@@ -136,16 +153,16 @@ class Buttons:
 
             if ('yellow_minus' in et and 'yellow_plus' in et) or ('black_minus' in et and 'black_plus' in et):
                 # Double press for reset?
-                board.reset()
+                self.board.reset()
                 for key in ['yellow_minus', 'yellow_plus', 'black_minus', 'black_plus']:
                     if key in et:
                         del et[key]
                 return
 
             if what == 'minus':
-                action = board.decrement
+                action = self.board.decrement
             else:
-                action = board.increment
+                action = self.board.increment
 
             action(color)
         else:
@@ -158,20 +175,6 @@ class Buttons:
         del et[event.action]
 
 ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
-
-button_events = {
-    'YD_D': ButtonEvent('yellow_minus', 'down'),
-    'YD_U': ButtonEvent('yellow_minus', 'up'),
-    'YI_D': ButtonEvent('yellow_plus', 'down'),
-    'YI_U': ButtonEvent('yellow_plus', 'up'),
-    'BD_D': ButtonEvent('black_minus', 'down'),
-    'BD_U': ButtonEvent('black_minus', 'up'),
-    'BI_D': ButtonEvent('black_plus', 'down'),
-    'BI_U': ButtonEvent('black_plus', 'up'),
-    'OK_D': ButtonEvent('ok', 'down'),
-    'OK_U': ButtonEvent('ok', 'up')
-}
-
 
 def replay(manual=False, regenerate=True):
     if config.replay_enabled:
@@ -219,11 +222,11 @@ bot = hipbot.HipBot()
 
 event_queue = queue.Queue()
 
-board = ScoreBoard(event_queue)
+board = ScoreBoard(event_queue, bus)
 # Register save status on exit
 atexit.register(board.save_info)
 
-buttons = Buttons(upload_delay=0.6)
+buttons = Buttons(bus, board, upload_delay=0.6)
 
 serial = IOSerial(event_queue, bus)
 debug = IODebug(event_queue, bus)
@@ -232,25 +235,7 @@ leds = LedController(bus)
 
 if gui.is_x11():
     print("Running Keyboard")
-    IOKeyboard(event_queue, bus)
+    IOKeyboard(None, bus)
 
-
-def processEvents():
-    while True:
-        e = event_queue.get(True)
-        print("Received event", e)
-        if e['type'] == 'input_command':
-            command = e['value']
-
-            if command in button_events:
-                buttons.event(board, button_events[command])
-
-            if command == 'BG' or command == 'YG':
-                command2team = {'BG': 'black', 'YG': 'yellow'}
-                board.score(command2team[command])
-
-        event_queue.task_done()
-
-threading.Thread(target=processEvents, daemon=True).start()
 gui.run()
 gui.cleanup()

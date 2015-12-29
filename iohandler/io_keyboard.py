@@ -4,17 +4,17 @@ from bus import Event
 
 class IOKeyboard(IOBase):
     key_map = {
-        87: 'YD',  # KP_1
-        79: 'YI',  # KP_7
-        89: 'BD',  # KP_3
-        81: 'BI',  # KP_9
-        84: 'OK',  # KP_5
+        87: 'yellow_minus',  # KP_1
+        79: 'yellow_plus',  # KP_7
+        89: 'black_minus',  # KP_3
+        81: 'black_plus',  # KP_9
+        84: 'ok',  # KP_5
 
-        24: 'YI',  # Q
-        26: 'BI',  # E
-        39: 'OK',  # S
-        52: 'YD',  # Z
-        54: 'BD',  # C
+        24: 'yellow_plus',  # Q
+        26: 'black_plus',  # E
+        39: 'ok',  # S
+        52: 'yellow_minus',  # Z
+        54: 'black_minus',  # C
     }
 
     goal_map = {
@@ -35,16 +35,15 @@ class IOKeyboard(IOBase):
                 e = display.event_list.pop()
                 if e.type == x.KeyPress or e.type == x.KeyRelease:
                     code = e.xkey.keycode
-                    command = None
                     if code in self.key_map:
-                        command = self.key_map[code]
-                        command += "_D" if e.type == x.KeyPress else "_U"
-
+                        btn = self.key_map[code]
+                        state = "down" if e.type == x.KeyPress else "up"
+                        self.bus.notify(Event('button_event', {'source': 'keyboard', 'btn': btn, 'state': state}))
+                                             
                     if code in self.goal_map and e.type == x.KeyPress:
                         command = self.goal_map[code]
+                        self.bus.notify(Event('button_event', {'source': 'keyboard', 'btn': command}))
 
-                    if command:
-                        self.read_queue.put({'type': 'input_command', 'source': 'keyboard', 'value': command})
                     if code == 60:  # PERIOD
                         self.bus.notify(Event('quit'))
 
