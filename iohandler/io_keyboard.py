@@ -18,11 +18,11 @@ class IOKeyboard(IOBase):
     }
 
     goal_map = {
-        83: 'YG',  # KP_4
-        85: 'BG',  # KP_6
+        83: 'yellow',  # KP_4
+        85: 'black',  # KP_6
 
-        38: 'YG',  # A
-        40: 'BG',  # D
+        38: 'yellow',  # A
+        40: 'black',  # D
     }
 
     def reader_thread(self):
@@ -41,8 +41,8 @@ class IOKeyboard(IOBase):
                         self.bus.notify(Event('button_event', {'source': 'keyboard', 'btn': btn, 'state': state}))
                                              
                     if code in self.goal_map and e.type == x.KeyPress:
-                        command = self.goal_map[code]
-                        self.bus.notify(Event('button_event', {'source': 'keyboard', 'btn': command}))
+                        team = self.goal_map[code]
+                        self.bus.notify(Event('button_event', {'source': 'keyboard', 'btn': 'goal', 'team': team}))
 
                     if code == 60:  # PERIOD
                         self.bus.notify(Event('quit'))

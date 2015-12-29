@@ -105,12 +105,9 @@ class ScoreBoard:
         self.sound.send_info(state)
 
     def process_event(self, ev):
-        command2team = {'BG': 'black', 'YG': 'yellow'}
-        if ev.name == 'button_event':
+        if ev.name == 'button_event' and ev.data['btn'] == 'goal':
             # process goals
-            btn = ev.data['btn']
-            if btn in command2team:
-                board.score(command2team[btn])
+            board.score(ev.data['team'])
 
 class Buttons:
     # Class to manage the state of the buttons and the needed logic
