@@ -2,6 +2,8 @@ import time
 import serial
 import glob
 from iohandler.io_base import IOBase
+from iohandler.arduino import getEventForButton
+
 
 class IOSerial(IOBase):
 
@@ -27,7 +29,10 @@ class IOSerial(IOBase):
                 self.open_serial()
             try:
                 line = self.ser.readline().strip().decode('ascii')
-                self.read_queue.put({'type': 'input_command', 'source': 'serial', 'value': line})
+                ev = getEventForButton(line)
+                if ev:
+                    self.bus.notify(ev)
+
             except serial.SerialException:
                 self.open_serial()
 

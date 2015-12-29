@@ -1,6 +1,7 @@
 import time
 import os
 from iohandler.io_base import IOBase
+from iohandler.arduino import getEventForButton
 
 
 class IODebug(IOBase):
@@ -25,7 +26,9 @@ class IODebug(IOBase):
                 if not line:
                     break
                 line = line.strip()
-                self.read_queue.put({'type': 'input_command', 'source': 'debug', 'value': line})
+                ev = getEventForButton(line)
+                if ev:
+                    self.bus.notify(ev)
 
     def writer_thread(self):
         fifo_file = "/tmp/foos-debug.out"
