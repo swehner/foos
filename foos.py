@@ -18,7 +18,7 @@ from iohandler.io_serial import IOSerial
 from iohandler.io_debug import IODebug
 from iohandler.io_keyboard import IOKeyboard
 from clock import Clock
-from ledcontroller import LedController, pat_goal, pat_reset, pat_ok, pat_error, Pattern
+from ledcontroller import LedController, Pattern
 from soundcontroller import SoundController
 import config
 import youtube_uploader
@@ -31,6 +31,8 @@ class ScoreBoard:
     status_file = '.status'
 
     def __init__(self, bus):
+        # Register save status on exit
+        atexit.register(self.save_info)
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
         self.bus = bus
@@ -49,7 +51,6 @@ class ScoreBoard:
         data = self.__get_event_data()
         data['team'] = team
         self.bus.notify(Event('score_goal', data))
-        leds.setMode(pat_goal)
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -204,12 +205,9 @@ def upload_handler(ev):
         if config.upload_enabled:
             try:
                 call(["./upload-latest.sh"])
-                leds.setMode(pat_ok)
                 youtube_uploader.upload('/tmp/replay/replay_long.mp4', bus)
             except:
-                leds.setMode(pat_error)
-        else:
-            leds.setMode(pat_error)
+                bus.notify(Event('upload_error'))
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
@@ -227,29 +225,26 @@ for opt, arg in opts:
     if opt == '-s':
         sf = int(arg)
 
-print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
+
 bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
 bot = hipbot.HipBot(bus)
 sound = SoundController(bus)
+board = ScoreBoard(bus)
 bus.subscribe(replay_handler, thread=True)
 bus.subscribe(upload_handler, thread=True)
 
-board = ScoreBoard(bus)
-# Register save status on exit
-atexit.register(board.save_info)
-
+# IO
 buttons = Buttons(bus, upload_delay=0.6)
-
 serial = IOSerial(bus)
 debug = IODebug(bus)
-
 leds = LedController(bus)
-
 if gui.is_x11():
     print("Running Keyboard")
     IOKeyboard(bus)
 
+# Run main gui main loop
+print("Run GUI")
 gui.run()
 gui.cleanup()

@@ -25,6 +25,7 @@ class LedController:
     def __init__(self, bus):
         self.queue = queue.Queue()
         self.bus = bus
+        self.bus.subscribe(self.process_event)
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
@@ -61,6 +62,14 @@ class LedController:
         self.stop = True
         self.queue.put((loop, mode))
 
+    def process_event(self, ev):
+        if ev.name == 'score_goal':
+            self.setMode(pat_goal)
+        if ev.name == 'upload_ok':
+            self.setMode(pat_ok)
+        # all error conditions
+        if ev.name in ['upload_error']:
+            self.setMode(pat_error)
 
 pat_reset = 3 * [Pattern(0.2, ["BI", "BD", "YI", "YD"]),
                  Pattern(0.1),
