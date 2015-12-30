@@ -135,6 +135,8 @@ class Gui():
             self.leds = ev.data
         if ev.name == "quit":
             self.stop()
+        if ev.name == "score_changed":
+            self.set_state(GuiState(ev.data['yellow'], ev.data['black'], ev.data['last_goal']))
             
     def run(self):
         try:

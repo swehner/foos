@@ -33,7 +33,6 @@ class ScoreBoard:
     def __init__(self, bus):
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
-        self.sound = SoundController()
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
         if not self.__load_info():
@@ -47,6 +46,9 @@ class ScoreBoard:
 
         self.last_goal_clock.reset()
         self.increment(team)
+        data = self.__get_event_data()
+        data['team'] = team
+        self.bus.notify(Event('score_goal', data))
         leds.setMode(pat_goal)
         replay()
 
@@ -85,16 +87,20 @@ class ScoreBoard:
     def reset(self):
         self.scores = {'black': 0, 'yellow': 0}
         self.last_goal_clock.reset()
+        self.bus.notify(Event('score_reset', self.__get_event_data()))
         self.pushState()
 
     def last_goal(self):
         return self.last_goal_clock.get()
 
+    def __get_event_data(self):
+        return  {'yellow': self.scores['yellow'],
+                 'black': self.scores['black'],
+                 'last_goal': self.last_goal()}
+    
     def pushState(self):
         state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal())
-        gui.set_state(state)
-        bot.send_info(state)
-        self.sound.send_info(state)
+        self.bus.notify(Event("score_changed", self.__get_event_data()))
 
     def process_event(self, ev):
         if ev.name == 'button_event' and ev.data['btn'] == 'goal':
@@ -213,7 +219,8 @@ print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
-bot = hipbot.HipBot()
+bot = hipbot.HipBot(bus)
+sound = SoundController(bus)
 
 board = ScoreBoard(bus)
 # Register save status on exit

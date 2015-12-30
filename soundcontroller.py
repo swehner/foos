@@ -14,29 +14,27 @@ class SoundController:
         (4, 4): '1_frag'
     }
 
-    def __init__(self):
-        self.queue = queue.Queue()
-        self.thread = threading.Thread(target=self.run)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def run(self):
-        while True:
-            score = self.queue.get()
+    def __init__(self, bus):
+        self.bus = bus
+        self.bus.subscribe(self.process_event, thread=True)
+        
+    def process_event(self, ev):
+        if ev.name == 'score_goal':
+            score = (ev.data['yellow'], ev.data['black'])
             if score not in self.sounds:
                 score = score[::-1]
                 if score not in self.sounds:
-                    continue
+                    return
+                
+        elif ev.name == 'score_reset':
+            score = (0,0)
+        else:
+            return
+            
+        sound = self.sounds[score]
+        path = "sounds/{}.wav".format(sound)
+        subprocess.call(['play', '-V0', '-G', '-q', path])
 
-            sound = self.sounds[score]
-            path = "sounds/{}.wav".format(sound)
-            subprocess.call(['play', '-V0', '-G', '-q', path])
-
-    def update(self, score):
-        self.queue.put(score)
-
-    def send_info(self, info):
-        self.update((info.yScore, info.bScore))
 
 if __name__ == "__main__":
     sc = SoundController()
