@@ -22,20 +22,17 @@ from ledcontroller import LedController, pat_goal, pat_reset, pat_ok, pat_error,
 from soundcontroller import SoundController
 import config
 import youtube_uploader
-import bus
+from bus import Bus, Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 
 
 class ScoreBoard:
-    event_queue = None
-    last_goal_clock = None
     status_file = '.status'
 
-    def __init__(self, event_queue, bus):
+    def __init__(self, bus):
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
-        self.event_queue = event_queue
         self.sound = SoundController()
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
@@ -52,11 +49,6 @@ class ScoreBoard:
         self.increment(team)
         leds.setMode(pat_goal)
         replay()
-        # Ignore events any event while replaying
-        q = self.event_queue
-        while not q.empty():
-            q.get_nowait()
-            q.task_done()
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -108,15 +100,21 @@ class ScoreBoard:
         if ev.name == 'button_event' and ev.data['btn'] == 'goal':
             # process goals
             board.score(ev.data['team'])
+        if ev.name == 'increment_score':
+            board.increment(ev.data['team'])
+        if ev.name == 'decrement_score':
+            board.decrement(ev.data['team'])
+        if ev.name == 'reset_score':
+            board.reset()
 
+            
 class Buttons:
     # Class to manage the state of the buttons and the needed logic
     event_table = {}
 
-    def __init__(self, bus, board, upload_delay=1):
+    def __init__(self, bus, upload_delay=1):
         self.upload_delay = upload_delay
         self.bus = bus
-        self.board = board
         self.bus.subscribe(self.process_event, thread=True)
 
     def process_event(self, ev):
@@ -150,18 +148,18 @@ class Buttons:
 
             if ('yellow_minus' in et and 'yellow_plus' in et) or ('black_minus' in et and 'black_plus' in et):
                 # Double press for reset?
-                self.board.reset()
+                self.bus.notify(Event('reset_score'))
                 for key in ['yellow_minus', 'yellow_plus', 'black_minus', 'black_plus']:
                     if key in et:
                         del et[key]
                 return
 
             if what == 'minus':
-                action = self.board.decrement
+                action = 'decrement_score'
             else:
-                action = self.board.increment
+                action = 'increment_score'
 
-            action(color)
+            self.bus.notify(Event(action, {'team': color}))
         else:
             reset_upload_confirmation()
             if delta < self.upload_delay:
@@ -213,17 +211,15 @@ for opt, arg in opts:
 
 print("Run GUI")
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
-bus = bus.Bus()
+bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
 bot = hipbot.HipBot()
 
-event_queue = queue.Queue()
-
-board = ScoreBoard(event_queue, bus)
+board = ScoreBoard(bus)
 # Register save status on exit
 atexit.register(board.save_info)
 
-buttons = Buttons(bus, board, upload_delay=0.6)
+buttons = Buttons(bus, upload_delay=0.6)
 
 serial = IOSerial(bus)
 debug = IODebug(bus)
