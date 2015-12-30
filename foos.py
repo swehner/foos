@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from gl.foos_gui import Gui, GuiState
+from gl.foos_gui import Gui
 import os
 import sys
 import time
@@ -99,7 +99,6 @@ class ScoreBoard:
                  'last_goal': self.last_goal()}
     
     def pushState(self):
-        state = GuiState(self.scores['yellow'], self.scores['black'], self.last_goal())
         self.bus.notify(Event("score_changed", self.__get_event_data()))
 
     def process_event(self, ev):
@@ -127,30 +126,30 @@ class Buttons:
         if ev.name != 'button_event' or 'state' not in ev.data:
             return
 
-        event = ButtonEvent(ev.data['btn'], ev.data['state'])
+        button, state = (ev.data['btn'], ev.data['state'])
 
         et = self.event_table
-        print("New event:", event, et)
+        print("New event:", ev, et)
 
         now = time.time()
-        if event.state == 'down':
+        if state == 'down':
             # Actions are executed on button release
-            if event.action not in et:
-                et[event.action] = now
-                if event.action == 'ok':
+            if button not in et:
+                et[button] = now
+                if button == 'ok':
                     schedule_upload_confirmation(self.upload_delay)
 
             return
 
-        if event.action not in et:
+        if button not in et:
             # No press action => ignore
             return
 
-        delta = now - et[event.action]
+        delta = now - et[button]
         print("Press duration:", delta)
 
-        if event.action != 'ok':
-            color, what = event.action.split('_')
+        if button != 'ok':
+            color, what = button.split('_')
 
             if ('yellow_minus' in et and 'yellow_plus' in et) or ('black_minus' in et and 'black_plus' in et):
                 # Double press for reset?
@@ -161,11 +160,11 @@ class Buttons:
                 return
 
             if what == 'minus':
-                action = 'decrement_score'
+                gen_event = 'decrement_score'
             else:
-                action = 'increment_score'
+                gen_event = 'increment_score'
 
-            self.bus.notify(Event(action, {'team': color}))
+            self.bus.notify(Event(gen_event, {'team': color}))
         else:
             reset_upload_confirmation()
             if delta < self.upload_delay:
@@ -173,9 +172,8 @@ class Buttons:
             else:
                 self.bus.notify(Event('upload_request'))
 
-        del et[event.action]
+        del et[button]
 
-ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
 
 def replay_handler(ev):
     regenerate=True
@@ -205,14 +203,17 @@ def upload_handler(ev):
         if config.upload_enabled:
             try:
                 call(["./upload-latest.sh"])
-                youtube_uploader.upload('/tmp/replay/replay_long.mp4', bus)
+                url = youtube_uploader.upload('/tmp/replay/replay_long.mp4')
+                bus.notify(Event('upload_ok', url))
             except:
                 bus.notify(Event('upload_error'))
+        else:
+            bus.notify(Event('upload_error'))
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
 except getopt.GetoptError:
-    print('usage: python2 ir_controller [-sfl]')
+    print('usage: ./foos.py [-sf]')
     print('-s: scale')
     print('-f: framerate (default: 25)')
     sys.exit(2)
