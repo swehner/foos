@@ -50,7 +50,6 @@ class ScoreBoard:
         data['team'] = team
         self.bus.notify(Event('score_goal', data))
         leds.setMode(pat_goal)
-        replay()
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -169,15 +168,24 @@ class Buttons:
         else:
             reset_upload_confirmation()
             if delta < self.upload_delay:
-                replay(True)
+                self.bus.notify(Event('replay_request'))
             else:
-                upload()
+                self.bus.notify(Event('upload_request'))
 
         del et[event.action]
 
 ButtonEvent = namedtuple('ButtonEvent', ['action', 'state'])
 
-def replay(manual=False, regenerate=True):
+def replay_handler(ev):
+    regenerate=True
+    manual = False
+    if ev.name == 'score_goal':
+        pass
+    elif ev.name == 'replay_request':
+        manual = True
+    else:
+        return
+        
     if config.replay_enabled:
         #TODO: where to move this?
         call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
@@ -191,13 +199,17 @@ def reset_upload_confirmation():
     leds.setMode([])
 
 
-def upload():
-    if config.upload_enabled:
-        call(["./upload-latest.sh"])
-        leds.setMode(pat_ok)
-        youtube_uploader.async_upload('/tmp/replay/replay_long.mp4', bot)
-    else:
-        leds.setMode(pat_error)
+def upload_handler(ev):
+    if ev.name == 'upload_request':
+        if config.upload_enabled:
+            try:
+                call(["./upload-latest.sh"])
+                leds.setMode(pat_ok)
+                youtube_uploader.upload('/tmp/replay/replay_long.mp4', bus)
+            except:
+                leds.setMode(pat_error)
+        else:
+            leds.setMode(pat_error)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
@@ -221,6 +233,8 @@ bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
 bot = hipbot.HipBot(bus)
 sound = SoundController(bus)
+bus.subscribe(replay_handler, thread=True)
+bus.subscribe(upload_handler, thread=True)
 
 board = ScoreBoard(bus)
 # Register save status on exit

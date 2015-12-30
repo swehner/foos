@@ -14,6 +14,7 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
+from bus import Event
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
 # we are handling retry logic ourselves.
@@ -107,7 +108,7 @@ def resumable_upload(insert_request):
             time.sleep(sleep_seconds)
 
 
-def upload(file, bot = None):
+def upload(file, bus = None):
     youtube = get_authenticated_service()
     video_id = None
     try:
@@ -115,13 +116,10 @@ def upload(file, bot = None):
     except HttpError as e:
         print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
 
-    if bot and video_id:
+    if bus and video_id:
         url = 'http://www.youtube.com/watch?v={}'.format(video_id)
-        bot.send_message("New replay uploaded: " + url)
+        bus.notify(Event('upload_ok', url))
 
-def async_upload(file, bot):
-    t = threading.Thread(target=upload, args=(file, bot), daemon=True)
-    t.start()
 
 if __name__ == '__main__':
     file = sys.argv[1]

@@ -21,6 +21,8 @@ class HipBot(object):
             msg = "Goal {}! Score: Yellow {} - {} Black".format(ev.data['team'], ev.data['yellow'], ev.data['black'])
         elif ev.name == 'score_reset':
             msg = "New match!"
+        elif ev.name == 'upload_ok':
+            msg = "New replay uploaded: " + ev.data
         else:
             return
             
