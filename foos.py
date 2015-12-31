@@ -94,10 +94,10 @@ class ScoreBoard:
         return self.last_goal_clock.get()
 
     def __get_event_data(self):
-        return  {'yellow': self.scores['yellow'],
-                 'black': self.scores['black'],
-                 'last_goal': self.last_goal()}
-    
+        return {'yellow': self.scores['yellow'],
+                'black': self.scores['black'],
+                'last_goal': self.last_goal()}
+
     def pushState(self):
         self.bus.notify(Event("score_changed", self.__get_event_data()))
 
@@ -112,7 +112,7 @@ class ScoreBoard:
         if ev.name == 'reset_score':
             board.reset()
 
-            
+
 class Buttons:
     # Class to manage the state of the buttons and the needed logic
     event_table = {}
@@ -176,7 +176,7 @@ class Buttons:
 
 
 def replay_handler(ev):
-    regenerate=True
+    regenerate = True
     manual = False
     if ev.name == 'score_goal':
         pass
@@ -184,10 +184,12 @@ def replay_handler(ev):
         manual = True
     else:
         return
-        
+
     if config.replay_enabled:
         #TODO: where to move this?
+        bus.notify(Event('replay_start'))
         call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
+        bus.notify(Event('replay_end'))
 
 
 def schedule_upload_confirmation(delay):

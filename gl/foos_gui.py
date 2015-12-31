@@ -59,10 +59,17 @@ class Counter():
         x = now - self.anim_start
         return math.sin(2 * math.pi * x * self.speed) * math.pow(100., -x * x)
 
+    def position(self, x=0, y=0, z=0):
+        self.number.position(x, y, z)
+
+    def scale(self, sx=1, sy=1, sz=1):
+        self.number.scale(sx, sy, sz)
+
 
 class Gui():
     def __init__(self, scaling_factor, fps, bus, show_leds=False):
         self.state = GuiState()
+        self.overlay_mode = False
         self.bus = bus
         self.bus.subscribe(self.process_event)
         self.show_leds = show_leds
@@ -73,7 +80,7 @@ class Gui():
         self.__setup_sprites()
 
     def __init_display(self, sf, fps):
-        bgcolor = (0.0, 0.0, 0.0, 0.0)
+        bgcolor = (0.0, 0.0, 0.0, 0.2)
         if sf == 0:
             #adapt to screen size
             self.DISPLAY = pi3d.Display.create(background=bgcolor)
@@ -88,18 +95,42 @@ class Gui():
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
 
+    def __move_sprites(self):
+        if self.overlay_mode:
+            posx = 750
+            posy = 450
+            scale = (0.2, 0.2, 1.0)
+            self.yellow.position(posx - 120, posy, 5)
+            self.yellow.scale(*scale)
+            self.black.position(posx + 120, posy, 5)
+            self.black.scale(*scale)
+            self.yCounter.position(posx - 40, posy, 5)
+            self.yCounter.scale(*scale)
+            self.bCounter.position(posx + 40, posy, 5)
+            self.bCounter.scale(*scale)
+        else:
+            scale = (1, 1, 1)
+            self.yellow.position(-400, 200, 5)
+            self.yellow.scale(*scale)
+            self.black.position(400, 200, 5)
+            self.black.scale(*scale)
+            self.yCounter.position(-400, -200, 5)
+            self.yCounter.scale(*scale)
+            self.bCounter.position(400, -200, 5)
+            self.bCounter.scale(*scale)
+
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
-        posx = 750
-        posy = 450
-        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, x=posx - 120, y=posy, w=60, h=66, z=5.0)
-        self.black = pi3d.ImageSprite("black.jpg", flat, x=posx + 120, y=posy, w=60, h=66, z=5.0)
-        font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=40)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, x=posx, y=posy - 100, z=6.0)
+
+        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
+        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, w=300, h=300, z=5)
+        self.black = pi3d.ImageSprite("black.jpg", flat, w=300, h=300, z=5)
+        font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=450, z=5)
         self.goal_time.set_shader(flat)
 
-        self.yCounter = Counter(0, flat, w=60, h=88, x=posx - 40, y=posy, z=5)
-        self.bCounter = Counter(0, flat, w=60, h=88, x=posx + 40, y=posy, z=5)
+        self.yCounter = Counter(0, flat, w=300, h=444, z=5)
+        self.bCounter = Counter(0, flat, w=300, h=444, z=5)
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -121,16 +152,26 @@ class Gui():
             self.stop()
         if ev.name == "score_changed":
             self.set_state(GuiState(ev.data['yellow'], ev.data['black'], ev.data['last_goal']))
-            
+        if ev.name == "replay_start":
+            self.overlay_mode = True
+        if ev.name == "replay_end":
+            self.overlay_mode = False
+
     def run(self):
         try:
             print("Running")
             while self.DISPLAY.loop_running():
+                self.__move_sprites()
+                if not self.overlay_mode:
+                    self.bg.draw()
+
                 self.yellow.draw()
                 self.black.draw()
                 self.yCounter.draw()
                 self.bCounter.draw()
-                self.goal_time.draw()
+                if not self.overlay_mode:
+                    self.goal_time.draw()
+
                 self.goal_time.quick_change(self.__get_time_since_last_goal())
                 if self.show_leds:
                     self.__draw_leds()
@@ -153,11 +194,12 @@ class Gui():
         if self.state.lastGoal:
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
+            # replace 0 with O because of dots in 0 in the chosen font
             timestr = ("%s.%d" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))).replace("0", "O")
         else:
             timestr = "--:--.-"
 
-        return "LG: %s" % timestr
+        return "Last Goal: %s" % timestr
 
     def set_state(self, state):
         self.state = self.__validate(state)
