@@ -23,23 +23,20 @@ class GuiState():
 
 
 class Counter():
-    textures = None
-
-    def __init__(self, value, shader, **kwargs):
-        if not Counter.textures:
-            Counter.textures = [pi3d.Texture("numbers/%d.png" % i)
-                                for i in range(0, 10)]
+    def __init__(self, value, shader, prefix, **kwargs):
+        self.textures = [pi3d.Texture("numbers/%s%d.png" % (prefix, i))
+                         for i in range(0, 10)]
         self.value = value
-        self.number = pi3d.ImageSprite(Counter.textures[value], shader, **kwargs)
+        self.number = pi3d.ImageSprite(self.textures[value], shader, **kwargs)
         self.anim_start = None
         self.speed = 5
-        self.maxAngle = 5
+        self.maxAngle = 10
         self.time = 0.8
 
     def draw(self):
         now = time.time()
         s = self.number
-        s.set_textures([Counter.textures[self.value % 10]])
+        s.set_textures([self.textures[self.value % 10]])
 
         if self.anim_start and (now - self.anim_start) <= self.time:
             angle = self.animValue(now) * self.maxAngle
@@ -97,40 +94,34 @@ class Gui():
 
     def __move_sprites(self):
         if self.overlay_mode:
-            posx = 750
+            posx = 800
             posy = 450
             scale = (0.2, 0.2, 1.0)
-            self.yellow.position(posx - 120, posy, 5)
-            self.yellow.scale(*scale)
-            self.black.position(posx + 120, posy, 5)
-            self.black.scale(*scale)
-            self.yCounter.position(posx - 40, posy, 5)
+            self.yCounter.position(posx - 65, posy, 5)
             self.yCounter.scale(*scale)
-            self.bCounter.position(posx + 40, posy, 5)
+            self.bCounter.position(posx + 65, posy, 5)
             self.bCounter.scale(*scale)
         else:
             scale = (1, 1, 1)
-            self.yellow.position(-400, 200, 5)
-            self.yellow.scale(*scale)
-            self.black.position(400, 200, 5)
-            self.black.scale(*scale)
-            self.yCounter.position(-400, -200, 5)
+            self.yCounter.position(-380, -80, 5)
             self.yCounter.scale(*scale)
-            self.bCounter.position(400, -200, 5)
+            self.bCounter.position(380, -80, 5)
             self.bCounter.scale(*scale)
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
         self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
-        self.yellow = pi3d.ImageSprite("yellow.jpg", flat, w=300, h=300, z=5)
-        self.black = pi3d.ImageSprite("black.jpg", flat, w=300, h=300, z=5)
+        self.logo = pi3d.ImageSprite("logo.png", flat, w=100, h=100, x=850, y=-450, z=5)
         font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(), is_3d=False, y=450, z=5)
+
+        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
+                                     is_3d=False, y=350, z=5)
         self.goal_time.set_shader(flat)
 
-        self.yCounter = Counter(0, flat, w=300, h=444, z=5)
-        self.bCounter = Counter(0, flat, w=300, h=444, z=5)
+        s = 512
+        self.yCounter = Counter(0, flat, 'y_', w=s, h=s, z=5)
+        self.bCounter = Counter(0, flat, 'b_', w=s, h=s, z=5)
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -165,8 +156,7 @@ class Gui():
                 if not self.overlay_mode:
                     self.bg.draw()
 
-                self.yellow.draw()
-                self.black.draw()
+                self.logo.draw()
                 self.yCounter.draw()
                 self.bCounter.draw()
                 if not self.overlay_mode:

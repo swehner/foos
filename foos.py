@@ -186,7 +186,6 @@ def replay_handler(ev):
         return
 
     if config.replay_enabled:
-        #TODO: where to move this?
         bus.notify(Event('replay_start'))
         call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
         bus.notify(Event('replay_end'))
