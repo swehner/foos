@@ -10,6 +10,7 @@ import time
 import sys
 import traceback
 import math
+import numpy
 from gl import monkeypatch
 
 monkeypatch.patch()
@@ -33,8 +34,7 @@ class Counter():
         self.maxAngle = 10
         self.time = 0.8
 
-    def draw(self):
-        now = time.time()
+    def step(self, now):
         s = self.number
         s.set_textures([self.textures[self.value % 10]])
 
@@ -45,8 +45,6 @@ class Counter():
             s.rotateToZ(0)
             self.anim_start = None
 
-        s.draw()
-
     def setValue(self, value):
         if self.value != value:
             self.value = value
@@ -56,11 +54,40 @@ class Counter():
         x = now - self.anim_start
         return math.sin(2 * math.pi * x * self.speed) * math.pow(100., -x * x)
 
-    def position(self, x=0, y=0, z=0):
-        self.number.position(x, y, z)
+    def shape(self):
+        return self.number
 
-    def scale(self, sx=1, sy=1, sz=1):
-        self.number.scale(sx, sy, sz)
+
+class Anim:
+    def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
+        self.tstart = 0
+        self.duration = 0.3
+        self.pos = opos
+        self.scale, self.shape = oscale, shape
+        self.tpos, self.tscale = self.pos, self.scale
+        self.opos, self.oscale = self.pos, self.scale
+
+    def step(self, now):
+        tdiff = now - self.tstart
+        tdiff /= self.duration
+        tdiff = math.pow(tdiff, 2)
+        if tdiff > 1:
+            self.tstart = 0
+            self.pos, self.scale = self.tpos, self.tscale
+        else:
+            self.pos = numpy.add(self.opos, numpy.multiply(tdiff, numpy.subtract(self.tpos, self.opos)))
+            self.scale = numpy.add(self.oscale, numpy.multiply(tdiff, numpy.subtract(self.tscale, self.oscale)))
+
+        self.shape.position(*self.pos)
+        self.shape.scale(*self.scale)
+
+    def next(self, tpos, tscale, now):
+        self.opos = (self.shape.x(), self.shape.y(), self.shape.z())  # self.pos
+        # extract current sx, sy, sz (no accessors defined)
+        u = self.shape.unif
+        self.oscale = (u[6], u[7], u[8])  # self.scale
+        self.tpos, self.tscale = tpos, tscale
+        self.tstart = now
 
 
 class Gui():
@@ -92,21 +119,20 @@ class Gui():
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
 
-    def __move_sprites(self):
+    def __move_sprites(self, now=None):
+        if now is None:
+            now = time.time()
+
         if self.overlay_mode:
             posx = 800
             posy = 450
             scale = (0.2, 0.2, 1.0)
-            self.yCounter.position(posx - 65, posy, 5)
-            self.yCounter.scale(*scale)
-            self.bCounter.position(posx + 65, posy, 5)
-            self.bCounter.scale(*scale)
+            self.yAnim.next((posx - 65, posy, 5), scale, now)
+            self.bAnim.next((posx + 65, posy, 5), scale, now)
         else:
             scale = (1, 1, 1)
-            self.yCounter.position(-380, -80, 5)
-            self.yCounter.scale(*scale)
-            self.bCounter.position(380, -80, 5)
-            self.bCounter.scale(*scale)
+            self.yAnim.next((-380, -80, 5), scale, now)
+            self.bAnim.next((380, -80, 5), scale, now)
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
@@ -122,6 +148,8 @@ class Gui():
         s = 512
         self.yCounter = Counter(0, flat, 'y_', w=s, h=s, z=5)
         self.bCounter = Counter(0, flat, 'b_', w=s, h=s, z=5)
+        self.yAnim = Anim(self.yCounter.shape())
+        self.bAnim = Anim(self.bCounter.shape())
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -135,6 +163,8 @@ class Gui():
         self.blackColor = (0, 0, 0, 0)
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
+        # move immediately to position
+        self.__move_sprites(0)
 
     def process_event(self, ev):
         if ev.name == "leds_enabled":
@@ -145,20 +175,26 @@ class Gui():
             self.set_state(GuiState(ev.data['yellow'], ev.data['black'], ev.data['last_goal']))
         if ev.name == "replay_start":
             self.overlay_mode = True
+            self.__move_sprites()
         if ev.name == "replay_end":
             self.overlay_mode = False
+            self.__move_sprites()
 
     def run(self):
         try:
             print("Running")
             while self.DISPLAY.loop_running():
-                self.__move_sprites()
+                now = time.time()
                 if not self.overlay_mode:
                     self.bg.draw()
 
                 self.logo.draw()
-                self.yCounter.draw()
-                self.bCounter.draw()
+                self.yAnim.step(now)
+                self.yCounter.step(now)
+                self.yCounter.shape().draw()
+                self.bAnim.step(now)
+                self.bCounter.step(now)
+                self.bCounter.shape().draw()
                 if not self.overlay_mode:
                     self.goal_time.draw()
 
