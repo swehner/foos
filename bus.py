@@ -11,6 +11,9 @@ class Event:
         self.data = data
         self.ts = ts if ts != None else time.time()
 
+    def __eq__(a, b):
+        return a.name == b.name and a.data == b.data
+
     def __repr__(self):
         return "Ev %s (%s)" % (self.name, repr(self.data))
 
