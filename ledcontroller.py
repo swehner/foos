@@ -4,7 +4,7 @@ import sys
 import threading
 import queue
 import collections
-from bus import Event
+from bus import Event, Bus
 
 class Pattern:
     def __init__(self, time, leds=[]):
@@ -98,18 +98,17 @@ pat_demo = [Pattern(1, ["BD"]),
 
 
 if __name__ == "__main__":
-    # TODO: fix sample with bus usage
-    class DemoWriter():
-        def write_data(self, leds):
-            print("\r", end="")
-            for led in ["BD", "BI", "OK", "YI", "YD"]:
-                print("0" if led in leds else " ", end=" ")
-            sys.stdout.flush()
+    def write_data(led_event):
+        leds = led_event.data
+        print("\r", end="")
+        for led in ["BD", "BI", "OK", "YI", "YD"]:
+            print("0" if led in leds else " ", end=" ")
+        sys.stdout.flush()
 
-    controller = LedController([DemoWriter()])
+    bus = Bus()
+    bus.subscribe(write_data, thread=True)
+    controller = LedController(bus)
     controller.setMode(pat_poweredoff, loop=True)
     time.sleep(5)
     controller.setMode(pat_goal)
-    time.sleep(5)
-    controller.setMode(pat_upload)
     time.sleep(5)
