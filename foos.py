@@ -239,9 +239,11 @@ bus.subscribe(upload_handler, thread=True)
 
 # IO
 buttons = Buttons(bus, upload_delay=0.6)
-serial = IOSerial(bus)
+if config.serial_enabled:
+    serial = IOSerial(bus)
 debug = IODebug(bus)
 leds = LedController(bus)
+
 if gui.is_x11():
     print("Running Keyboard")
     IOKeyboard(bus)

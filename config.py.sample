@@ -2,5 +2,6 @@ hipchat_enabled = False
 upload_enabled = False
 replay_enabled = False
 onscreen_leds_enabled = False
+serial_enabled = False
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
