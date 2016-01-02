@@ -21,7 +21,7 @@ from clock import Clock
 from ledcontroller import LedController, Pattern
 from soundcontroller import SoundController
 import config
-import youtube_uploader
+import uploader
 from bus import Bus, Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
@@ -197,19 +197,6 @@ def schedule_upload_confirmation(delay):
 def reset_upload_confirmation():
     leds.setMode([])
 
-
-def upload_handler(ev):
-    if ev.name == 'upload_request':
-        if config.upload_enabled:
-            try:
-                call(["./upload-latest.sh"])
-                url = youtube_uploader.upload('/tmp/replay/replay_long.mp4')
-                bus.notify(Event('upload_ok', url))
-            except:
-                bus.notify(Event('upload_error'))
-        else:
-            bus.notify(Event('upload_error'))
-
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
 except getopt.GetoptError:
@@ -234,7 +221,6 @@ bot = hipbot.HipBot(bus)
 sound = SoundController(bus)
 board = ScoreBoard(bus)
 bus.subscribe(replay_handler, thread=True)
-bus.subscribe(upload_handler, thread=True)
 
 # IO
 buttons = Buttons(bus, upload_delay=0.6)
@@ -242,6 +228,7 @@ if config.serial_enabled:
     serial = IOSerial(bus)
 debug = IODebug(bus)
 leds = LedController(bus)
+uploader.Uploader(bus)
 
 if gui.is_x11():
     print("Running Keyboard")

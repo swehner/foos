@@ -5,8 +5,7 @@ import os
 import random
 import sys
 import time
-import threading
-
+import logging
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
@@ -14,6 +13,7 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
+import config
 from bus import Event
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -34,6 +34,7 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
 CLIENT_SECRETS_FILE = "client_secrets.json"
+logging.getLogger().setLevel(logging.WARNING)
 
 
 def get_authenticated_service():
@@ -48,17 +49,16 @@ def get_authenticated_service():
 
     return build('youtube', 'v3', http=credentials.authorize(httplib2.Http()))
 
-def initialize_upload(youtube, file):
+def initialize_upload(title=None, file='/tmp/replay/replay_long.mp4'):
+    youtube = get_authenticated_service()
     tags = ['foos']
-    title = 'Tuenti foos replay' + file
+    if not title:
+        title = 'Tuenti foos replay'
     body = {
         'snippet': {
             'title': title,
             'description': title,
-            'tags': tags,
-            'categoryId': 22,
-        },
-        'status': {'privacyStatus': 'unlisted'}
+        }
     }
 
     # Call the API's videos.insert method to create and upload the video.
@@ -107,21 +107,41 @@ def resumable_upload(insert_request):
             print("Sleeping %f seconds and then retrying..." % sleep_seconds)
             time.sleep(sleep_seconds)
 
+class Uploader:
+    def __init__(self, bus):
+        self.bus = bus
+        self.bus.subscribe(self.process_event, thread=True)
+        self.last_goal = None
+        self.current_score = None
 
-def upload(file):
-    youtube = get_authenticated_service()
-    video_id = None
-    try:
-        video_id = initialize_upload(youtube, file)
-    except HttpError as e:
-        print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
-        raise
-        
-    return 'http://www.youtube.com/watch?v={}'.format(video_id)
+    def process_event(self, ev):
+        if ev.name == 'score_goal':
+            self.last_goal = ev.data['team']
+        elif ev.name == 'score_changed':
+            self.current_score = ev.data['yellow'], ev.data['black']
+
+        if ev.name != 'upload_request':
+            return
+
+        title = "{} goal: {} - {}".format(self.last_goal, self.current_score[0], self.current_score[1])
+        print("Uploading video:", title)
+
+        if not config.upload_enabled:
+            return
+
+        try:
+            video_id = initialize_upload(title)
+            url = 'http://www.youtube.com/watch?v={}'.format(video_id)
+            self.bus.notify(Event('upload_ok', url))
+        except HttpError as e:
+            print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+            self.bus.notify(Event('upload_error'))
+
 
 if __name__ == '__main__':
     file = sys.argv[1]
     if not os.path.exists(file):
         print('File not found', file)
 
-    upload(file)
+    title = file
+    initialize_upload(title, file)
