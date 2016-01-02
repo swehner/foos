@@ -67,6 +67,8 @@ class LedController:
             self.setMode(pat_goal)
         if ev.name == 'upload_ok':
             self.setMode(pat_ok)
+        if ev.name == 'leds_mode':
+            self.setMode(ev.data)
         # all error conditions
         if ev.name in ['upload_error']:
             self.setMode(pat_error)
