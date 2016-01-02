@@ -56,7 +56,8 @@ for opt, arg in opts:
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 
 bus = Bus()
-gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled)
+gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
+          bg_change_interval=config.bg_change_secs)
 bus.subscribe(replay_handler, thread=True)
 
 hipbot.HipBot(bus)

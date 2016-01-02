@@ -11,6 +11,7 @@ import sys
 import traceback
 import math
 import numpy
+import glob
 from gl import monkeypatch
 
 monkeypatch.patch()
@@ -91,12 +92,15 @@ class Anim:
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps, bus, show_leds=False):
+    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300):
         self.state = GuiState()
         self.overlay_mode = False
         self.bus = bus
         self.bus.subscribe(self.process_event)
         self.show_leds = show_leds
+        self.last_bg_change = time.time()
+        self.bg_change_interval = bg_change_interval
+        self.bg_idx = 0
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
             monkeypatch.fixX11KeyEvents(self.DISPLAY)
@@ -137,7 +141,9 @@ class Gui():
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
-        self.bg = pi3d.ImageSprite("foosball.jpg", flat, w=1920, h=1080, z=10)
+        self.bg_textures = [pi3d.Texture(f) for f in glob.glob("gl/bg/*.jpg")]
+
+        self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
         self.logo = pi3d.ImageSprite("logo.png", flat, w=100, h=100, x=850, y=-450, z=5)
         font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
 
@@ -180,11 +186,18 @@ class Gui():
             self.overlay_mode = False
             self.__move_sprites()
 
+    def __set_bg(self, now):
+        if now > (self.last_bg_change + self.bg_change_interval):
+            self.last_bg_change = now
+            self.bg_idx = (self.bg_idx + 1) % len(self.bg_textures)
+            self.bg.set_textures([self.bg_textures[self.bg_idx]])
+
     def run(self):
         try:
             print("Running")
             while self.DISPLAY.loop_running():
                 now = time.time()
+                self.__set_bg(now)
                 if not self.overlay_mode:
                     self.bg.draw()
 

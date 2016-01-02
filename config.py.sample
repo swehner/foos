@@ -4,5 +4,6 @@ replay_enabled = False
 onscreen_leds_enabled = False
 serial_enabled = False
 standby_timeout_secs = 600
+bg_change_secs = 300
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
