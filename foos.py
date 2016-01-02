@@ -18,6 +18,8 @@ import scoreboard
 import ledcontroller
 import soundcontroller
 import buttoncontroller
+import standby
+
 
 def replay_handler(ev):
     regenerate = True
@@ -61,7 +63,8 @@ hipbot.HipBot(bus)
 soundcontroller.SoundController(bus)
 scoreboard.ScoreBoard(bus)
 uploader.Uploader(bus)
-leds = ledcontroller.LedController(bus)
+ledcontroller.LedController(bus)
+standby.Standby(bus, config.standby_timeout_secs)
 
 # IO
 buttons = buttoncontroller.Buttons(bus)

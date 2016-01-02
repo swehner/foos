@@ -69,6 +69,10 @@ class LedController:
             self.setMode(pat_ok)
         if ev.name == 'leds_mode':
             self.setMode(ev.data)
+        if ev.name == 'tv_standby':
+            self.setMode(pat_standby, loop=True)
+        if ev.name == 'tv_on':
+            self.setMode([])
         # all error conditions
         if ev.name in ['upload_error']:
             self.setMode(pat_error)
@@ -78,8 +82,8 @@ pat_reset = 3 * [Pattern(0.2, ["BI", "BD", "YI", "YD"]),
                  Pattern(0.2, ["BI", "BD", "YI", "YD"]),
                  Pattern(1)]
 
-pat_poweredoff = [Pattern(0.5, ["OK"]),
-                  Pattern(1)]
+pat_standby = [Pattern(1, ["OK"]),
+               Pattern(1)]
 
 pat_goal = [[Pattern(0.1, ["BD", "YD"]),
              Pattern(0.1, ["OK"]),
@@ -110,7 +114,7 @@ if __name__ == "__main__":
     bus = Bus()
     bus.subscribe(write_data, thread=True)
     controller = LedController(bus)
-    controller.setMode(pat_poweredoff, loop=True)
+    controller.setMode(pat_standby, loop=True)
     time.sleep(5)
     controller.setMode(pat_goal)
     time.sleep(5)
