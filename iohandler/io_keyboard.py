@@ -2,6 +2,7 @@ import time
 from iohandler.io_base import IOBase
 from bus import Event
 
+
 class IOKeyboard(IOBase):
     key_map = {
         87: 'yellow_minus',  # KP_1
@@ -29,22 +30,24 @@ class IOKeyboard(IOBase):
         from pi3d.Display import Display
         from pyxlib import x
         display = Display.INSTANCE
-        last_event = Event(None)
+        last_event = None
 
         while True:
             time.sleep(0.01)
             while len(display.event_list) > 0:
                 e = display.event_list.pop()
+                if last_event == (e.type, e.xkey.keycode):
+                    continue
+
+                last_event = (e.type, e.xkey.keycode)
                 if e.type == x.KeyPress or e.type == x.KeyRelease:
                     code = e.xkey.keycode
                     if code in self.key_map:
                         btn = self.key_map[code]
                         state = "down" if e.type == x.KeyPress else "up"
                         event = Event('button_event', {'source': 'keyboard', 'btn': btn, 'state': state})
-                        if event != last_event:
-                            self.bus.notify(event)
-                            last_event = event
-                                             
+                        self.bus.notify(event)
+
                     if code in self.goal_map and e.type == x.KeyPress:
                         team = self.goal_map[code]
                         event = Event('button_event', {'source': 'keyboard', 'btn': 'goal', 'team': team})

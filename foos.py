@@ -152,7 +152,6 @@ class Buttons:
             color, what = button.split('_')
 
             if ('yellow_minus' in et and 'yellow_plus' in et) or ('black_minus' in et and 'black_plus' in et):
-                # Double press for reset?
                 self.bus.notify(Event('reset_score'))
                 for key in ['yellow_minus', 'yellow_plus', 'black_minus', 'black_plus']:
                     if key in et:

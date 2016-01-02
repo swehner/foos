@@ -5,17 +5,16 @@ import queue
 from functools import partial
 import time
 
+
 class Event:
     def __init__(self, name, data=None, ts=None):
         self.name = name
         self.data = data
-        self.ts = ts if ts != None else time.time()
-
-    def __eq__(a, b):
-        return a.name == b.name and a.data == b.data
+        self.ts = ts if ts is not None else time.time()
 
     def __repr__(self):
         return "Ev %s (%s)" % (self.name, repr(self.data))
+
 
 class Bus:
     def __init__(self):
@@ -59,7 +58,6 @@ if __name__ == '__main__':
     def log(*args):
         args = (time.time(),) + args
         print(*args)
-
 
     def logAndSleep(*args):
         l = args[1:]
