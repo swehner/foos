@@ -30,6 +30,11 @@ class Buttons:
                 self.bus.notify(Event("leds_mode", pattern))
             return
 
+        if state == 'up':
+            if button not in et:
+               # ignore
+               return
+
         delta = now - et[button]
         print("Press duration:", delta)
 
