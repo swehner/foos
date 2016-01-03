@@ -39,8 +39,6 @@ void setup() {
   //set pin 2,3 to input
   pinMode(PIN_GOAL_BLACK, INPUT);
   pinMode(PIN_GOAL_YELLOW, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_BLACK), goalBlack, RISING);
-  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_YELLOW), goalYellow, RISING);
 
   // setup signal for IR Led
   Timer1.initialize(26);  // 26 us = 38 kHz
@@ -49,6 +47,11 @@ void setup() {
 
   // setup serial
   Serial.begin(115200);
+
+  //sleep a bit to avoid false edges from goal pins
+  delay(10);
+  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_BLACK), goalBlack, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_YELLOW), goalYellow, RISING);
 }
 
 // goal event processing
