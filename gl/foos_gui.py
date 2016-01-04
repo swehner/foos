@@ -135,8 +135,8 @@ class Gui():
             self.bAnim.next((posx + 65, posy, 5), scale, now)
         else:
             scale = (1, 1, 1)
-            self.yAnim.next((-380, -80, 5), scale, now)
-            self.bAnim.next((380, -80, 5), scale, now)
+            self.yAnim.next((-380, 0, 5), scale, now)
+            self.bAnim.next((380, 0, 5), scale, now)
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
@@ -144,11 +144,11 @@ class Gui():
         self.bg_textures = [pi3d.Texture(f) for f in glob.glob("gl/bg/*.jpg")]
 
         self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
-        self.logo = pi3d.ImageSprite("logo.png", flat, w=100, h=100, x=850, y=-450, z=5)
+        self.logo = pi3d.ImageSprite("logo.png", flat, w=80, h=80, x=880, y=-460, z=5)
         font = pi3d.Font("LiberationMono-Bold.ttf", (255, 255, 255, 255), font_size=60)
 
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
-                                     is_3d=False, y=350, z=5)
+                                     is_3d=False, y=390, z=5)
         self.goal_time.set_shader(flat)
 
         s = 512

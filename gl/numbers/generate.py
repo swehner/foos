@@ -8,7 +8,8 @@ def makeImage(c, l, color):
 
   # use a bitmap font
   f = "/usr/share/fonts/truetype/msttcorefonts/arialbd.ttf"
-  font = ImageFont.truetype(f, 500)
+  #f = "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf"
+  font = ImageFont.truetype(f, 450)
 
   sx, sy = font.getsize(letter)
   ascent, descent = font.getmetrics()
