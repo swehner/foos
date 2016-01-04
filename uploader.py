@@ -6,6 +6,7 @@ import random
 import sys
 import time
 import logging
+import subprocess
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
@@ -130,6 +131,7 @@ class Uploader:
             return
 
         try:
+            subprocess.call(["./prepare-upload.sh"])
             video_id = initialize_upload(title)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
             self.bus.notify(Event('upload_ok', url))
