@@ -19,7 +19,7 @@ elif PLATFORM != PLATFORM_PI and PLATFORM != PLATFORM_ANDROID:
 
 from functools import partial
 
-pi3dlayer = 100
+pi3dlayer = 1
 
 
 def create_surface(self, x=0, y=0, w=0, h=0):
