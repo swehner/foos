@@ -48,15 +48,14 @@ void setup() {
   // setup serial
   Serial.begin(115200);
 
-  //sleep a bit to avoid false edges from goal pins
-  delay(10);
   attachInterrupt(digitalPinToInterrupt(PIN_GOAL_BLACK), goalBlack, RISING);
   attachInterrupt(digitalPinToInterrupt(PIN_GOAL_YELLOW), goalYellow, RISING);
 }
 
 // goal event processing
-byte goalsEnabled = 1;
-unsigned long reenableGoalsAt = 0;
+byte goalsEnabled = 0;
+// enable goals a bit after startup to avoid false events
+unsigned long reenableGoalsAt = 1000;
 inline void goal(char* str) {
   if (goalsEnabled) {
     Serial.println(str);
