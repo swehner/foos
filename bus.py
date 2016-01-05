@@ -32,7 +32,7 @@ class Bus:
         self.queue.put(ev)
 
     def __threaded_func(self, f):
-        q = queue.Queue()
+        q = queue.Queue(maxsize=20)
 
         def trun():
             while True:
@@ -41,7 +41,10 @@ class Bus:
                 q.task_done()
 
         def fthread(ev):
-            q.put(ev)
+            try:
+                q.put_nowait(ev)
+            except queue.Full:
+                print("Queue full for", f, ev)
 
         t = Thread(target=trun, daemon=True).start()
         return fthread
