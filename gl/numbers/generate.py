@@ -2,21 +2,24 @@ from PIL import ImageFont, ImageDraw, Image
 import sys
 
 def makeImage(c, l, color):
-  letter = l #if l!='0' else 'O'
+  # most monospaced fonts have ugly zeroes use upper case O instead
+  letter = l if l!='0' else 'O'
   image = Image.open('circle.png')
   draw = ImageDraw.Draw(image)
 
-  # use a bitmap font
-  f = "/usr/share/fonts/truetype/msttcorefonts/arialbd.ttf"
   #f = "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf"
-  font = ImageFont.truetype(f, 450)
-
+  f = "../../UbuntuMono-B.ttf"
+  font = ImageFont.truetype(f, 480)
   sx, sy = font.getsize(letter)
+  #sy for ubuntumono seems to be off
+  sy = sy * 0.75
   ascent, descent = font.getmetrics()
   posx = 256 - sx/2
-  posy = 256 - ascent +sy/2 #- descent
+  posy = 256 - ascent + sy/2
 
-  #draw.rectangle((0,256,512, 256+sy), fill='blue')
+  #posy = 0  
+  #draw.rectangle((0,ascent-sy,512, ascent), fill='red')
+  #draw.rectangle((0,0,512, sy), fill='blue')
   draw.text((posx, posy), letter, font=font, fill=color)
 
   image.save("%s_%s.png" % (c, l))
