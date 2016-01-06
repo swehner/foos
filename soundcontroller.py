@@ -3,38 +3,46 @@ import time
 import queue
 import threading
 import subprocess
+import random
 from gl.foos_gui import GuiState
 
 
 class SoundController:
     # This map scores => sounds
     sounds = {
-        (3, 0): 'perfect',
-        (5, 0): 'humiliation',
+        (0, 3): 'perfect',
+        (0, 5): 'humiliation',
         (4, 4): '1_frag'
     }
+    generic_goal_sounds = ['crowd1', 'crowd2']
 
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
+        self.rand = random.Random()
 
     def process_event(self, ev):
+        sounds = []
         if ev.name == 'score_goal':
             score = (ev.data['yellow'], ev.data['black'])
-            if score not in self.sounds:
-                score = score[::-1]
-                if score not in self.sounds:
-                    return
+            score = tuple(sorted(score))
+            if score in self.sounds:
+                sounds.append(self.sounds[score])
 
-            sound = self.sounds[score]
+            sounds.append(self.rand.choice(self.generic_goal_sounds))
 
         elif ev.name == 'score_reset':
-            sound = 'prepare'
+            sounds = ['prepare', 'whistle_2short1long']
         else:
             return
 
-        path = "sounds/{}.wav".format(sound)
-        subprocess.call(['play', '-V0', '-G', '-q', path])
+        sounds = ["sounds/{}.wav".format(sound) for sound in sounds]
+
+        # if more than one sound, mix
+        if len(sounds) > 1:
+            sounds.insert(0, '-m')
+
+        subprocess.call(['play', '-V0', '-G', '-q'] + sounds)
 
 
 if __name__ == "__main__":
