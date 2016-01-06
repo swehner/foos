@@ -141,7 +141,7 @@ class Gui():
     def __cp_lg(self):
         """Generate codepoint list for last goal display"""
         l = "Last Goal:.-O123456789"
-        return map(ord,set(sorted(l)))
+        return map(ord, set(sorted(l)))
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
@@ -150,6 +150,9 @@ class Gui():
 
         self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
         self.logo = pi3d.ImageSprite("logo.png", flat, w=80, h=80, x=880, y=-460, z=5)
+
+        self.instructions = pi3d.ImageSprite("instructions.png", flat, w=512, h=256, x=-1920 / 2 + 256 + 20, y=-1080 / 2 + 128 + 10, z=5)
+        self.instructions.scale(0.75, 0.75, 1)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
 
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
@@ -207,6 +210,7 @@ class Gui():
                 self.__set_bg(now)
                 if not self.overlay_mode:
                     self.bg.draw()
+                    self.instructions.draw()
 
                 self.logo.draw()
                 self.yAnim.step(now)
