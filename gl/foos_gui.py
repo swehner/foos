@@ -58,7 +58,27 @@ class Counter():
     def shape(self):
         return self.number
 
+class DisappearingShape:
+    def __init__(self, shape, duration=2, fade=0.5):
+        self.shape = shape
+        self.duration = duration
+        self.ts_requested = 0
+        self.fade = fade
+        
+    def draw(self, now):
+        diff = now - self.ts_requested
+        fading = self.duration - diff
+        if diff <= self.duration:
+            if fading <= self.fade:
+                self.shape.set_alpha(fading / self.fade)
+            else:
+                self.shape.set_alpha(1)
+                
+            self.shape.draw()
 
+    def show(self, now):
+        self.ts_requested = now
+            
 class Anim:
     def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
         self.tstart = 0
@@ -153,6 +173,7 @@ class Gui():
 
         self.instructions = pi3d.ImageSprite("instructions.png", flat, w=512, h=256, x=-1920 / 2 + 256 + 20, y=-1080 / 2 + 128 + 10, z=5)
         self.instructions.scale(0.75, 0.75, 1)
+        self.instructions = DisappearingShape(self.instructions)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
 
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
@@ -195,7 +216,10 @@ class Gui():
         if ev.name == "replay_end":
             self.overlay_mode = False
             self.__move_sprites()
+        if ev.name == "button_event" and ev.data['btn']!='goal':
+            self.instructions.show(time.time())
 
+            
     def __set_bg(self, now):
         if now > (self.last_bg_change + self.bg_change_interval):
             self.last_bg_change = now
@@ -210,7 +234,7 @@ class Gui():
                 self.__set_bg(now)
                 if not self.overlay_mode:
                     self.bg.draw()
-                    self.instructions.draw()
+                    self.instructions.draw(now)
 
                 self.logo.draw()
                 self.yAnim.step(now)
