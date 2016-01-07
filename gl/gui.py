@@ -13,6 +13,7 @@ import math
 import numpy
 import glob
 from gl import monkeypatch
+from gl.anim import Move, Disappear, Wiggle, Delegate
 
 monkeypatch.patch()
 
@@ -24,114 +25,23 @@ class GuiState():
         self.lastGoal = lastGoal
 
 
-class Delegate:
-    def __init__(self, delegate):
-        self.delegate = delegate
-
-    def __getattr__(self, name):
-        return getattr(self.delegate, name)
-
-
 class Counter(Delegate):
     def __init__(self, value, shader, prefix, **kwargs):
         self.textures = [pi3d.Texture("numbers/%s%d.png" % (prefix, i))
                          for i in range(0, 10)]
         self.value = value
-        self.number = pi3d.ImageSprite(self.textures[value], shader, **kwargs)
+        self.number = Wiggle(pi3d.ImageSprite(self.textures[value], shader, **kwargs),
+                             5, 10, 0.8)
         super().__init__(self.number)
 
-        self.anim_start = None
-        self.speed = 5
-        self.maxAngle = 10
-        self.time = 0.8
-
     def draw(self):
-        now = time.time()
-        s = self.number
-        s.set_textures([self.textures[self.value % 10]])
-
-        if self.anim_start and (now - self.anim_start) <= self.time:
-            angle = self.animValue(now) * self.maxAngle
-            s.rotateToZ(angle)
-        else:
-            s.rotateToZ(0)
-            self.anim_start = None
-
+        self.number.set_textures([self.textures[self.value % 10]])
         self.number.draw()
 
     def setValue(self, value):
         if self.value != value:
             self.value = value
-            self.anim_start = time.time()
-
-    def animValue(self, now):
-        x = now - self.anim_start
-        return math.sin(2 * math.pi * x * self.speed) * math.pow(100., -x * x)
-
-
-class DisappearingShape(Delegate):
-    def __init__(self, shape, duration=2, fade=0.5):
-        super().__init__(shape)
-        self.shape = shape
-        self.duration = duration
-        self.ts_requested = 0
-        self.fade = fade
-
-    def draw(self):
-        now = time.time()
-        diff = now - self.ts_requested
-        fading = self.duration - diff
-        if diff <= self.duration:
-            if fading <= self.fade:
-                self.shape.set_alpha(fading / self.fade)
-            else:
-                self.shape.set_alpha(1)
-
-            self.shape.draw()
-
-    def show(self):
-        self.ts_requested = time.time()
-
-    def hide(self):
-        self.ts_requested = 0
-
-
-class Anim(Delegate):
-    def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
-        super().__init__(shape)
-        self.tstart = 0
-        self.duration = 0.3
-        self.pos = opos
-        self.scale, self.shape = oscale, shape
-        self.tpos, self.tscale = self.pos, self.scale
-        self.opos, self.oscale = self.pos, self.scale
-
-    def draw(self):
-        now = time.time()
-        tdiff = now - self.tstart
-        tdiff /= self.duration
-        tdiff = math.pow(tdiff, 2)
-        if tdiff > 1:
-            self.tstart = 0
-            self.pos, self.scale = self.tpos, self.tscale
-        else:
-            self.pos = numpy.add(self.opos, numpy.multiply(tdiff, numpy.subtract(self.tpos, self.opos)))
-            self.scale = numpy.add(self.oscale, numpy.multiply(tdiff, numpy.subtract(self.tscale, self.oscale)))
-
-        self.shape.position(*self.pos)
-        self.shape.scale(*self.scale)
-        self.shape.draw()
-
-    def moveTo(self, tpos, tscale):
-        self.opos = (self.shape.x(), self.shape.y(), self.shape.z())  # self.pos
-        # extract current sx, sy, sz (no accessors defined)
-        u = self.shape.unif
-        self.oscale = (u[6], u[7], u[8])  # self.scale
-        self.tpos, self.tscale = tpos, tscale
-        self.tstart = time.time()
-
-    def __getattr__(self, name):
-        return getattr(self.shape, name)
+            self.wiggle()
 
 
 class Gui():
@@ -191,7 +101,7 @@ class Gui():
         msg = pi3d.String(font=self.msg_font, string=string,
                           is_3d=False, y=-380, z=5)
         msg.set_shader(shader)
-        msg = DisappearingShape(msg, 2, 0.5)
+        msg = Disappear(msg, 2, 0.5)
         self.all_messages.append(msg)
         return msg
 
@@ -212,7 +122,7 @@ class Gui():
 
         self.instructions = pi3d.ImageSprite("instructions.png", flat, w=512, h=256, x=-1920 / 2 + 256 + 20, y=-1080 / 2 + 128 + 10, z=5)
         self.instructions.scale(0.75, 0.75, 1)
-        self.instructions = DisappearingShape(self.instructions)
+        self.instructions = Disappear(self.instructions)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
         self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50)
 
@@ -226,8 +136,8 @@ class Gui():
         self.goal_time.set_shader(flat)
 
         s = 512
-        self.yCounter = Anim(Counter(0, flat, 'y_', w=s, h=s, z=5))
-        self.bCounter = Anim(Counter(0, flat, 'b_', w=s, h=s, z=5))
+        self.yCounter = Move(Counter(0, flat, 'y_', w=s, h=s, z=5))
+        self.bCounter = Move(Counter(0, flat, 'b_', w=s, h=s, z=5))
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),

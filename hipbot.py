@@ -1,7 +1,7 @@
 import config
 import hipchat
 import traceback
-from gl.foos_gui import GuiState
+
 
 class HipBot(object):
     def __init__(self, bus):
@@ -25,5 +25,5 @@ class HipBot(object):
             msg = "New replay uploaded: " + ev.data
         else:
             return
-            
+
         self.send_message(msg)

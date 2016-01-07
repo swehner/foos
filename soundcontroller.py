@@ -4,7 +4,6 @@ import queue
 import threading
 import subprocess
 import random
-from gl.foos_gui import GuiState
 
 
 class SoundController:

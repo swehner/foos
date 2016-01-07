@@ -28,8 +28,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="5.6"
-     inkscape:cx="167.99658"
-     inkscape:cy="995.40954"
+     inkscape:cx="127.70223"
+     inkscape:cy="976.0438"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -67,12 +67,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.14227641999999999;stroke-dasharray:none;stroke-dashoffset:0"
+       style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.14227642;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect3005"
        width="262.14285"
        height="195.35715"
-       x="-29.642857"
-       y="-3.7092459" />
+       x="-30.848213"
+       y="-2.1913888" />
     <g
        id="g3806"
        transform="translate(0,0.33928573)">
@@ -206,18 +206,24 @@
        id="path3914"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="38.854374"
-       y="-175.97656"
-       id="text3006"
-       sodipodi:linespacing="125%"
-       transform="matrix(0,1,-1,0,0,0)"><tspan
-         sodipodi:role="line"
-         id="tspan3008"
-         x="38.854374"
-         y="-175.97656"
-         style="font-size:16px;fill:#ffffff">⇥</tspan></text>
+    <g
+       id="g3778"
+       transform="matrix(0.72807014,0,0,0.72807014,35.375959,17.042094)">
+      <g
+         id="g3007">
+        <path
+           style="fill:#ffffff;stroke:none"
+           d="m 193.56171,38.091787 5.17857,8.571429 5,-8.392857 z"
+           id="path3006"
+           inkscape:connector-curvature="0" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3008"
+           width="10.058103"
+           height="1.7423856"
+           x="193.6411"
+           y="45.140827" />
+      </g>
+    </g>
   </g>
 </svg>

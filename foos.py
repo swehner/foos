@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from gl.foos_gui import Gui
+from gl.gui import Gui
 import os
 import sys
 import getopt
