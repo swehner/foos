@@ -175,7 +175,12 @@ class Gui():
         self.instructions.scale(0.75, 0.75, 1)
         self.instructions = DisappearingShape(self.instructions)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
+        self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40)
 
+        self.uploading = pi3d.String(font=self.msg_font, string="Uploading replay...",
+                                     is_3d=False, y=-380, z=5)
+        self.uploading.set_shader(flat)
+        self.uploading = DisappearingShape(self.uploading, 2, 0.5)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts
@@ -216,6 +221,8 @@ class Gui():
         if ev.name == "replay_end":
             self.overlay_mode = False
             self.__move_sprites()
+        if ev.name == "upload_start":
+            self.uploading.show(time.time())
         if ev.name == "button_event" and ev.data['btn']!='goal':
             self.instructions.show(time.time())
 
@@ -236,6 +243,7 @@ class Gui():
                     self.bg.draw()
                     self.instructions.draw(now)
 
+                self.uploading.draw(now)
                 self.logo.draw()
                 self.yAnim.step(now)
                 self.yCounter.step(now)
