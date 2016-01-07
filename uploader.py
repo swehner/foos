@@ -113,7 +113,7 @@ class Uploader:
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
         self.last_goal = None
-        self.current_score = None
+        self.current_score = ('-', '-')
 
     def process_event(self, ev):
         if ev.name == 'score_goal':
@@ -124,6 +124,7 @@ class Uploader:
         if ev.name != 'upload_request':
             return
 
+        self.bus.notify(Event('upload_start'))
         title = "{} goal: {} - {}".format(self.last_goal, self.current_score[0], self.current_score[1])
         print("Uploading video:", title)
 
