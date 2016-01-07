@@ -69,7 +69,7 @@ class Gui():
             sf = 1920 / self.DISPLAY.width
         else:
             print("Forcing size")
-            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=1920 // sf, h=1080 // sf,
+            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(1920 / sf), h=int(1080 / sf),
                                                background=bgcolor)
 
         self.DISPLAY.frames_per_second = fps

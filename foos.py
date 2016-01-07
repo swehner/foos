@@ -51,7 +51,7 @@ for opt, arg in opts:
     if opt == '-f':
         frames = int(arg)
     if opt == '-s':
-        sf = int(arg)
+        sf = float(arg)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 
