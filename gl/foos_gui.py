@@ -24,18 +24,29 @@ class GuiState():
         self.lastGoal = lastGoal
 
 
-class Counter():
+class Delegate:
+    def __init__(self, delegate):
+        self.delegate = delegate
+
+    def __getattr__(self, name):
+        return getattr(self.delegate, name)
+
+
+class Counter(Delegate):
     def __init__(self, value, shader, prefix, **kwargs):
         self.textures = [pi3d.Texture("numbers/%s%d.png" % (prefix, i))
                          for i in range(0, 10)]
         self.value = value
         self.number = pi3d.ImageSprite(self.textures[value], shader, **kwargs)
+        super().__init__(self.number)
+
         self.anim_start = None
         self.speed = 5
         self.maxAngle = 10
         self.time = 0.8
 
-    def step(self, now):
+    def draw(self):
+        now = time.time()
         s = self.number
         s.set_textures([self.textures[self.value % 10]])
 
@@ -46,6 +57,8 @@ class Counter():
             s.rotateToZ(0)
             self.anim_start = None
 
+        self.number.draw()
+
     def setValue(self, value):
         if self.value != value:
             self.value = value
@@ -55,17 +68,17 @@ class Counter():
         x = now - self.anim_start
         return math.sin(2 * math.pi * x * self.speed) * math.pow(100., -x * x)
 
-    def shape(self):
-        return self.number
 
-class DisappearingShape:
+class DisappearingShape(Delegate):
     def __init__(self, shape, duration=2, fade=0.5):
+        super().__init__(shape)
         self.shape = shape
         self.duration = duration
         self.ts_requested = 0
         self.fade = fade
-        
-    def draw(self, now):
+
+    def draw(self):
+        now = time.time()
         diff = now - self.ts_requested
         fading = self.duration - diff
         if diff <= self.duration:
@@ -73,14 +86,19 @@ class DisappearingShape:
                 self.shape.set_alpha(fading / self.fade)
             else:
                 self.shape.set_alpha(1)
-                
+
             self.shape.draw()
 
-    def show(self, now):
-        self.ts_requested = now
-            
-class Anim:
+    def show(self):
+        self.ts_requested = time.time()
+
+    def hide(self):
+        self.ts_requested = 0
+
+
+class Anim(Delegate):
     def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
+        super().__init__(shape)
         self.tstart = 0
         self.duration = 0.3
         self.pos = opos
@@ -88,7 +106,8 @@ class Anim:
         self.tpos, self.tscale = self.pos, self.scale
         self.opos, self.oscale = self.pos, self.scale
 
-    def step(self, now):
+    def draw(self):
+        now = time.time()
         tdiff = now - self.tstart
         tdiff /= self.duration
         tdiff = math.pow(tdiff, 2)
@@ -101,14 +120,18 @@ class Anim:
 
         self.shape.position(*self.pos)
         self.shape.scale(*self.scale)
+        self.shape.draw()
 
-    def next(self, tpos, tscale, now):
+    def moveTo(self, tpos, tscale):
         self.opos = (self.shape.x(), self.shape.y(), self.shape.z())  # self.pos
         # extract current sx, sy, sz (no accessors defined)
         u = self.shape.unif
         self.oscale = (u[6], u[7], u[8])  # self.scale
         self.tpos, self.tscale = tpos, tscale
-        self.tstart = now
+        self.tstart = time.time()
+
+    def __getattr__(self, name):
+        return getattr(self.shape, name)
 
 
 class Gui():
@@ -121,6 +144,7 @@ class Gui():
         self.last_bg_change = time.time()
         self.bg_change_interval = bg_change_interval
         self.bg_idx = 0
+        self.all_messages = []
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
             monkeypatch.fixX11KeyEvents(self.DISPLAY)
@@ -151,17 +175,32 @@ class Gui():
             posx = 800
             posy = 450
             scale = (0.2, 0.2, 1.0)
-            self.yAnim.next((posx - 65, posy, 5), scale, now)
-            self.bAnim.next((posx + 65, posy, 5), scale, now)
+            self.yCounter.moveTo((posx - 65, posy, 5), scale)
+            self.bCounter.moveTo((posx + 65, posy, 5), scale)
         else:
             scale = (1, 1, 1)
-            self.yAnim.next((-380, 0, 5), scale, now)
-            self.bAnim.next((380, 0, 5), scale, now)
+            self.yCounter.moveTo((-380, 0, 5), scale)
+            self.bCounter.moveTo((380, 0, 5), scale)
 
     def __cp_lg(self):
         """Generate codepoint list for last goal display"""
         l = "Last Goal:.-O123456789"
         return map(ord, set(sorted(l)))
+
+    def __display_message(self, string, shader):
+        msg = pi3d.String(font=self.msg_font, string=string,
+                          is_3d=False, y=-380, z=5)
+        msg.set_shader(shader)
+        msg = DisappearingShape(msg, 2, 0.5)
+        self.all_messages.append(msg)
+        return msg
+
+    def show_message(self, msg):
+        for m in self.all_messages:
+            if m == msg:
+                m.show()
+            else:
+                m.hide()
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
@@ -175,12 +214,11 @@ class Gui():
         self.instructions.scale(0.75, 0.75, 1)
         self.instructions = DisappearingShape(self.instructions)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
-        self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40)
+        self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50)
 
-        self.uploading = pi3d.String(font=self.msg_font, string="Uploading replay...",
-                                     is_3d=False, y=-380, z=5)
-        self.uploading.set_shader(flat)
-        self.uploading = DisappearingShape(self.uploading, 2, 0.5)
+        self.uploading = self.__display_message("Uploading replay...", flat)
+        self.uploadok = self.__display_message("Upload ok!", flat)
+        self.uploaderror = self.__display_message("Upload error :(", flat)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts
@@ -188,10 +226,8 @@ class Gui():
         self.goal_time.set_shader(flat)
 
         s = 512
-        self.yCounter = Counter(0, flat, 'y_', w=s, h=s, z=5)
-        self.bCounter = Counter(0, flat, 'b_', w=s, h=s, z=5)
-        self.yAnim = Anim(self.yCounter.shape())
-        self.bAnim = Anim(self.bCounter.shape())
+        self.yCounter = Anim(Counter(0, flat, 'y_', w=s, h=s, z=5))
+        self.bCounter = Anim(Counter(0, flat, 'b_', w=s, h=s, z=5))
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -222,12 +258,16 @@ class Gui():
             self.overlay_mode = False
             self.__move_sprites()
         if ev.name == "upload_start":
-            self.uploading.show(time.time())
-        if ev.name == "button_event" and ev.data['btn']!='goal':
-            self.instructions.show(time.time())
+            self.show_message(self.uploading)
+        if ev.name == "upload_ok":
+            self.show_message(self.uploadok)
+        if ev.name == "upload_error":
+            self.show_message(self.uploaderror)
+        if ev.name == "button_event" and ev.data['btn'] != 'goal':
+            self.instructions.show()
 
-            
-    def __set_bg(self, now):
+    def __set_bg(self):
+        now = time.time()
         if now > (self.last_bg_change + self.bg_change_interval):
             self.last_bg_change = now
             self.bg_idx = (self.bg_idx + 1) % len(self.bg_textures)
@@ -237,24 +277,21 @@ class Gui():
         try:
             print("Running")
             while self.DISPLAY.loop_running():
-                now = time.time()
-                self.__set_bg(now)
+                self.__set_bg()
                 if not self.overlay_mode:
                     self.bg.draw()
-                    self.instructions.draw(now)
+                    self.instructions.draw()
 
-                self.uploading.draw(now)
-                self.logo.draw()
-                self.yAnim.step(now)
-                self.yCounter.step(now)
-                self.yCounter.shape().draw()
-                self.bAnim.step(now)
-                self.bCounter.step(now)
-                self.bCounter.shape().draw()
-                if not self.overlay_mode:
+                    for m in self.all_messages:
+                        m.draw()
+
                     self.goal_time.draw()
+                    self.goal_time.quick_change(self.__get_time_since_last_goal())
 
-                self.goal_time.quick_change(self.__get_time_since_last_goal())
+                self.logo.draw()
+                self.yCounter.draw()
+                self.bCounter.draw()
+
                 if self.show_leds:
                     self.__draw_leds()
 

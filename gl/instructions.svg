@@ -16,8 +16,8 @@
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="instructions.svg"
    inkscape:export-filename="/home/stefan/dev/foos/gl/instructions.png"
-   inkscape:export-xdpi="600.03088"
-   inkscape:export-ydpi="600.03088">
+   inkscape:export-xdpi="244.98"
+   inkscape:export-ydpi="244.98">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8"
-     inkscape:cx="202.42956"
-     inkscape:cy="932.9705"
+     inkscape:zoom="5.6"
+     inkscape:cx="167.99658"
+     inkscape:cy="995.40954"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -58,6 +58,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -66,12 +67,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2.6946137;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       id="rect2993"
-       width="243.57045"
-       height="165.8674"
-       x="-20.188408"
-       y="-41.92395" />
+       style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.14227641999999999;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3005"
+       width="262.14285"
+       height="195.35715"
+       x="-29.642857"
+       y="-3.7092459" />
     <g
        id="g3806"
        transform="translate(0,0.33928573)">
@@ -99,7 +100,7 @@
        id="g3802"
        transform="translate(0,0.58928573)">
       <path
-         d="m 60,39.862183 a 12.5,12.5 0 1 1 -25,0 12.5,12.5 0 1 1 25,0 z"
+         d="m 60,39.862183 c 0,6.903559 -5.596441,12.5 -12.5,12.5 -6.903559,0 -12.5,-5.596441 -12.5,-12.5 0,-6.90356 5.596441,-12.5 12.5,-12.5 6.903559,0 12.5,5.59644 12.5,12.5 z"
          sodipodi:ry="12.5"
          sodipodi:rx="12.5"
          sodipodi:cy="39.862183"
@@ -198,25 +199,25 @@
          x="119.356"
          y="51.327896"
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
-         id="tspan3868-2">Upload</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="-185.4319"
-       y="-40.901012"
-       id="text3839-1-4-0"
-       sodipodi:linespacing="125%"
-       transform="scale(-1,-1)"><tspan
-         sodipodi:role="line"
-         x="-185.4319"
-         y="-40.901012"
-         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
-         id="tspan3868-2-1">⇪</tspan></text>
+         id="tspan3868-2">Upload </tspan></text>
     <path
        style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 102.47481,45.532686 13.25825,-9.280909"
        id="path3914"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="38.854374"
+       y="-175.97656"
+       id="text3006"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,1,-1,0,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3008"
+         x="38.854374"
+         y="-175.97656"
+         style="font-size:16px;fill:#ffffff">⇥</tspan></text>
   </g>
 </svg>

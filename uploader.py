@@ -50,6 +50,7 @@ def get_authenticated_service():
 
     return build('youtube', 'v3', http=credentials.authorize(httplib2.Http()))
 
+
 def initialize_upload(title=None, file='/tmp/replay/replay_long.mp4'):
     youtube = get_authenticated_service()
     tags = ['foos']
@@ -108,6 +109,7 @@ def resumable_upload(insert_request):
             print("Sleeping %f seconds and then retrying..." % sleep_seconds)
             time.sleep(sleep_seconds)
 
+
 class Uploader:
     def __init__(self, bus):
         self.bus = bus
@@ -136,10 +138,13 @@ class Uploader:
             video_id = initialize_upload(title)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
             self.bus.notify(Event('upload_ok', url))
+            return
         except HttpError as e:
             print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
-            self.bus.notify(Event('upload_error'))
+        except Exception as e:
+            print("An error occurred: %s" % e)
 
+        self.bus.notify(Event('upload_error'))
 
 if __name__ == '__main__':
     file = sys.argv[1]
