@@ -67,12 +67,12 @@ class LedController:
             self.setMode(pat_goal)
         if ev.name == 'upload_ok':
             self.setMode(pat_ok)
-        if ev.name == 'leds_mode':
-            self.setMode(ev.data)
         if ev.name == 'tv_standby':
             self.setMode(pat_standby, loop=True)
         if ev.name == 'tv_on':
             self.setMode([])
+        if ev.name == 'button_will_upload':
+            self.setMode(pat_upload_feedback)
         # all error conditions
         if ev.name in ['upload_error']:
             self.setMode(pat_error)
@@ -92,6 +92,8 @@ pat_goal = [[Pattern(0.1, ["BD", "YD"]),
                  Pattern(0.1, ["BI", "BD", "OK", "YI", "YD"])]]
 
 pat_ok = [Pattern(0.3, ["OK"])]
+
+pat_upload_feedback = 2 * [Pattern(0.1, ["OK"]), Pattern(0.1)]
 
 pat_error = 2 * [Pattern(0.3, ["YD", "BD"]),
                  Pattern(0.3)]
