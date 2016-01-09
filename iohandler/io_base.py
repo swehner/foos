@@ -5,6 +5,8 @@ import queue
 
 class IOBase:
     def __init__(self, bus):
+        self.bus = bus
+        self.bus.subscribe(self.process_event, thread=False)
         self.write_queue = Queue(10)
         self.reader = threading.Thread(target=self.reader_thread)
         self.reader.daemon = True
@@ -12,8 +14,6 @@ class IOBase:
         self.writer = threading.Thread(target=self.writer_thread)
         self.writer.daemon = True
         self.writer.start()
-        self.bus = bus
-        self.bus.subscribe(self.process_event, thread=False)
 
     def reader_thread(self):
         raise NotImplementedError()
