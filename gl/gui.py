@@ -26,22 +26,38 @@ class GuiState():
 
 
 class Counter(Delegate):
-    def __init__(self, value, shader, prefix, **kwargs):
-        self.textures = [pi3d.Texture("numbers/%s%d.png" % (prefix, i))
-                         for i in range(0, 10)]
+    textures = None
+
+    def __init__(self, value, shader, color, **kwargs):
+        if Counter.textures is None:
+            print("Loading numbers")
+            Counter.textures = [pi3d.Texture("numbers/%d.png" % (i))
+                                for i in range(0, 10)]
         self.value = value
-        self.number = Wiggle(pi3d.ImageSprite(self.textures[value], shader, **kwargs),
+        self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=4, rx=90)
+        self.disk.set_material(color)
+        self.number = Wiggle(pi3d.ImageSprite(Counter.textures[value], shader, **kwargs),
                              5, 10, 0.8)
         super().__init__(self.number)
 
     def draw(self):
-        self.number.set_textures([self.textures[self.value % 10]])
+        self.disk.draw()
         self.number.draw()
 
     def setValue(self, value):
         if self.value != value:
             self.value = value
+            self.number.set_textures([Counter.textures[self.value % 10]])
             self.wiggle()
+
+    def position(self, x, y, z):
+        self.number.position(x, y, z)
+        self.disk.position(x, y, z + 1)
+
+    def scale(self, sx, sy, sz):
+        self.number.scale(sx, sy, sz)
+        # reorder due to initial rx=90 rotation
+        self.disk.scale(sx, sz, sy)
 
 
 class Gui():
@@ -115,9 +131,12 @@ class Gui():
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
+        print("Loading bgs")
         self.bg_textures = [pi3d.Texture(f) for f in glob.glob("gl/bg/*.jpg")]
 
         self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
+
+        print("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite("logo.png", flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=5)
@@ -126,6 +145,8 @@ class Gui():
         self.instructions = pi3d.ImageSprite("instructions.png", flat, w=in_d[0], h=in_d[1],
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
         self.instructions = Disappear(self.instructions)
+
+        print("Loading fonts and messages")
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
         self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50)
 
@@ -139,8 +160,8 @@ class Gui():
         self.goal_time.set_shader(flat)
 
         s = 512
-        self.yCounter = Move(Counter(0, flat, 'y_', w=s, h=s, z=5))
-        self.bCounter = Move(Counter(0, flat, 'b_', w=s, h=s, z=5))
+        self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=5))
+        self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=5))
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -149,8 +170,8 @@ class Gui():
             "BD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
             "BI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
         }
-        red = (255, 0, 0, 0)
-        green = (0, 255, 0, 0)
+        red = (10, 0, 0, 0)
+        green = (0, 10, 0, 0)
         self.blackColor = (0, 0, 0, 0)
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
