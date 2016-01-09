@@ -99,3 +99,27 @@ class Move(Delegate):
         self.oscale = (u[6], u[7], u[8])  # self.scale
         self.tpos, self.tscale = tpos, tscale
         self.tstart = time.time()
+
+
+class ChangingTextures(Delegate):
+    def __init__(self, shape, textures, interval):
+        super().__init__(shape)
+        self.idx = 0
+        self.shape = shape
+        self.shape.set_textures([textures[0]])
+        self.textures = textures
+        self.last_change = time.time()
+        self.interval = interval
+
+    def draw(self):
+        if self.interval > 0:
+            self.__change_texture()
+
+        self.shape.draw()
+
+    def __change_texture(self):
+        now = time.time()
+        if now > (self.last_change + self.interval):
+            self.last_change = now
+            self.idx = (self.idx + 1) % len(self.textures)
+            self.shape.set_textures([self.textures[self.idx]])

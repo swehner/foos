@@ -57,7 +57,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 
 bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
-          bg_change_interval=config.bg_change_secs)
+          bg_change_interval=config.bg_change_secs,
+          bg_amount=config.bg_amount)
 bus.subscribe(replay_handler, thread=True)
 
 hipbot.HipBot(bus)

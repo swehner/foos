@@ -13,7 +13,7 @@ import math
 import numpy
 import glob
 from gl import monkeypatch
-from gl.anim import Move, Disappear, Wiggle, Delegate
+from gl.anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 
 monkeypatch.patch()
 
@@ -61,15 +61,14 @@ class Counter(Delegate):
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300):
+    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
         self.state = GuiState()
         self.overlay_mode = False
         self.bus = bus
         self.bus.subscribe(self.process_event)
-        self.show_leds = show_leds
-        self.last_bg_change = time.time()
         self.bg_change_interval = bg_change_interval
-        self.bg_idx = 0
+        self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
+        self.show_leds = show_leds
         self.all_messages = []
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
@@ -128,13 +127,20 @@ class Gui():
             else:
                 m.hide()
 
+    def __get_bg_textures(self):
+        bgs = glob.glob("gl/bg/*.jpg")
+        random.shuffle(bgs)
+        bgs = bgs[0:self.bg_amount]
+
+        print("Loading %d bgs" % len(bgs), bgs)
+        return [pi3d.Texture(f) for f in bgs]
+
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
-        print("Loading bgs")
-        self.bg_textures = [pi3d.Texture(f) for f in glob.glob("gl/bg/*.jpg")]
-
-        self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
+        bg = pi3d.Sprite(w=1920, h=1080, z=10)
+        bg.set_shader(flat)
+        self.bg = ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval)
 
         print("Loading other images")
         logo_d = (80, 80)
@@ -200,18 +206,10 @@ class Gui():
         if ev.name == "button_event" and ev.data['btn'] != 'goal':
             self.instructions.show()
 
-    def __set_bg(self):
-        now = time.time()
-        if now > (self.last_bg_change + self.bg_change_interval):
-            self.last_bg_change = now
-            self.bg_idx = (self.bg_idx + 1) % len(self.bg_textures)
-            self.bg.set_textures([self.bg_textures[self.bg_idx]])
-
     def run(self):
         try:
             print("Running")
             while self.DISPLAY.loop_running():
-                self.__set_bg()
                 if not self.overlay_mode:
                     self.bg.draw()
                     self.instructions.draw()
