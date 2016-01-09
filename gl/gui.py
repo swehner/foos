@@ -120,8 +120,9 @@ class Gui():
         self.bg = pi3d.ImageSprite(self.bg_textures[0], flat, w=1920, h=1080, z=10)
         self.logo = pi3d.ImageSprite("logo.png", flat, w=80, h=80, x=880, y=-460, z=5)
 
-        self.instructions = pi3d.ImageSprite("instructions.png", flat, w=512, h=256, x=-1920 / 2 + 256 + 20, y=-1080 / 2 + 128 + 10, z=5)
-        self.instructions.scale(0.75, 0.75, 1)
+        ins = 0.75
+        self.instructions = pi3d.ImageSprite("instructions.png", flat, w=512 * ins, h=256 * ins,
+                                             x=(-1920 / 2) + 256 * ins + 40, y=(-1080 / 2) + 128 * ins + 40, z=5)
         self.instructions = Disappear(self.instructions)
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
         self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50)

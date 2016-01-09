@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="127.70223"
-     inkscape:cy="976.0438"
+     inkscape:zoom="3.959798"
+     inkscape:cx="49.377332"
+     inkscape:cy="1001.9714"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -167,13 +167,13 @@
          y="62.362183"
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono">Reset</tspan></text>
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 30,37.362183 -10,0 0,10"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627453;stroke-dasharray:none"
+       d="m 30,77.362183 -10,0 0,-10"
        id="path3843"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 30,77.362183 -10,0 0,-10 0,0"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627453;stroke-dasharray:none"
+       d="m 30,37.362183 -10,0 0,10 0,0"
        id="path3845"
        inkscape:connector-curvature="0" />
     <text
@@ -201,7 +201,7 @@
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
          id="tspan3868-2">Upload </tspan></text>
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627453;stroke-dasharray:none"
        d="m 102.47481,45.532686 13.25825,-9.280909"
        id="path3914"
        inkscape:connector-curvature="0"
