@@ -46,6 +46,7 @@ class Disappear(Delegate):
         self.duration = duration
         self.ts_requested = 0
         self.fade = fade
+        self.max_alpha = 1
 
     def draw(self):
         now = time.time()
@@ -53,9 +54,9 @@ class Disappear(Delegate):
         fading = self.duration - diff
         if diff <= self.duration:
             if fading <= self.fade:
-                self.shape.set_alpha(fading / self.fade)
+                self.shape.set_alpha(self.max_alpha * fading / self.fade)
             else:
-                self.shape.set_alpha(1)
+                self.shape.set_alpha(self.max_alpha)
 
             self.shape.draw()
 

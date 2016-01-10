@@ -60,6 +60,29 @@ class Counter(Delegate):
         self.disk.scale(sx, sz, sy)
 
 
+class KeysFeedback:
+    def __init__(self, shader):
+        icon = pi3d.Sprite(w=256, h=256, z=5, y=-400)
+        icon.set_shader(shader)
+        upload = pi3d.Texture("upload.png")
+        replay = pi3d.Texture("replay.png")
+        self.icons = {"will_upload": (upload, 0.4),
+                      "will_replay": (replay, 0.4),
+                      "error": (pi3d.Texture("error.png"), 1),
+                      "ok": (pi3d.Texture("ok.png"), 1),
+                      "uploading": (upload, 1)}
+        self.icon = Disappear(icon)
+
+    def draw(self):
+        self.icon.draw()
+
+    def setIcon(self, i):
+        texture, alpha = self.icons[i]
+        self.icon.set_textures([texture])
+        self.icon.max_alpha = alpha
+        self.icon.show()
+
+
 class Gui():
     def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
         self.state = GuiState()
@@ -69,7 +92,6 @@ class Gui():
         self.bg_change_interval = bg_change_interval
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
-        self.all_messages = []
         self.__init_display(scaling_factor, fps)
         if self.is_x11():
             monkeypatch.fixX11KeyEvents(self.DISPLAY)
@@ -112,21 +134,6 @@ class Gui():
         l = "Last Goal:.-O123456789"
         return map(ord, set(sorted(l)))
 
-    def __display_message(self, string, shader):
-        msg = pi3d.String(font=self.msg_font, string=string,
-                          is_3d=False, y=-380, z=5)
-        msg.set_shader(shader)
-        msg = Disappear(msg, 2, 0.5)
-        self.all_messages.append(msg)
-        return msg
-
-    def show_message(self, msg):
-        for m in self.all_messages:
-            if m == msg:
-                m.show()
-            else:
-                m.hide()
-
     def __get_bg_textures(self):
         bgs = glob.glob("gl/bg/*.jpg")
         random.shuffle(bgs)
@@ -152,18 +159,15 @@ class Gui():
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
         self.instructions = Disappear(self.instructions)
 
-        print("Loading fonts and messages")
+        print("Loading font")
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
-        self.msg_font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50)
-
-        self.uploading = self.__display_message("Uploading replay...", flat)
-        self.uploadok = self.__display_message("Upload ok!", flat)
-        self.uploaderror = self.__display_message("Upload error :(", flat)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts
         self.goal_time.scale(2, 2, 1)
         self.goal_time.set_shader(flat)
+
+        self.feedback = KeysFeedback(flat)
 
         s = 512
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=5))
@@ -197,12 +201,16 @@ class Gui():
         if ev.name == "replay_end":
             self.overlay_mode = False
             self.__move_sprites()
+        if ev.name == "button_will_upload":
+            self.feedback.setIcon("will_upload")
         if ev.name == "upload_start":
-            self.show_message(self.uploading)
+            self.feedback.setIcon("uploading")
         if ev.name == "upload_ok":
-            self.show_message(self.uploadok)
+            self.feedback.setIcon("ok")
         if ev.name == "upload_error":
-            self.show_message(self.uploaderror)
+            self.feedback.setIcon("error")
+        if ev.name == "button_event" and ev.data['btn'] == 'ok':
+            self.feedback.setIcon("will_replay")
         if ev.name == "button_event" and ev.data['btn'] != 'goal':
             self.instructions.show()
 
@@ -214,11 +222,9 @@ class Gui():
                     self.bg.draw()
                     self.instructions.draw()
 
-                    for m in self.all_messages:
-                        m.draw()
-
                     self.goal_time.draw()
                     self.goal_time.quick_change(self.__get_time_since_last_goal())
+                    self.feedback.draw()
 
                 self.logo.draw()
                 self.yCounter.draw()
