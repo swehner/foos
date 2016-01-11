@@ -66,8 +66,8 @@ class KeysFeedback:
         icon.set_shader(shader)
         upload = pi3d.Texture("upload.png")
         replay = pi3d.Texture("replay.png")
-        self.icons = {"will_upload": (upload, 0.4),
-                      "will_replay": (replay, 0.4),
+        self.icons = {"will_upload": (upload, 0.5),
+                      "will_replay": (replay, 0.5),
                       "error": (pi3d.Texture("error.png"), 1),
                       "ok": (pi3d.Texture("ok.png"), 1),
                       "uploading": (upload, 1)}
