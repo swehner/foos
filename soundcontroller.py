@@ -31,7 +31,7 @@ class SoundController:
             sounds.append(self.rand.choice(self.generic_goal_sounds))
 
         elif ev.name == 'score_reset':
-            sounds = ['prepare', 'whistle_2short1long']
+            sounds = ['whistle_2short1long']
         else:
             return
 

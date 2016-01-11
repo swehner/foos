@@ -157,7 +157,7 @@ class Gui():
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite("instructions.png", flat, w=in_d[0], h=in_d[1],
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
-        self.instructions = Disappear(self.instructions)
+        self.instructions = Disappear(self.instructions, duration=5)
 
         print("Loading font")
         font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
