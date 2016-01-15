@@ -1,8 +1,8 @@
 import time
 import serial
 import glob
-from iohandler.io_base import IOBase
-from iohandler.arduino import getEventForButton
+from .io_base import IOBase
+from .arduino import getEventForButton
 
 
 class IOSerial(IOBase):

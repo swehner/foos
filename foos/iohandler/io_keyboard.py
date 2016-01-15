@@ -1,6 +1,6 @@
 import time
-from iohandler.io_base import IOBase
-from bus import Event
+from .io_base import IOBase
+from .. bus import Event
 
 
 class IOKeyboard(IOBase):

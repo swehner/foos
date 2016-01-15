@@ -5,19 +5,15 @@ import sys
 import getopt
 from subprocess import check_output, call
 
-from iohandler.io_serial import IOSerial
-from iohandler.io_debug import IODebug
-from iohandler.io_keyboard import IOKeyboard
+from foos.iohandler.io_serial import IOSerial
+from foos.iohandler.io_debug import IODebug
+from foos.iohandler.io_keyboard import IOKeyboard
 import config
-from bus import Bus, Event
+from foos.bus import Bus, Event
 
-import hipbot
-import uploader
-import scoreboard
-import ledcontroller
-import soundcontroller
-import buttoncontroller
-import standby
+from foos import hipbot
+from foos import uploader
+from foos import scoreboard, ledcontroller, soundcontroller, buttoncontroller, standby
 
 
 def replay_handler(ev):

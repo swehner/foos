@@ -15,7 +15,7 @@ from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
 import config
-from bus import Event
+from .bus import Event
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
 # we are handling retry logic ourselves.

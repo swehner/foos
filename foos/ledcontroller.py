@@ -4,7 +4,7 @@ import sys
 import threading
 import queue
 import collections
-from bus import Event, Bus
+from .bus import Event, Bus
 
 class Pattern:
     def __init__(self, time, leds=[]):

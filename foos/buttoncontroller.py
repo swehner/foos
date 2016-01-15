@@ -1,8 +1,7 @@
 import time
 import queue
 from threading import Thread
-from bus import Bus, Event
-from ledcontroller import Pattern
+from .bus import Bus, Event
 
 class Buttons:
     """Class to manage the state of the buttons and the needed logic"""

@@ -6,8 +6,8 @@ import pickle
 from collections import namedtuple
 import traceback
 
-from clock import Clock
-from bus import Bus, Event
+from .clock import Clock
+from .bus import Bus, Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 

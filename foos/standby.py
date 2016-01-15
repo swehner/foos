@@ -2,7 +2,7 @@ import time
 import threading
 import subprocess
 
-from bus import Event, Bus
+from .bus import Event, Bus
 
 
 class Standby:
