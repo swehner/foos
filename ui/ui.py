@@ -12,10 +12,14 @@ import traceback
 import math
 import numpy
 import glob
-from gl import monkeypatch
-from gl.anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
+from . import monkeypatch
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 
 monkeypatch.patch()
+
+
+def img(filename):
+    return os.path.dirname(__file__) + "/" + filename
 
 
 class GuiState():
@@ -31,7 +35,7 @@ class Counter(Delegate):
     def __init__(self, value, shader, color, **kwargs):
         if Counter.textures is None:
             print("Loading numbers")
-            Counter.textures = [pi3d.Texture("numbers/%d.png" % (i))
+            Counter.textures = [pi3d.Texture(img("numbers/%d.png") % (i))
                                 for i in range(0, 10)]
         self.value = value
         self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=4, rx=90)
@@ -64,12 +68,12 @@ class KeysFeedback:
     def __init__(self, shader):
         icon = pi3d.Sprite(w=256, h=256, z=5, y=-400)
         icon.set_shader(shader)
-        upload = pi3d.Texture("upload.png")
-        replay = pi3d.Texture("replay.png")
+        upload = pi3d.Texture(img("icons/upload.png"))
+        replay = pi3d.Texture(img("icons/replay.png"))
         self.icons = {"will_upload": (upload, 0.5),
                       "will_replay": (replay, 0.5),
-                      "error": (pi3d.Texture("error.png"), 1),
-                      "ok": (pi3d.Texture("ok.png"), 1),
+                      "error": (pi3d.Texture(img("icons/error.png")), 1),
+                      "ok": (pi3d.Texture(img("icons/ok.png")), 1),
                       "uploading": (upload, 1)}
         self.icon = Disappear(icon)
 
@@ -135,7 +139,7 @@ class Gui():
         return map(ord, set(sorted(l)))
 
     def __get_bg_textures(self):
-        bgs = glob.glob("gl/bg/*.jpg")
+        bgs = glob.glob(os.path.dirname(__file__) + "/bg/*.jpg")
         random.shuffle(bgs)
         bgs = bgs[0:self.bg_amount]
 
@@ -151,16 +155,16 @@ class Gui():
 
         print("Loading other images")
         logo_d = (80, 80)
-        self.logo = pi3d.ImageSprite("logo.png", flat, w=logo_d[0], h=logo_d[1],
+        self.logo = pi3d.ImageSprite(img("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=5)
 
         in_d = (512 * 0.75, 185 * 0.75)
-        self.instructions = pi3d.ImageSprite("instructions.png", flat, w=in_d[0], h=in_d[1],
+        self.instructions = pi3d.ImageSprite(img("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
         self.instructions = Disappear(self.instructions, duration=5)
 
         print("Loading font")
-        font = pi3d.Font("UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
+        font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts

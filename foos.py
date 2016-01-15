@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-from gl.gui import Gui
-import os
+from ui.ui import Gui
 import sys
 import getopt
 from subprocess import check_output, call
@@ -52,8 +51,6 @@ for opt, arg in opts:
         frames = int(arg)
     if opt == '-s':
         sf = float(arg)
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/gl/")
 
 bus = Bus()
 gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,

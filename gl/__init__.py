@@ -1,1 +1,0 @@
-all = ['foos_gui']
