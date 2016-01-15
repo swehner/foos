@@ -16,10 +16,11 @@ from . import monkeypatch
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 
 monkeypatch.patch()
+media_path = ""
 
 
 def img(filename):
-    return os.path.dirname(__file__) + "/" + filename
+    return media_path + "/" + filename
 
 
 class GuiState():
@@ -139,7 +140,7 @@ class Gui():
         return map(ord, set(sorted(l)))
 
     def __get_bg_textures(self):
-        bgs = glob.glob(os.path.dirname(__file__) + "/bg/*.jpg")
+        bgs = glob.glob(img("/bg/*.jpg"))
         random.shuffle(bgs)
         bgs = bgs[0:self.bg_amount]
 

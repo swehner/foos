@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
-from ui.ui import Gui
 import sys
 import getopt
+import os
 from subprocess import check_output, call
 
+from foos.ui import ui
 from foos.iohandler.io_serial import IOSerial
 from foos.iohandler.io_debug import IODebug
 from foos.iohandler.io_keyboard import IOKeyboard
@@ -48,14 +49,18 @@ for opt, arg in opts:
     if opt == '-s':
         sf = float(arg)
 
+root = os.path.abspath(os.path.dirname(__file__))
+sounds_dir = root + "/sounds"
+ui.media_path = root + "/img"
+
 bus = Bus()
-gui = Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
-          bg_change_interval=config.bg_change_secs,
-          bg_amount=config.bg_amount)
+gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
+             bg_change_interval=config.bg_change_secs,
+             bg_amount=config.bg_amount)
 bus.subscribe(replay_handler, thread=True)
 
 hipbot.HipBot(bus)
-soundcontroller.SoundController(bus)
+soundcontroller.SoundController(bus, sounds_dir)
 scoreboard.ScoreBoard(bus)
 uploader.Uploader(bus)
 ledcontroller.LedController(bus)

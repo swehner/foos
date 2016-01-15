@@ -15,10 +15,11 @@ class SoundController:
     }
     generic_goal_sounds = ['crowd1', 'crowd2']
 
-    def __init__(self, bus):
+    def __init__(self, bus, sounds_dir):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
         self.rand = random.Random()
+        self.sounds_dir = sounds_dir
 
     def process_event(self, ev):
         sounds = []
@@ -35,13 +36,13 @@ class SoundController:
         else:
             return
 
-        sounds = ["sounds/{}.wav".format(sound) for sound in sounds]
+        sounds = [self.sounds_dir + "/{}.wav".format(sound) for sound in sounds]
 
         # if more than one sound, mix
         if len(sounds) > 1:
             sounds.insert(0, '-m')
 
-        subprocess.call(['play', '-V0', '-G', '-q'] + sounds)
+        subprocess.call(['echo', 'play', '-V0', '-G', '-q'] + sounds)
 
 
 if __name__ == "__main__":
