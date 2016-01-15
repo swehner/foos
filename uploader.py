@@ -134,8 +134,8 @@ class Uploader:
             return
 
         try:
-            subprocess.call(["./prepare-upload.sh"])
-            video_id = initialize_upload(title)
+            filename = subprocess.check_output(["video/prepare-upload.sh"])
+            video_id = initialize_upload(title, filename)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
             self.bus.notify(Event('upload_ok', url))
             return

@@ -22,18 +22,18 @@ import standby
 
 
 def replay_handler(ev):
-    regenerate = True
-    manual = False
+    replay_type = 'short'
     if ev.name == 'score_goal':
         pass
     elif ev.name == 'replay_request':
-        manual = True
+        replay_type = 'long'
     else:
         return
 
     if config.replay_enabled:
+        call(["video/generate-replay.sh"])
         bus.notify(Event('replay_start'))
-        call(["./replay.sh", "manual" if manual else "auto", "true" if regenerate else "false"])
+        call(["video/replay-last.sh", replay_type])
         bus.notify(Event('replay_end'))
 
 

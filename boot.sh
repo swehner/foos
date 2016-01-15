@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd /root/foos
-./run-camera.sh &
+cd $(dirname $0)
+video/run-camera.sh &
 ./main.sh &

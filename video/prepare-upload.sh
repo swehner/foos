@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-filename=`date +%Y%m%d_%H%M%S`.mp4
+. $(dirname $0)/config.sh
 
-ffmpeg -loglevel quiet -i /tmp/replay/replay_long.h264 -codec:v copy -f mp4 -y /tmp/replay/replay_long.mp4
+out_file=${long_replay_file%.h264}.mp4
+ffmpeg -loglevel quiet -i $long_replay_file -codec:v copy -f mp4 -y $outfile
+echo $out_file
 
