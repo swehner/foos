@@ -6,8 +6,6 @@ from .arduino import getEventForButton
 
 
 class IOSerial(IOBase):
-
-    ser = None
     bitmap = {
         "YD": 0b00001,
         "YI": 0b00010,
@@ -15,6 +13,10 @@ class IOSerial(IOBase):
         "BI": 0b01000,
         "OK": 0b10000
     }
+
+    def __init__(self, bus):
+        self.ser = None
+        super().__init__(bus)
 
     def __getArduinoValueFor(self, leds):
         value = sum(map(lambda x: IOSerial.bitmap.get(x, 0), leds))
@@ -28,12 +30,17 @@ class IOSerial(IOBase):
             if not self.ser:
                 self.open_serial()
             try:
-                line = self.ser.readline().strip().decode('ascii')
-                ev = getEventForButton(line)
-                if ev:
-                    self.bus.notify(ev)
+                line = self.ser.readline()
+                try:
+                    line = line.decode('ascii').strip()
+                    ev = getEventForButton(line)
+                    if ev:
+                        self.bus.notify(ev)
+                except Exception as e:
+                    print(e)
 
-            except serial.SerialException:
+            except serial.SerialException as e:
+                print(e)
                 self.open_serial()
 
     def writer_thread(self):
@@ -48,11 +55,22 @@ class IOSerial(IOBase):
             self.ser.write(line)
 
     def open_serial(self):
-        while True:
+        if self.ser:
+            self.ser.close()
+            self.ser = None
+
+        while not self.ser:
             tty_list = glob.glob("/dev/ttyUSB[0-9]")
+            tty_list.extend(glob.glob("/dev/ttyACM[0-9]"))
             if not len(tty_list):
                 print("No ttyUSB device available")
                 time.sleep(1)
             else:
-                self.ser = serial.Serial(tty_list[0], 115200)
-                return
+                try:
+                    print("Opening", tty_list[0])
+                    # seems like it's necessary to change the baudrate for it to be set correctly
+                    self.ser = serial.Serial(tty_list[0], 9600, timeout=10)
+                    self.ser.baudrate = 115200
+                except Exception as e:
+                    print(e)
+                    time.sleep(1)
