@@ -86,7 +86,8 @@ class KeysFeedback:
                       "will_replay": (replay, 0.5),
                       "error": (load_icon("icons/error.png"), 1),
                       "ok": (load_icon("icons/ok.png"), 1),
-                      "uploading": (upload, 1)}
+                      "uploading": (upload, 1),
+                      "unplugged": (load_icon("icons/unplugged.png"), 1)}
         self.icon = Disappear(icon)
 
     def draw(self):
@@ -225,6 +226,8 @@ class Gui():
             self.feedback.setIcon("ok")
         if ev.name == "upload_error":
             self.feedback.setIcon("error")
+        if ev.name == "serial_disconnected":
+            self.feedback.setIcon("unplugged")
         if ev.name == "button_event" and ev.data['btn'] == 'ok':
             self.feedback.setIcon("will_replay")
         if ev.name == "button_event" and ev.data['btn'] != 'goal':

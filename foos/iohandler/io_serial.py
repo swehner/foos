@@ -3,7 +3,7 @@ import serial
 import glob
 from .io_base import IOBase
 from .arduino import getEventForButton
-
+from .. bus import Event
 
 class IOSerial(IOBase):
     bitmap = {
@@ -64,13 +64,16 @@ class IOSerial(IOBase):
             tty_list.extend(glob.glob("/dev/ttyACM[0-9]"))
             if not len(tty_list):
                 print("No ttyUSB device available")
-                time.sleep(1)
             else:
                 try:
                     print("Opening", tty_list[0])
                     # seems like it's necessary to change the baudrate for it to be set correctly
                     self.ser = serial.Serial(tty_list[0], 9600, timeout=10)
                     self.ser.baudrate = 115200
+                    self.bus.notify(Event("serial_connected"))
+                    return
                 except Exception as e:
                     print(e)
-                    time.sleep(1)
+
+            self.bus.notify(Event("serial_disconnected"))
+            time.sleep(1)
