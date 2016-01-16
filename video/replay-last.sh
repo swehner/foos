@@ -7,6 +7,10 @@ fi
 
 . $(dirname $0)/config.sh
 
+if [ -e "$(dirname $0)/debug" ]; then
+  sleep 2
+fi
+
 replay_file=$short_replay_file
 if [ "$1" = "long" ]; then
 	replay_file=$long_replay_file
