@@ -20,7 +20,18 @@ media_path = ""
 
 
 def img(filename):
-    return media_path + "/" + filename
+    if os.path.isabs(filename):
+        return filename
+    else:
+        return media_path + "/" + filename
+
+
+def load_texture(filename):
+    return pi3d.Texture(img(filename), defer=False)
+
+
+def load_icon(filename):
+    return pi3d.Texture(img(filename), defer=False)
 
 
 class GuiState():
@@ -36,7 +47,7 @@ class Counter(Delegate):
     def __init__(self, value, shader, color, **kwargs):
         if Counter.textures is None:
             print("Loading numbers")
-            Counter.textures = [pi3d.Texture(img("numbers/%d.png") % (i))
+            Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
         self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=4, rx=90)
@@ -69,12 +80,12 @@ class KeysFeedback:
     def __init__(self, shader):
         icon = pi3d.Sprite(w=256, h=256, z=5, y=-400)
         icon.set_shader(shader)
-        upload = pi3d.Texture(img("icons/upload.png"))
-        replay = pi3d.Texture(img("icons/replay.png"))
+        upload = load_icon("icons/upload.png")
+        replay = load_icon("icons/replay.png")
         self.icons = {"will_upload": (upload, 0.5),
                       "will_replay": (replay, 0.5),
-                      "error": (pi3d.Texture(img("icons/error.png")), 1),
-                      "ok": (pi3d.Texture(img("icons/ok.png")), 1),
+                      "error": (load_icon("icons/error.png"), 1),
+                      "ok": (load_icon("icons/ok.png"), 1),
                       "uploading": (upload, 1)}
         self.icon = Disappear(icon)
 
@@ -140,12 +151,12 @@ class Gui():
         return map(ord, set(sorted(l)))
 
     def __get_bg_textures(self):
-        bgs = glob.glob(img("/bg/*.jpg"))
+        bgs = glob.glob(img("bg/*.jpg"))
         random.shuffle(bgs)
         bgs = bgs[0:self.bg_amount]
 
         print("Loading %d bgs" % len(bgs), bgs)
-        return [pi3d.Texture(f) for f in bgs]
+        return [load_texture(f) for f in bgs]
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
@@ -156,11 +167,11 @@ class Gui():
 
         print("Loading other images")
         logo_d = (80, 80)
-        self.logo = pi3d.ImageSprite(img("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
+        self.logo = pi3d.ImageSprite(load_icon("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=5)
 
         in_d = (512 * 0.75, 185 * 0.75)
-        self.instructions = pi3d.ImageSprite(img("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
+        self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
         self.instructions = Disappear(self.instructions, duration=5)
 
