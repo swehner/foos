@@ -40,31 +40,35 @@ class Wiggle(Delegate):
 
 
 class Disappear(Delegate):
-    def __init__(self, shape, duration=2, fade=0.5):
+    def __init__(self, shape, duration=2, fade=0.5, alpha=1):
         super().__init__(shape)
         self.shape = shape
         self.duration = duration
-        self.ts_requested = 0
         self.fade = fade
-        self.max_alpha = 1
+        self.default_alpha = alpha
+        self.ts_off = 0
+        self.ts_fade = 0
 
     def draw(self):
         now = time.time()
-        diff = now - self.ts_requested
-        fading = self.duration - diff
-        if diff <= self.duration:
-            if fading <= self.fade:
-                self.shape.set_alpha(self.max_alpha * fading / self.fade)
+        if now <= self.ts_off:
+            ttime = self.ts_off - self.ts_fade
+            diff = now - self.ts_fade
+            if diff > 0:
+                self.shape.set_alpha(self.alpha * (1 - diff / ttime))
             else:
-                self.shape.set_alpha(self.max_alpha)
+                self.shape.set_alpha(self.alpha)
 
             self.shape.draw()
 
-    def show(self):
-        self.ts_requested = time.time()
+    def show(self, duration=None, fade=None, alpha=None):
+        now = time.time()
+        self.ts_off = now + (duration if duration else self.duration)
+        self.ts_fade = self.ts_off - (fade if fade else self.fade)
+        self.alpha = alpha if alpha else self.default_alpha
 
     def hide(self):
-        self.ts_requested = 0
+        self.ts_off = 0
 
 
 class Move(Delegate):

@@ -82,22 +82,24 @@ class KeysFeedback:
         icon.set_shader(shader)
         upload = load_icon("icons/upload.png")
         replay = load_icon("icons/replay.png")
-        self.icons = {"will_upload": (upload, 0.5),
-                      "will_replay": (replay, 0.5),
-                      "error": (load_icon("icons/error.png"), 1),
-                      "ok": (load_icon("icons/ok.png"), 1),
-                      "uploading": (upload, 1),
-                      "unplugged": (load_icon("icons/unplugged.png"), 1)}
-        self.icon = Disappear(icon)
+        self.icons = {"will_upload": (upload, {'alpha': 0.5}),
+                      "will_replay": (replay, {'alpha': 0.5}),
+                      "error": (load_icon("icons/error.png"), {'duration': 2}),
+                      "ok": (load_icon("icons/ok.png"), {'duration': 1}),
+                      "uploading": (upload, {'duration': 2}),
+                      "unplugged": (load_icon("icons/unplugged.png"), {'duration': 1})}
+        self.icon = Disappear(icon, duration=1, fade=0.5, alpha=1)
 
     def draw(self):
         self.icon.draw()
 
     def setIcon(self, i):
-        texture, alpha = self.icons[i]
-        self.icon.set_textures([texture])
-        self.icon.max_alpha = alpha
-        self.icon.show()
+        if i:
+            texture, params = self.icons[i]
+            self.icon.set_textures([texture])
+            self.icon.show(**params)
+        else:
+            self.icon.hide()
 
 
 class Gui():
@@ -214,6 +216,7 @@ class Gui():
             self.set_state(GuiState(ev.data['yellow'], ev.data['black'], ev.data['last_goal']))
         if ev.name == "replay_start":
             self.overlay_mode = True
+            self.feedback.setIcon(None)
             self.__move_sprites()
         if ev.name == "replay_end":
             self.overlay_mode = False
