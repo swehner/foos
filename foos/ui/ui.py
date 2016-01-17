@@ -12,10 +12,8 @@ import traceback
 import math
 import numpy
 import glob
-from . import monkeypatch
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 
-monkeypatch.patch()
 media_path = ""
 
 
@@ -26,12 +24,16 @@ def img(filename):
         return media_path + "/" + filename
 
 
-def load_texture(filename):
-    return pi3d.Texture(img(filename), defer=False)
+def load_texture(filename, mode):
+    return pi3d.Texture(img(filename), defer=False, free_after_load=True, i_format=mode)
+
+
+def load_bg(filename):
+    return load_texture(filename, pi3d.constants.GL_RGB)
 
 
 def load_icon(filename):
-    return pi3d.Texture(img(filename), defer=False)
+    return load_texture(filename, pi3d.constants.GL_RGBA4)
 
 
 class GuiState():
@@ -112,8 +114,6 @@ class Gui():
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
         self.__init_display(scaling_factor, fps)
-        if self.is_x11():
-            monkeypatch.fixX11KeyEvents(self.DISPLAY)
 
         self.__setup_sprites()
 
@@ -121,12 +121,12 @@ class Gui():
         bgcolor = (0.0, 0.0, 0.0, 0.2)
         if sf == 0:
             #adapt to screen size
-            self.DISPLAY = pi3d.Display.create(background=bgcolor)
+            self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
             sf = 1920 / self.DISPLAY.width
         else:
             print("Forcing size")
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(1920 / sf), h=int(1080 / sf),
-                                               background=bgcolor)
+                                               background=bgcolor, layer=1)
 
         self.DISPLAY.frames_per_second = fps
         print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
@@ -159,7 +159,7 @@ class Gui():
         bgs = bgs[0:self.bg_amount]
 
         print("Loading %d bgs" % len(bgs), bgs)
-        return [load_texture(f) for f in bgs]
+        return [load_bg(f) for f in bgs]
 
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
