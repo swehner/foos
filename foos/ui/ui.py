@@ -29,11 +29,11 @@ def load_texture(filename, mode):
 
 
 def load_bg(filename):
-    return load_texture(filename, pi3d.constants.GL_RGB)
+    return load_texture(filename, None)
 
 
 def load_icon(filename):
-    return load_texture(filename, pi3d.constants.GL_RGBA4)
+    return load_texture(filename, None)
 
 
 class GuiState():
