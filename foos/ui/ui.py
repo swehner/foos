@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import pi3d
+from pi3d.constants import GL_LINEAR, GL_NEAREST, GL_LUMINANCE_ALPHA, GL_ALPHA
 import os
 import datetime
 import random
@@ -27,16 +28,16 @@ def img(filename):
         return media_path + "/" + filename
 
 
-def load_texture(filename, mode):
-    return pi3d.Texture(img(filename), defer=False, free_after_load=True, i_format=mode)
+def load_texture(filename, i_format=None, mipmap=False):
+    return pi3d.Texture(img(filename), defer=False, free_after_load=True, i_format=i_format, mipmap=mipmap, filter=GL_LINEAR)
 
 
 def load_bg(filename):
-    return load_texture(filename, None)
+    return load_texture(filename)
 
 
 def load_icon(filename):
-    return load_texture(filename, None)
+    return load_texture(filename, i_format=GL_LUMINANCE_ALPHA)
 
 
 class GuiState():
