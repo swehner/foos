@@ -13,6 +13,7 @@ import math
 import numpy
 import glob
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
+from .menu import Menu, MenuTree, choose_divisions
 
 media_path = ""
 
@@ -192,6 +193,11 @@ class Gui():
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=5))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=5))
 
+        menufont = pi3d.Font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50, image_size=1024)
+        arrow = load_icon("icons/arrow.png")
+        menu = Menu(menufont, arrow, wchar=60, n=12, z=0)
+        self.menu = MenuTree(choose_divisions, menu)
+
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
             "YI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
@@ -235,6 +241,12 @@ class Gui():
             self.feedback.setIcon("will_replay")
         if ev.name == "button_event" and ev.data['btn'] != 'goal':
             self.instructions.show()
+        if ev.name == "button_event" and ev.data['btn'].endswith('_minus') and ev.data['state'] == 'down':
+            self.menu.down()
+        if ev.name == "button_event" and ev.data['btn'].endswith('_plus') and ev.data['state'] == 'down':
+            self.menu.up()
+        if ev.name == "button_event" and ev.data['btn'] == 'ok' and ev.data['state'] == 'down':
+            self.menu.select()
 
     def run(self):
         try:
@@ -251,6 +263,8 @@ class Gui():
                 self.logo.draw()
                 self.yCounter.draw()
                 self.bCounter.draw()
+                if not self.overlay_mode:
+                    self.menu.draw()
 
                 if self.show_leds:
                     self.__draw_leds()
