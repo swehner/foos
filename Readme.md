@@ -42,6 +42,13 @@ Using X11 you can change the window size changing the scaling factor (-s 3 runs 
 python3 foos.py -s 3
 ```
 
+Keys:
+ * Increment goal counter: `q, e`
+ * Decrement goal counter: `z, c`
+ * Ok: `s`
+ * Simulate goal: `a, d`
+ * Exit: `.`
+
 ## Acknowledgments
 
 Big thanks to [.Tuenti](http://www.tuenti.com) (the company we work at) where this project started as a HackMeUp.
