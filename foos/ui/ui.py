@@ -14,6 +14,7 @@ import numpy
 import glob
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 from .menu import Menu, MenuTree, choose_divisions
+from .. bus import Event
 
 media_path = ""
 
@@ -114,6 +115,7 @@ class Gui():
         self.bg_change_interval = bg_change_interval
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
+        self.draw_menu = False
         self.__init_display(scaling_factor, fps)
 
         self.__setup_sprites()
@@ -229,6 +231,8 @@ class Gui():
             self.__move_sprites()
         if ev.name == "button_will_upload":
             self.feedback.setIcon("will_upload")
+        if ev.name == "button_will_replay":
+            self.feedback.setIcon("will_replay")
         if ev.name == "upload_start":
             self.feedback.setIcon("uploading")
         if ev.name == "upload_ok":
@@ -237,16 +241,20 @@ class Gui():
             self.feedback.setIcon("error")
         if ev.name == "serial_disconnected":
             self.feedback.setIcon("unplugged")
-        if ev.name == "button_event" and ev.data['btn'] == 'ok':
-            self.feedback.setIcon("will_replay")
         if ev.name == "button_event" and ev.data['btn'] != 'goal':
             self.instructions.show()
-        if ev.name == "button_event" and ev.data['btn'].endswith('_minus') and ev.data['state'] == 'down':
+        if ev.name == "menu_down":
             self.menu.down()
-        if ev.name == "button_event" and ev.data['btn'].endswith('_plus') and ev.data['state'] == 'down':
+        if ev.name == "menu_up":
             self.menu.up()
-        if ev.name == "button_event" and ev.data['btn'] == 'ok' and ev.data['state'] == 'down':
+        if ev.name == "menu_select":
             self.menu.select()
+        if ev.name == "menu_show":
+            self.draw_menu = True
+            self.bus.notify(Event("menu_visible", {}))
+        if ev.name == "menu_hide":
+            self.draw_menu = False
+            self.bus.notify(Event("menu_hidden", {}))
 
     def run(self):
         try:
@@ -263,7 +271,7 @@ class Gui():
                 self.logo.draw()
                 self.yCounter.draw()
                 self.bCounter.draw()
-                if not self.overlay_mode:
+                if not self.overlay_mode and self.draw_menu:
                     self.menu.draw()
 
                 if self.show_leds:

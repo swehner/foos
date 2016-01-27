@@ -38,7 +38,6 @@ class Standby:
 
     def process_event(self, ev):
         if ev.name in self.activation_events:
-            print("Updating time %s" % ev.name)
             self.last_active = time.time()
             if not self.active:
                 self.turn_on()

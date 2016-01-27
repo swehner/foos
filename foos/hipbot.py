@@ -14,7 +14,10 @@ class HipBot(object):
     def send_message(self, msg, color='yellow', notify=False):
         print("Sending Hipchat message:", msg)
         if config.hipchat_enabled:
-            self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
+            try:
+                self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
+            except Exception as e:
+                print("Hipbot error", e)
 
     def process_event(self, ev):
         if ev.name == 'score_goal':
