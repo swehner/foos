@@ -24,7 +24,7 @@ class Menu:
         flat_mat = pi3d.Shader("mat_flat")
         self.select = pi3d.shape.Sprite.Sprite(w=self.width, h=self.lheight,
                                                y=py + self.lheight / 2, z=z + 1)
-        self.select.set_material((0.2, 0.2, 0))
+        self.select.set_material((0.8, 0.56, 0))
         self.select.set_shader(flat_mat)
 
         self.bg = pi3d.shape.Sprite.Sprite(w=self.width, h=self.lheight * n,
@@ -38,7 +38,7 @@ class Menu:
         self.bg_t.set_material((0, 0, 0))
 
         self.title_shape = pi3d.String(font=font, string=" " * wchar,
-                                 is_3d=False, x=-arrow_size, y=py + self.lheight / 2, z=z)
+                                       is_3d=False, x=-arrow_size, y=py + self.lheight / 2, z=z)
 
         self.title_shape.set_shader(flat_uv)
 
@@ -60,6 +60,12 @@ class Menu:
             idx = self.offset + i
             t, id = self.options[idx] if idx < len(self.options) else ("", 0)
             t = t.ljust(self.wchar)
+            # changed selected element text color to black
+            # texrgb += materialrgb - (0.5,)*3 - see std_main_uv.inc
+            if i == self.selectpos:
+                s.set_material((-1.5,) * 3)
+            else:
+                s.set_material((0.5,) * 3)
             s.quick_change(t)
 
         self.select.positionY(self.starty - self.lheight * (self.selectpos + 0.5))
