@@ -67,7 +67,8 @@ ledcontroller.LedController(bus)
 standby.Standby(bus, config.standby_timeout_secs)
 
 # IO
-buttons = buttoncontroller.Buttons(bus)
+buttoncontroller.GameButtons(bus, long_press_delay=0.6)
+buttoncontroller.MenuButtons(bus, long_press_delay=0.3, enabled=False)
 if config.serial_enabled:
     serial = IOSerial(bus)
 IODebug(bus)
