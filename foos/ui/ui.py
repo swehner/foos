@@ -13,7 +13,7 @@ import math
 import numpy
 import glob
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
-from .menu import Menu, MenuTree, choose_divisions
+from .menu import Menu, MenuTree
 from .. bus import Event
 
 media_path = ""
@@ -118,8 +118,23 @@ class Gui():
         self.draw_menu = False
         self.winner_s = None
         self.__init_display(scaling_factor, fps)
-
+        self.__setup_menu()
         self.__setup_sprites()
+
+    def __setup_menu(self):
+        def q(ev):
+            def f():
+                if (ev):
+                    self.bus.notify(ev)
+                self.bus.notify(Event("menu_hide"))
+            return f
+
+        game_mode_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
+                          ("3 points", q(Event("set_game_mode", {"mode": 3}))),
+                          ("5 points", q(Event("set_game_mode", {"mode": 5}))),
+                          ("« Back", None)]
+        self.main_menu = [("Game mode", game_mode_menu),
+                          ("« Back", q(None))]
 
     def __init_display(self, sf, fps):
         bgcolor = (0.0, 0.0, 0.0, 0.2)
@@ -200,7 +215,7 @@ class Gui():
         menufont = pi3d.Font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50, image_size=1024)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=0)
-        self.menu = MenuTree(choose_divisions, menu)
+        self.menu = MenuTree(self.main_menu, menu)
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
@@ -253,6 +268,7 @@ class Gui():
             self.menu.select()
         if ev.name == "menu_show":
             self.draw_menu = True
+            self.menu.reset()
             self.bus.notify(Event("menu_visible", {}))
         if ev.name == "menu_hide":
             self.draw_menu = False
@@ -260,6 +276,7 @@ class Gui():
         if ev.name == "win_game":
             self.winner.show()
             self.winner_s = self.__get_winner_string(ev.data)
+            print("WIN", self.winner_s)
 
     def __get_winner_string(self, evdata):
         s = " Black wins %d - %d" if evdata.get('team', None) == 'black' else "Yellow wins %d - %d"

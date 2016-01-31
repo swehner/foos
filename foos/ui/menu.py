@@ -131,8 +131,11 @@ class MenuTree(Delegate):
         super().__init__(menu)
         self.tree = tree
         self.menu = menu
-        self.breadcrumb = []
         self.rootTitle = rootTitle
+        self.reset()
+
+    def reset(self):
+        self.breadcrumb = []
         self.menu.setOptions(self.tree)
         self.setTitle()
 
@@ -161,47 +164,9 @@ class MenuTree(Delegate):
             self.menu.setOptions(elem)
         else:
             print("Chose", idx, elem)
-            if elem == 0:
+            if elem is None:
                 self.goBack()
+            if callable(elem):
+                elem()
 
         self.setTitle()
-
-
-options1 = [("Sergio A., Iván I., Luisja, J. Altava", 11),
-            ("Darío, Alfredo, Ismael, Edu", 12),
-            ("David S, Ángel C., Aarón, D. Pañeda", 13),
-            ("D. Zayas, J. Tamayo, Suso, A. Santos", 14),
-            ("RETURN", 0)]
-
-options2 = [("Jairo, Ricardo S., Paul, J. Padrón", 21),
-            ("Víctor M., May, Nuria, Sara", 22),
-            ("Roberto F., Andrés V., Carmen L., Jorge S.", 23),
-            ("Julio, Oleg, J. Salavert, Pol", 24),
-            ("RETURN", 0)]
-
-options3 = [("Juanjo, Pablo P., Ana Mateo, Nacho F.", 31),
-            ("Wiljan, Stefan, J.A. Guerra, Manu Coll", 32),
-            ("Guillermo M., Pilar, Sonia, Jorge P.", 33),
-            ("Adrián M., J. Moreno, Verónic, Emanuela", 34),
-            ("Carlos B., Pablo S., Jessica, Quique", 35),
-            ("Iván M., María José, Laura A., Alex M.", 36),
-            ("RETURN", 0)]
-
-
-choose_divisions = [("1ª Division", options1),
-                    ("2ª Division", options2),
-                    ("3ª Division", options3),
-                    ("-", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1),
-                    ("mas opciones por aqui", 1)]

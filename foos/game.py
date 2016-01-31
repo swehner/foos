@@ -26,8 +26,9 @@ class Game:
             self.check_win_time = None
         if ev.name == "replay_end":
             self.check_win_time = now + self.check_delay
-        if ev.name == "win_game":
-            print("WIN", ev.data)
+        if ev.name == "set_game_mode":
+            self.game_win_score = ev.data["mode"]
+            print("Setting game mode", self.game_win_score)
 
     def check_win(self):
         if self.game_win_score:
