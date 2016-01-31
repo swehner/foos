@@ -14,7 +14,7 @@ from foos.bus import Bus, Event
 
 from foos import hipbot
 from foos import uploader
-from foos import scoreboard, ledcontroller, soundcontroller, buttoncontroller, standby
+from foos import scoreboard, ledcontroller, soundcontroller, buttoncontroller, standby, game
 
 
 def replay_handler(ev):
@@ -65,6 +65,7 @@ scoreboard.ScoreBoard(bus)
 uploader.Uploader(bus)
 ledcontroller.LedController(bus)
 standby.Standby(bus, config.standby_timeout_secs)
+game.Game(bus)
 
 # IO
 buttoncontroller.GameButtons(bus, long_press_delay=0.6)

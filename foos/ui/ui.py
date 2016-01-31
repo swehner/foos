@@ -116,6 +116,7 @@ class Gui():
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
         self.draw_menu = False
+        self.winner_s = None
         self.__init_display(scaling_factor, fps)
 
         self.__setup_sprites()
@@ -184,6 +185,12 @@ class Gui():
         self.goal_time.scale(2, 2, 1)
         self.goal_time.set_shader(flat)
 
+        self.winner = Disappear(pi3d.String(font=font, string=self.__get_winner_string({}),
+                                            is_3d=False, y=-380, z=4), duration=3)
+        # scale text, because bigger font size creates weird artifacts
+        self.winner.scale(2, 2, 1)
+        self.winner.set_shader(flat)
+
         self.feedback = KeysFeedback(flat)
 
         s = 512
@@ -250,6 +257,13 @@ class Gui():
         if ev.name == "menu_hide":
             self.draw_menu = False
             self.bus.notify(Event("menu_hidden", {}))
+        if ev.name == "win_game":
+            self.winner.show()
+            self.winner_s = self.__get_winner_string(ev.data)
+
+    def __get_winner_string(self, evdata):
+        s = " Black wins %d - %d" if evdata.get('team', None) == 'black' else "Yellow wins %d - %d"
+        return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
     def run(self):
         try:
@@ -266,8 +280,14 @@ class Gui():
                 self.logo.draw()
                 self.yCounter.draw()
                 self.bCounter.draw()
-                if not self.overlay_mode and self.draw_menu:
-                    self.menu.draw()
+                if not self.overlay_mode:
+                    self.winner.draw()
+                    if self.winner_s:
+                        self.winner.quick_change(self.winner_s)
+                        self.winner_s = None
+
+                    if self.draw_menu:
+                        self.menu.draw()
 
                 if self.show_leds:
                     self.__draw_leds()
