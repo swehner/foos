@@ -117,6 +117,7 @@ class Gui():
         self.show_leds = show_leds
         self.draw_menu = False
         self.winner_s = None
+        self.mode = None
         self.__init_display(scaling_factor, fps)
         self.__setup_menu()
         self.__setup_sprites()
@@ -206,6 +207,12 @@ class Gui():
         self.winner.scale(2, 2, 1)
         self.winner.set_shader(flat)
 
+        self.mode_ind = pi3d.String(font=font, string=self.__get_mode_string(None),
+                                    is_3d=False, x=880, y=480, z=4)
+        # scale text, because bigger font size creates weird artifacts
+        self.mode_ind.scale(2, 2, 1)
+        self.mode_ind.set_shader(flat)
+
         self.feedback = KeysFeedback(flat)
 
         s = 512
@@ -277,10 +284,18 @@ class Gui():
             self.winner.show()
             self.winner_s = self.__get_winner_string(ev.data)
             print("WIN", self.winner_s)
+        if ev.name == "set_game_mode":
+            self.mode = self.__get_mode_string(ev.data["mode"])
 
     def __get_winner_string(self, evdata):
         s = " Black wins %d - %d" if evdata.get('team', None) == 'black' else "Yellow wins %d - %d"
         return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
+
+    def __get_mode_string(self, mode):
+        if mode is None:
+            return "  "
+        else:
+            return "%dp" % mode
 
     def run(self):
         try:
@@ -302,6 +317,11 @@ class Gui():
                     if self.winner_s:
                         self.winner.quick_change(self.winner_s)
                         self.winner_s = None
+
+                    self.mode_ind.draw()
+                    if self.mode:
+                        self.mode_ind.quick_change(self.mode)
+                        self.mode = None
 
                     if self.draw_menu:
                         self.menu.draw()
