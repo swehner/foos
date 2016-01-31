@@ -54,7 +54,7 @@ class Counter(Delegate):
             Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
-        self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=4, rx=90)
+        self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
         self.disk.set_material(color)
         self.number = Wiggle(pi3d.ImageSprite(Counter.textures[value], shader, **kwargs),
                              5, 10, 0.8)
@@ -151,11 +151,6 @@ class Gui():
             self.yCounter.moveTo((-380, 0, 5), scale)
             self.bCounter.moveTo((380, 0, 5), scale)
 
-    def __cp_lg(self):
-        """Generate codepoint list for last goal display"""
-        l = "Last Goal:.-O123456789"
-        return map(ord, set(sorted(l)))
-
     def __get_bg_textures(self):
         bgs = glob.glob(img("bg/*.jpg"))
         random.shuffle(bgs)
@@ -182,7 +177,7 @@ class Gui():
         self.instructions = Disappear(self.instructions, duration=5)
 
         print("Loading font")
-        font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, codepoints=self.__cp_lg(), image_size=1024)
+        font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, image_size=1024)
         self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts
