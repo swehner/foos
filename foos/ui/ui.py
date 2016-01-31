@@ -106,6 +106,26 @@ class KeysFeedback:
             self.icon.hide()
 
 
+class ChangingText(Delegate):
+    def __init__(self, shader, **kwargs):
+        self.s = pi3d.String(**kwargs)
+        self.s.set_shader(shader)
+        self.newtext = None
+        self.first = True
+        super().__init__(self.s)
+
+    def quick_change(self, s):
+        self.newtext = s
+
+    def draw(self):
+        if self.newtext and not self.first:
+            self.s.quick_change(self.newtext)
+            self.newtext = None
+
+        self.first = False
+        self.s.draw()
+
+
 class Gui():
     def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
         self.state = GuiState()
@@ -116,8 +136,6 @@ class Gui():
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
         self.draw_menu = False
-        self.winner_s = None
-        self.mode = None
         self.__init_display(scaling_factor, fps)
         self.__setup_menu()
         self.__setup_sprites()
@@ -195,23 +213,20 @@ class Gui():
 
         print("Loading font")
         font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, image_size=1024)
-        self.goal_time = pi3d.String(font=font, string=self.__get_time_since_last_goal(),
-                                     is_3d=False, y=380, z=5)
+        self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
+                                      is_3d=False, y=380, z=5)
         # scale text, because bigger font size creates weird artifacts
         self.goal_time.scale(2, 2, 1)
-        self.goal_time.set_shader(flat)
 
-        self.winner = Disappear(pi3d.String(font=font, string=self.__get_winner_string({}),
-                                            is_3d=False, y=-380, z=4), duration=3)
+        self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
+                                             is_3d=False, y=-380, z=4), duration=3)
         # scale text, because bigger font size creates weird artifacts
         self.winner.scale(2, 2, 1)
-        self.winner.set_shader(flat)
 
-        self.mode_ind = pi3d.String(font=font, string=self.__get_mode_string(None),
-                                    is_3d=False, x=880, y=480, z=4)
+        self.game_mode = ChangingText(flat, font=font, string=self.__get_mode_string(None),
+                                     is_3d=False, x=880, y=480, z=4)
         # scale text, because bigger font size creates weird artifacts
-        self.mode_ind.scale(2, 2, 1)
-        self.mode_ind.set_shader(flat)
+        self.game_mode.scale(2, 2, 1)
 
         self.feedback = KeysFeedback(flat)
 
@@ -282,10 +297,11 @@ class Gui():
             self.bus.notify(Event("menu_hidden", {}))
         if ev.name == "win_game":
             self.winner.show()
-            self.winner_s = self.__get_winner_string(ev.data)
-            print("WIN", self.winner_s)
+            s = self.__get_winner_string(ev.data)
+            self.winner.quick_change(s)
+            print("Win:", s)
         if ev.name == "set_game_mode":
-            self.mode = self.__get_mode_string(ev.data["mode"])
+            self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
 
     def __get_winner_string(self, evdata):
         s = " Black wins %d - %d" if evdata.get('team', None) == 'black' else "Yellow wins %d - %d"
@@ -305,8 +321,8 @@ class Gui():
                     self.bg.draw()
                     self.instructions.draw()
 
-                    self.goal_time.draw()
                     self.goal_time.quick_change(self.__get_time_since_last_goal())
+                    self.goal_time.draw()
                     self.feedback.draw()
 
                 self.logo.draw()
@@ -314,14 +330,7 @@ class Gui():
                 self.bCounter.draw()
                 if not self.overlay_mode:
                     self.winner.draw()
-                    if self.winner_s:
-                        self.winner.quick_change(self.winner_s)
-                        self.winner_s = None
-
-                    self.mode_ind.draw()
-                    if self.mode:
-                        self.mode_ind.quick_change(self.mode)
-                        self.mode = None
+                    self.game_mode.draw()
 
                     if self.draw_menu:
                         self.menu.draw()
