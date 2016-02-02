@@ -234,7 +234,7 @@ class Gui():
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=5))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=5))
 
-        menufont = pi3d.Font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf", (255, 255, 255, 255), font_size=50, image_size=1024)
+        menufont = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=1024)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=0)
         self.menu = MenuTree(self.main_menu, menu)
