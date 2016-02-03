@@ -3,6 +3,7 @@ upload_enabled = False
 replay_enabled = False
 onscreen_leds_enabled = False
 serial_enabled = False
+sound_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
 bg_amount = 3

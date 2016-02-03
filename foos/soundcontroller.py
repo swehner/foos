@@ -4,7 +4,7 @@ import queue
 import threading
 import subprocess
 import random
-
+import config
 
 class SoundController:
     # This map scores => sounds
@@ -28,8 +28,8 @@ class SoundController:
             score = tuple(sorted(score))
             if score in self.sounds:
                 sounds.append(self.sounds[score])
-
-            sounds.append(self.rand.choice(self.generic_goal_sounds))
+            else:
+                sounds.append(self.rand.choice(self.generic_goal_sounds))
 
         elif ev.name == 'score_reset':
             sounds = ['whistle_2short1long']
@@ -42,7 +42,8 @@ class SoundController:
         if len(sounds) > 1:
             sounds.insert(0, '-m')
 
-        subprocess.call(['echo', 'play', '-V0', '-G', '-q'] + sounds)
+        if config.sound_enabled:
+            subprocess.call(['play', '-V0', '-G', '-q'] + sounds)
 
 
 if __name__ == "__main__":
