@@ -29,7 +29,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
      inkscape:cx="49.377332"
-     inkscape:cy="1001.9714"
+     inkscape:cy="1022.1745"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -157,25 +157,27 @@
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="-5"
-       y="62.362183"
+       x="-15"
+       y="55.140099"
        id="text3839"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3841"
-         x="-5"
-         y="62.362183"
+         x="-15"
+         y="55.140099"
          style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono">Reset</tspan></text>
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627453;stroke-dasharray:none"
-       d="m 30,77.362183 -10,0 0,-10"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627451;stroke-dasharray:none"
+       d="m 30,77.362183 -10,0 0,-4.696699"
        id="path3843"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627453;stroke-dasharray:none"
-       d="m 30,37.362183 -10,0 0,10 0,0"
+       style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.68627451;stroke-dasharray:none"
+       d="m 30,37.362183 -10,0 0,4.949237"
        id="path3845"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -219,6 +221,46 @@
         <rect
            style="fill:#ffffff;fill-opacity:1;stroke:none"
            id="rect3008"
+           width="10.058103"
+           height="1.7423856"
+           x="193.6411"
+           y="45.140827" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="-3.0304575"
+       y="107.36448"
+       id="text3010"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3012"></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="-5.5145435"
+       y="69.76738"
+       id="text3839-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3841-9"
+         x="-5.5145435"
+         y="69.76738"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono">Menu</tspan></text>
+    <g
+       id="g3778-5"
+       transform="matrix(0.72807014,0,0,0.72807014,-155.83485,35.801146)">
+      <g
+         id="g3007-0">
+        <path
+           style="fill:#ffffff;stroke:none"
+           d="m 193.56171,38.091787 5.17857,8.571429 5,-8.392857 z"
+           id="path3006-2"
+           inkscape:connector-curvature="0" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3008-4"
            width="10.058103"
            height="1.7423856"
            x="193.6411"
