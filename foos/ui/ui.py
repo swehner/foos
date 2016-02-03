@@ -219,7 +219,7 @@ class Gui():
         self.goal_time.scale(2, 2, 1)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
-                                             is_3d=False, y=-380, z=4), duration=3)
+                                             is_3d=False, y=-380, z=4), duration=10)
         # scale text, because bigger font size creates weird artifacts
         self.winner.scale(2, 2, 1)
 
