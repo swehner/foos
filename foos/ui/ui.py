@@ -149,8 +149,8 @@ class Gui():
             return f
 
         game_mode_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
-                          ("3 points", q(Event("set_game_mode", {"mode": 3}))),
-                          ("5 points", q(Event("set_game_mode", {"mode": 5}))),
+                          ("3 goals", q(Event("set_game_mode", {"mode": 3}))),
+                          ("5 goals", q(Event("set_game_mode", {"mode": 5}))),
                           ("« Back", None)]
         self.main_menu = [("Game mode", game_mode_menu),
                           ("« Back", q(None))]
@@ -304,14 +304,14 @@ class Gui():
             self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
 
     def __get_winner_string(self, evdata):
-        s = " Black wins %d - %d" if evdata.get('team', None) == 'black' else "Yellow wins %d - %d"
+        s = " Black wins %d:%d" if evdata.get('team', None) == 'black' else "Yellow wins %d:%d"
         return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
     def __get_mode_string(self, mode):
         if mode is None:
             return "  "
         else:
-            return "%dp" % mode
+            return "»%d" % mode
 
     def run(self):
         try:
