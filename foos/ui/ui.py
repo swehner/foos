@@ -82,7 +82,7 @@ class Counter(Delegate):
 
 class KeysFeedback:
     def __init__(self, shader):
-        icon = pi3d.Sprite(w=256, h=256, z=5, y=-400)
+        icon = pi3d.Sprite(w=256, h=256, z=50, y=-400)
         icon.set_shader(shader)
         upload = load_icon("icons/upload.png")
         replay = load_icon("icons/replay.png")
@@ -175,16 +175,17 @@ class Gui():
         if now is None:
             now = time.time()
 
+        posz = 50
         if self.overlay_mode:
             posx = 800
             posy = 450
             scale = (0.2, 0.2, 1.0)
-            self.yCounter.moveTo((posx - 65, posy, 5), scale)
-            self.bCounter.moveTo((posx + 65, posy, 5), scale)
+            self.yCounter.moveTo((posx - 65, posy, posz), scale)
+            self.bCounter.moveTo((posx + 65, posy, posz), scale)
         else:
             scale = (1, 1, 1)
-            self.yCounter.moveTo((-380, 0, 5), scale)
-            self.bCounter.moveTo((380, 0, 5), scale)
+            self.yCounter.moveTo((-380, 0, posz), scale)
+            self.bCounter.moveTo((380, 0, posz), scale)
 
     def __get_bg_textures(self):
         bgs = glob.glob(img("bg/*.jpg"))
@@ -197,46 +198,46 @@ class Gui():
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
-        bg = pi3d.Sprite(w=1920, h=1080, z=10)
+        bg = pi3d.Sprite(w=1920, h=1080, z=100)
         bg.set_shader(flat)
         self.bg = ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval)
 
         print("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
-                                     x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=5)
+                                     x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
 
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
-                                             x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=5)
+                                             x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=50)
         self.instructions = Disappear(self.instructions, duration=5)
 
         print("Loading font")
         font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, image_size=1024)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, y=380, z=5)
+                                      is_3d=False, y=380, z=50)
         # scale text, because bigger font size creates weird artifacts
         self.goal_time.scale(2, 2, 1)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
-                                             is_3d=False, y=-380, z=4), duration=10)
+                                             is_3d=False, y=-380, z=40), duration=10)
         # scale text, because bigger font size creates weird artifacts
         self.winner.scale(2, 2, 1)
 
         self.game_mode = ChangingText(flat, font=font, string=self.__get_mode_string(None),
-                                     is_3d=False, x=880, y=480, z=4)
+                                      is_3d=False, x=880, y=480, z=50)
         # scale text, because bigger font size creates weird artifacts
         self.game_mode.scale(2, 2, 1)
 
         self.feedback = KeysFeedback(flat)
 
         s = 512
-        self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=5))
-        self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=5))
+        self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
+        self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
 
         menufont = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=1024)
         arrow = load_icon("icons/arrow.png")
-        menu = Menu(menufont, arrow, wchar=60, n=12, z=0)
+        menu = Menu(menufont, arrow, wchar=60, n=12, z=10)
         self.menu = MenuTree(self.main_menu, menu)
 
         self.ledShapes = {
