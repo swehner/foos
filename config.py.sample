@@ -1,11 +1,9 @@
-hipchat_enabled = False
-upload_enabled = False
 replay_enabled = False
 onscreen_leds_enabled = False
-serial_enabled = False
-sound_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
 bg_amount = 3
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
+plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hipbot']
+# plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot']

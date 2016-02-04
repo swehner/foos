@@ -3,9 +3,9 @@ import serial
 import glob
 from .io_base import IOBase
 from .arduino import getEventForButton
-from .. bus import Event
+from foos.bus import Event
 
-class IOSerial(IOBase):
+class Plugin(IOBase):
     bitmap = {
         "YD": 0b00001,
         "YI": 0b00010,

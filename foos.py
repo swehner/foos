@@ -3,18 +3,13 @@
 import sys
 import getopt
 import os
+import importlib
 from subprocess import check_output, call
 
 from foos.ui import ui
-from foos.iohandler.io_serial import IOSerial
-from foos.iohandler.io_debug import IODebug
-from foos.iohandler.io_keyboard import IOKeyboard
+import plugins.io_keyboard
 import config
 from foos.bus import Bus, Event
-
-from foos import hipbot
-from foos import uploader
-from foos import scoreboard, ledcontroller, soundcontroller, buttoncontroller, standby, game
 
 
 def replay_handler(ev):
@@ -50,7 +45,6 @@ for opt, arg in opts:
         sf = float(arg)
 
 root = os.path.abspath(os.path.dirname(__file__))
-sounds_dir = root + "/sounds"
 ui.media_path = root + "/img"
 
 bus = Bus()
@@ -59,24 +53,14 @@ gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
              bg_amount=config.bg_amount)
 bus.subscribe(replay_handler, thread=True)
 
-hipbot.HipBot(bus)
-soundcontroller.SoundController(bus, sounds_dir)
-scoreboard.ScoreBoard(bus)
-uploader.Uploader(bus)
-ledcontroller.LedController(bus)
-standby.Standby(bus, config.standby_timeout_secs)
-game.Game(bus)
-
-# IO
-buttoncontroller.GameButtons(bus, long_press_delay=0.6)
-buttoncontroller.MenuButtons(bus, long_press_delay=0.3, enabled=False)
-if config.serial_enabled:
-    serial = IOSerial(bus)
-IODebug(bus)
+for plugin in config.plugins:
+     module = importlib.import_module('plugins.' + plugin)
+     module.Plugin(bus)
+     print("Loaded plugin " + plugin)
 
 if gui.is_x11():
     print("Running Keyboard")
-    IOKeyboard(bus)
+    plugins.io_keyboard.Plugin(bus)
 
 # Run main gui main loop
 print("Run GUI")

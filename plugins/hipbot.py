@@ -3,8 +3,9 @@ import hipchat
 import traceback
 
 
-class HipBot(object):
+class Plugin(object):
     def __init__(self, bus):
+        print("Yay")
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
         self.hc = hipchat.HipChat(token=config.hipchat_token)
@@ -13,11 +14,10 @@ class HipBot(object):
 
     def send_message(self, msg, color='yellow', notify=False):
         print("Sending Hipchat message:", msg)
-        if config.hipchat_enabled:
-            try:
-                self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
-            except Exception as e:
-                print("Hipbot error", e)
+        try:
+            self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
+        except Exception as e:
+            print("Hipbot error", e)
 
     def process_event(self, ev):
         if ev.name == 'score_goal':

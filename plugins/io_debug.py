@@ -4,7 +4,7 @@ from .io_base import IOBase
 from .arduino import getEventForButton
 
 
-class IODebug(IOBase):
+class Plugin(IOBase):
     def convert_data(self, data):
         return ("Leds: %s\n" % ', '.join(data))
 

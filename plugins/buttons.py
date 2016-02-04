@@ -1,7 +1,7 @@
 import time
 import queue
 from threading import Thread
-from .bus import Bus, Event
+from foos.bus import Bus, Event
 
 
 def key(btns, state, duration, ev, ar):
@@ -110,51 +110,3 @@ class Buttons:
                 self.checkState(state)
                 # Delete all button events to avoid double processing (e.g. reset and one other key)
                 self.clearState()
-
-
-class GameButtons(Buttons):
-    def generateKeyMap(self):
-        key_map = {}
-        for d in [up(['black_minus'], ('decrement_score', {'team': 'black'})),
-                  up(['black_plus'], ('increment_score', {'team': 'black'})),
-                  up(['yellow_minus'], ('decrement_score', {'team': 'yellow'})),
-                  up(['yellow_plus'], ('increment_score', {'team': 'yellow'})),
-                  up(['ok'], ('replay_request', {}), long=('upload_request', {})),
-                  down(['ok'], ('button_will_replay', {}), long=('button_will_upload', {})),
-                  up(['black_minus', 'black_plus'], ('reset_score', {}), long=None),
-                  up(['yellow_minus', 'yellow_plus'], ('reset_score', {}), long=None),
-                  down(['black_minus', 'black_plus'], None, long=('menu_show', {})),
-                  down(['yellow_minus', 'yellow_plus'], None, long=('menu_show', {}))]:
-            key_map.update(d)
-        return key_map
-
-    def process_event(self, ev):
-        if ev.name == 'menu_visible':
-            self.setEnabled(False)
-        elif ev.name == 'menu_hidden':
-            self.setEnabled(True)
-        else:
-            super().process_event(ev)
-
-
-class MenuButtons(Buttons):
-    def generateKeyMap(self):
-        key_map = {}
-        for d in [down(['black_minus'], ('menu_down', {}), ar=True),
-                  down(['yellow_minus'], ('menu_down', {}), ar=True),
-                  down(['black_plus'], ('menu_up', {}), ar=True),
-                  down(['yellow_plus'], ('menu_up', {}), ar=True),
-                  down(['ok'], ('menu_select', {})),
-                  down(['black_minus', 'black_plus'], None, long=('menu_hide', {})),
-                  down(['yellow_minus', 'yellow_plus'], None, long=('menu_hide', {}))]:
-            key_map.update(d)
-
-        return key_map
-
-    def process_event(self, ev):
-        if ev.name == 'menu_visible':
-            self.setEnabled(True)
-        elif ev.name == 'menu_hidden':
-            self.setEnabled(False)
-        else:
-            super().process_event(ev)

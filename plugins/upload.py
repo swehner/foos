@@ -15,7 +15,7 @@ from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
 import config
-from .bus import Event
+from foos.bus import Event
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
 # we are handling retry logic ourselves.
@@ -110,7 +110,7 @@ def resumable_upload(insert_request):
             time.sleep(sleep_seconds)
 
 
-class Uploader:
+class Plugin:
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
@@ -129,9 +129,6 @@ class Uploader:
         self.bus.notify(Event('upload_start'))
         title = "{} goal: {} - {}".format(self.last_goal, self.current_score[0], self.current_score[1])
         print("Uploading video:", title)
-
-        if not config.upload_enabled:
-            return
 
         try:
             filename = subprocess.check_output(["video/prepare-upload.sh"]).decode('utf-8').strip()

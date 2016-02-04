@@ -1,9 +1,9 @@
 import time
 from .io_base import IOBase
-from .. bus import Event
+from foos.bus import Event
 
 
-class IOKeyboard(IOBase):
+class Plugin(IOBase):
     key_map = {
         87: 'yellow_minus',  # KP_1
         79: 'yellow_plus',  # KP_7

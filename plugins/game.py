@@ -3,10 +3,10 @@
 from threading import Thread
 import time
 
-from .bus import Bus, Event
+from foos.bus import Bus, Event
 
 
-class Game:
+class Plugin:
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)

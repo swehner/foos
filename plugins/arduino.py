@@ -1,4 +1,4 @@
-from .. bus import Event
+from foos.bus import Event
 
 btnmap = {
     "YD": "yellow_minus",

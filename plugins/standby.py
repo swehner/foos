@@ -1,13 +1,14 @@
 import time
 import threading
 import subprocess
+import config
 
-from .bus import Event, Bus
+from foos.bus import Event, Bus
 
 
-class Standby:
+class Plugin:
     def __init__(self, bus, standby_timeout=500):
-        self.standby_timeout = standby_timeout
+        self.standby_timeout = config.standby_timeout_secs
         self.bus = bus
         self.activation_events = ["button_event"]
         self.last_active = time.time()
