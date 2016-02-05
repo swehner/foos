@@ -26,6 +26,7 @@ You can find more info on how to build its components in the [doc folder](doc/HW
 ## Run it!
 
 To run the UI you'll need to install a few dependencies - you can find a list of the python packages in requirements.txt.
+Other dependencies you'll need on your system (raspbian packages) are: `libav-tools sox cec-utils`
 Copy the sample confiuration and customize it according to your needs:
 ```
 cp config.py.sample config.py
