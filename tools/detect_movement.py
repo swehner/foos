@@ -40,12 +40,12 @@ class MotionDetector:
         arr = np.square(arr)
         mvs = len(arr[arr > self.vector_threshold])
         has_movement = (mvs > self.min_vectors)
-        print('M' if has_movement else '.', end='')
+        print('M' if has_movement else '.', end='', file=sys.stderr)
         return has_movement
 
 
 def asImage(frame, name):
-    print("Converting to", name)
+    print("Converting to", name, file=sys.stderr)
     arr = np.fromstring(frame, np.dtype("2<u2"))
     arr = arr[:, 1]
     arr = np.reshape(arr / 10, (size[1], size[0]))
@@ -78,13 +78,13 @@ def processFile(f, convert_to_images):
         else:
             has_movement = md.frame_has_movement(frame)
 
-    print()
+    print(file=sys.stderr)
     d.close()
     return has_movement
 
 
 def processForMovement(filename):
-    print(filename)
+    print(filename, file=sys.stderr)
     has_movement = processFile(filename, False)
     eg.reportMovement(has_movement)
 
@@ -92,7 +92,7 @@ def processForMovement(filename):
 size = (82, 46)
 md = MotionDetector(100000, 30)
 eg = EventGen(5)
-watch_dir = '/tmp'
+watch_dir = '/run/replay/fragments'
 prefix = 'mv'
 
 if len(sys.argv) == 1:
