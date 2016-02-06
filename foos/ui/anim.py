@@ -71,6 +71,40 @@ class Disappear(Delegate):
         self.ts_off = 0
 
 
+class ShowHide(Delegate):
+    def __init__(self, shape, visible=False, fade=0.5):
+        super().__init__(shape)
+        self.visible = visible
+        self.shape = shape
+        self.fade = fade
+        self.ttime = 0
+
+    def draw(self):
+        now = time.time()
+        diff = self.ttime - now
+        if diff > 0:
+            self.shape.set_alpha(self.alpha_for_diff(diff))
+            self.shape.draw()
+        else:
+            if self.visible:
+                self.shape.set_alpha(1)
+                self.shape.draw()
+
+    def alpha_for_diff(self, diff):
+        if self.visible:
+            return 1 - diff / self.fade
+        else:
+            return diff / self.fade
+
+    def show(self):
+        self.visible = True
+        self.ttime = time.time() + self.fade
+
+    def hide(self):
+        self.visible = False
+        self.ttime = time.time() + self.fade
+
+
 class Move(Delegate):
     def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
         super().__init__(shape)
