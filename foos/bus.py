@@ -4,6 +4,7 @@ from threading import Thread
 import queue
 from functools import partial
 import time
+import multiprocessing as mp
 
 
 class Event:
@@ -18,7 +19,7 @@ class Event:
 
 class Bus:
     def __init__(self):
-        self.queue = queue.Queue()
+        self.queue = mp.Queue()
         self.subscribers = []
         Thread(target=self.__run, daemon=True).start()
 
@@ -54,7 +55,6 @@ class Bus:
             e = self.queue.get()
             for s in self.subscribers:
                 s(e)
-            self.queue.task_done()
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ import numpy as np
 import threading
 from foos.bus import Event
 import video_config
+import multiprocessing as mp
 
 
 class EventGen:
@@ -51,7 +52,7 @@ class Plugin:
         self.eg = EventGen(5, bus)
         self.watch_dir = video_config.fragments_path
         self.prefix = 'mv'
-        threading.Thread(daemon=True, target=self.run).start()
+        mp.Process(daemon=True, target=self.run).start()
 
     def run(self):
         inotify = INotify()
