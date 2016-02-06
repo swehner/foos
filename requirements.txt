@@ -5,3 +5,4 @@ python-simple-hipchat
 pyserial
 google-api-python-client
 six==1.10.0
+inotify_simple
