@@ -54,9 +54,9 @@ gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
 bus.subscribe(replay_handler, thread=True)
 
 for plugin in config.plugins:
-     module = importlib.import_module('plugins.' + plugin)
-     module.Plugin(bus)
-     print("Loaded plugin " + plugin)
+    module = importlib.import_module('plugins.' + plugin)
+    module.Plugin(bus)
+    print("Loaded plugin " + plugin)
 
 if gui.is_x11():
     print("Running Keyboard")
