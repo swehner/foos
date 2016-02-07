@@ -34,13 +34,17 @@ class EventGen:
 
 class MotionDetector:
     """Detect motion in a frame"""
-    def __init__(self, vector_threshold, min_vectors):
+    def __init__(self, size, vector_threshold, min_vectors, crop_x):
+        self.size = size
         self.vector_threshold = vector_threshold
         self.min_vectors = min_vectors
+        self.crop_x = crop_x
 
     def frame_has_movement(self, frame):
         arr = np.fromstring(frame, np.dtype("2<u2"))
         arr = arr[:, 1].astype('float')
+        arr = np.reshape(arr, (self.size[1], self.size[0]))
+        arr = arr[:, self.crop_x:-self.crop_x]
         arr = np.square(arr)
         mvs = len(arr[arr > self.vector_threshold])
         has_movement = (mvs > self.min_vectors)
@@ -50,7 +54,7 @@ class MotionDetector:
 class Plugin:
     def __init__(self, bus):
         self.size = (82, 46)
-        self.md = MotionDetector(100000, 30)
+        self.md = MotionDetector(self.size, 100000, 30, 25)
         self.eg = EventGen(5, bus)
         self.watch_dir = video_config.fragments_path
         self.prefix = 'mv'

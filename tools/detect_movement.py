@@ -48,10 +48,14 @@ def asImage(frame, name):
     print("Converting to", name, file=sys.stderr)
     arr = np.fromstring(frame, np.dtype("2<u2"))
     arr = arr[:, 1]
-    arr = np.reshape(arr / 10, (size[1], size[0]))
+    arr = np.reshape(arr / 2, (size[1], size[0]))
+
+    sx = 25
+    arr = arr [:,sx:-sx]
     magnitudes = arr.astype('u1')
 
     im = Image.fromarray(magnitudes)
+    im = im.resize(((size[0] - 2 * sx) * 16, size[1] * 16))
     im.save(name)
 
 
