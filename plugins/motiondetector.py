@@ -26,7 +26,9 @@ class EventGen:
                 return
 
         if self.movement != newmovement:
-            self.bus.notify(Event("movement_detected" if newmovement else "movement_not_detected"))
+            event = "movement_detected" if newmovement else "movement_not_detected"
+            print(time.strftime("%H:%M:%S", time.localtime()), event)
+            self.bus.notify(Event(event))
             self.movement = newmovement
 
 
