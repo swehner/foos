@@ -5,7 +5,6 @@ import traceback
 
 class Plugin(object):
     def __init__(self, bus):
-        print("Yay")
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
         self.hc = hipchat.HipChat(token=config.hipchat_token)

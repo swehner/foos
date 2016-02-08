@@ -19,7 +19,7 @@ class Plugin(IOBase):
         super().__init__(bus)
 
     def __getArduinoValueFor(self, leds):
-        value = sum(map(lambda x: IOSerial.bitmap.get(x, 0), leds))
+        value = sum(map(lambda x: self.bitmap.get(x, 0), leds))
         return chr(value + ord('A'))
 
     def convert_data(self, data):
