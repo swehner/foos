@@ -10,23 +10,31 @@ import multiprocessing as mp
 
 
 class EventGen:
-    """Receive movement status from detector, dedup and send events"""
-    def __init__(self, absence_timeout, bus):
+    """Receive movement status from detector, dedup and send events.
+    Sends 'movement_detected' at most every 2 second while movement is detected.
+    Sends 'people_start_playing' and 'people_stop_playing' (after absence_timeout w/o movement)"""
+    def __init__(self, bus, absence_timeout=30, max_interval=2):
         self.absence_timeout = absence_timeout
         self.last_mv = 0
+        self.last_mv_event_time = 0
+        self.max_interval = max_interval
         self.movement = None
         self.bus = bus
 
     def reportMovement(self, newmovement):
+        now = time.time()
         if newmovement:
-            self.last_mv = time.time()
+            if now - self.last_mv > self.max_interval:
+                self.last_mv = now
+                self.bus.notify(Event("movement_detected"))
+                #print(time.strftime("%H:%M:%S", time.localtime()), "movement_detected")
         else:
-            if self.last_mv + self.absence_timeout > time.time():
+            if now - self.last_mv < self.absence_timeout:
                 # wait a bit before assuming people have left
                 return
 
         if self.movement != newmovement:
-            event = "movement_detected" if newmovement else "movement_not_detected"
+            event = "people_start_playing" if newmovement else "people_stop_playing"
             print(time.strftime("%H:%M:%S", time.localtime()), event)
             self.bus.notify(Event(event))
             self.movement = newmovement
@@ -34,10 +42,11 @@ class EventGen:
 
 class MotionDetector:
     """Detect motion in a frame"""
-    def __init__(self, size, vector_threshold, min_vectors, crop_x):
+    def __init__(self, size, vector_threshold, min_vectors, crop_x, min_frames_movement):
         self.size = size
         self.vector_threshold = vector_threshold
         self.min_vectors = min_vectors
+        self.min_frames_movement = min_frames_movement
         self.crop_x = crop_x
 
     def frame_has_movement(self, frame):
@@ -50,12 +59,55 @@ class MotionDetector:
         has_movement = (mvs > self.min_vectors)
         return has_movement
 
+    def runs(self, l):
+        runs = []
+        if len(l) == 0:
+            return []
+
+        prev = l[0]
+        n = 1
+        for i in l[1:]:
+            if prev == i:
+                n += 1
+            else:
+                runs.append((prev, n))
+                n = 1
+
+            prev = i
+
+        runs.append((prev, n))
+        return runs
+
+    def readFrame(self, f):
+        return f.read(self.size[0] * self.size[1] * 4)
+
+    def chunk_has_movement(self, d):
+        #skip first frame
+        frame = self.readFrame(d)
+        movement_in_frame = []
+        while True:
+            frame = self.readFrame(d)
+            if len(frame) == 0:
+                break
+
+            movement_in_frame.append(self.frame_has_movement(frame))
+
+        # get runs of contiguous frames with or without movement
+        rs = self.runs(movement_in_frame)
+        # append a default value in case there are no frames with movement
+        rs.append((True, 0))
+        # get the longest run of frames with movement
+        streak = max([r[1] for r in rs if r[0]])
+        mv = streak >= self.min_frames_movement
+        #print("Detected movement: %6s %d/%d" % (mv, streak, self.min_frames_movement))
+        return mv
+
 
 class Plugin:
     def __init__(self, bus):
         self.size = (82, 46)
-        self.md = MotionDetector(self.size, 100000, 30, 25)
-        self.eg = EventGen(5, bus)
+        self.md = MotionDetector(self.size, 100000, 30, 25, 9)
+        self.eg = EventGen(bus)
         self.watch_dir = video_config.fragments_path
         self.prefix = 'mv'
         mp.Process(daemon=True, target=self.run).start()
@@ -76,24 +128,9 @@ class Plugin:
 
         inotify.close()
 
-    def readFrame(self, f):
-        return f.read(self.size[0] * self.size[1] * 4)
-
     def processFile(self, f):
-        d = open(f, 'rb')
-
-        #skip first frame
-        frame = self.readFrame(d)
-        has_movement = False
-        while not has_movement:
-            frame = self.readFrame(d)
-            if len(frame) == 0:
-                break
-
-            has_movement = self.md.frame_has_movement(frame)
-
-        d.close()
-        return has_movement
+        with open(f, 'rb') as d:
+            return self.md.chunk_has_movement(d)
 
     def processForMovement(self, filename):
         has_movement = self.processFile(filename)

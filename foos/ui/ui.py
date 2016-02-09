@@ -305,9 +305,9 @@ class Gui():
             print("Win:", s)
         if ev.name == "set_game_mode":
             self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
-        if ev.name == "movement_detected":
+        if ev.name == "people_start_playing":
             self.people.show()
-        if ev.name == "movement_not_detected":
+        if ev.name == "people_stop_playing":
             self.people.hide()
 
     def __get_winner_string(self, evdata):
