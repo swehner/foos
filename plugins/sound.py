@@ -4,6 +4,7 @@ import subprocess
 import random
 import os
 
+
 class Plugin:
     # This map scores => sounds
     sounds = {
@@ -19,6 +20,22 @@ class Plugin:
         self.rand = random.Random()
         root = os.path.abspath(os.path.dirname(__file__))
         self.sounds_dir = root + "/../sounds"
+        self.running = []
+
+    def wait_for(self):
+        still_running = []
+        for p in self.running:
+            try:
+                p.wait(timeout=0)
+            except subprocess.TimeoutExpired:
+                still_running.append(p)
+
+        self.running = still_running
+
+    def play(self, s):
+        self.wait_for()
+        p = subprocess.Popen(['play', '-V0', '-q', s])
+        self.running.append(p)
 
     def process_event(self, ev):
         sounds = []
@@ -37,7 +54,8 @@ class Plugin:
 
         sounds = [self.sounds_dir + "/{}.wav".format(sound) for sound in sounds]
 
-        subprocess.call(['play', '-V0', '-G', '-q'] + sounds)
+        for s in sounds:
+            self.play(s)
 
 
 if __name__ == "__main__":
