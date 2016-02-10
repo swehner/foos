@@ -148,11 +148,9 @@ class Gui():
                 self.bus.notify(Event("menu_hide"))
             return f
 
-        game_mode_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
+        self.main_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
                           ("3 goals", q(Event("set_game_mode", {"mode": 3}))),
                           ("5 goals", q(Event("set_game_mode", {"mode": 5}))),
-                          ("« Back", None)]
-        self.main_menu = [("Game mode", game_mode_menu),
                           ("« Back", q(None))]
 
     def __init_display(self, sf, fps):
@@ -240,7 +238,7 @@ class Gui():
         menufont = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=1024)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=10)
-        self.menu = MenuTree(self.main_menu, menu)
+        self.menu = MenuTree(self.main_menu, menu, rootTitle="Game mode")
 
         self.ledShapes = {
             "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),

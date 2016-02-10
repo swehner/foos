@@ -163,7 +163,6 @@ class MenuTree(Delegate):
             self.breadcrumb.append(idx)
             self.menu.setOptions(elem)
         else:
-            print("Chose", idx, elem)
             if elem is None:
                 self.goBack()
             if callable(elem):
