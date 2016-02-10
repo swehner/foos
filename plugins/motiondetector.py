@@ -1,19 +1,19 @@
 import time
 import os
-import sys
 from inotify_simple import INotify, flags
 import numpy as np
-import threading
+import multiprocessing as mp
+
 from foos.bus import Event
 import video_config
-import multiprocessing as mp
+import config
 
 
 class EventGen:
     """Receive movement status from detector, dedup and send events.
     Sends 'movement_detected' at most every 2 second while movement is detected.
     Sends 'people_start_playing' and 'people_stop_playing' (after absence_timeout w/o movement)"""
-    def __init__(self, bus, absence_timeout=30, max_interval=2):
+    def __init__(self, bus, absence_timeout, max_interval):
         self.absence_timeout = absence_timeout
         self.last_mv = 0
         self.last_mv_event_time = 0
@@ -105,9 +105,9 @@ class MotionDetector:
 
 class Plugin:
     def __init__(self, bus):
-        self.size = (82, 46)
-        self.md = MotionDetector(self.size, 100000, 30, 25, 9)
-        self.eg = EventGen(bus)
+        self.md = MotionDetector(config.md_size, config.md_mv_threshold,
+                                 config.md_min_vectors, config.md_crop_x, config.md_min_frames)
+        self.eg = EventGen(bus, config.md_ev_absence_timeout, config.md_ev_interval)
         self.watch_dir = video_config.fragments_path
         self.prefix = 'mv'
         mp.Process(daemon=True, target=self.run).start()

@@ -65,6 +65,14 @@ It only needs the power cable and a network cable and a USB cable to the Arduino
 The video is recorded using raspivid at 49 fps with a fixed number of segments. When a goal occurs the replay of the last few seconds is generated simply concatenating the most recent chunks.
 It is then simply replayed on a layer under the UI with a transparent background, so that the current score can be drawn on top.
 
+## Motion detection
+
+The motion detection is done using the motion vectors that raspivid can output to a separate file for each video chunk.
+These files are read in and each frame we chck if there are enough motion vectors big enough to consider it movement.
+To avoid false positives due to camera vibration we require a number of contiguous frames with movement.
+All config related to motion detection depends a lot on the parameters of the camera (resolution, chunk size, etc...) and might not work correctly if the config changes.
+You can find more info here: https://www.raspberrypi.org/blog/vectors-from-coarse-motion-estimation/
+
 ## Arduino
 
 The arduino takes core of getting input from the push buttons, and detecting when a goal is scored (IR Barrier) and sends these events over the serial interface.
