@@ -19,12 +19,16 @@ class Plugin(object):
             print("Hipbot error", e)
 
     def process_event(self, ev):
-        if ev.name == 'score_goal':
-            msg = "Goal {}! Score: Yellow {} - {} Black".format(ev.data['team'], ev.data['yellow'], ev.data['black'])
-        elif ev.name == 'score_reset':
-            msg = "New match!"
+        if ev.name == 'people_start_playing':
+            msg = "People start playing..."
+        elif ev.name == 'people_stop_playing':
+            msg = "People have left."
         elif ev.name == 'upload_ok':
             msg = "New replay uploaded: " + ev.data
+        elif ev.name == "win_game":
+            s = "%s wins %d-%d!"
+            msg = (s % (ev.data.get('team', None).capitalize(),
+                        ev.data.get('yellow', 0), ev.data.get('black', 0)))
         else:
             return
 
