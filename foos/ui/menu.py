@@ -74,7 +74,7 @@ class Menu:
     def selIndex(self):
         return self.offset + self.selectpos
 
-    def up(self):
+    def _up(self):
         if self.selectpos > 0:
             self.selectpos -= 1
         else:
@@ -83,7 +83,7 @@ class Menu:
 
         self.changed = True
 
-    def down(self):
+    def _down(self):
         if self.selectpos < min(self.n, len(self.options)) - 1:
             self.selectpos += 1
         else:
@@ -91,6 +91,26 @@ class Menu:
                 self.offset += 1
 
         self.changed = True
+
+    def up(self):
+        self._mv(True)
+
+    def down(self):
+        self._mv(False)
+
+    def _mv(self, up=True):
+        idx = self.selIndex()
+        i = 1
+        idx += -1 if up else 1
+        while idx >= 0 and idx < len(self.options) and self.options[idx][0] == "":
+            idx += -1 if up else 1
+            i += 1
+
+        for x in range(i):
+            if up:
+                self._up()
+            else:
+                self._down()
 
     def setTitle(self, title):
         self.title = title

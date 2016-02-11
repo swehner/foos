@@ -153,6 +153,7 @@ class Gui():
         self.main_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
                           ("3 goals", q(Event("set_game_mode", {"mode": 3}))),
                           ("5 goals", q(Event("set_game_mode", {"mode": 5}))),
+                          ("", None),
                           ("« Back", q(None))]
 
     def __init_display(self, sf, fps):
@@ -311,7 +312,7 @@ class Gui():
             self.people.show()
 
     def __get_winner_string(self, evdata):
-        s = " Black wins %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
+        s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
         return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
     def __get_mode_string(self, mode):

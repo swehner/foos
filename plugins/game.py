@@ -28,6 +28,7 @@ class Plugin:
             self.check_win_time = now + self.check_delay
         if ev.name == "set_game_mode":
             self.game_win_score = ev.data["mode"]
+            self.check_win()
             print("Setting game mode", self.game_win_score)
 
     def check_win(self):
