@@ -12,9 +12,10 @@ import traceback
 import math
 import numpy
 import glob
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ShowHide
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 from .menu import Menu, MenuTree
 from .. bus import Event
+import config
 
 media_path = ""
 
@@ -204,8 +205,10 @@ class Gui():
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
-        self.people = ShowHide(pi3d.ImageSprite(load_icon("icons/people.png"), flat, w=logo_d[0], h=logo_d[1],
-                                                x=(1920 - logo_d[0]) / 2 - 40 - logo_d[0] - 20, y=(-1080 + logo_d[1]) / 2 + 40, z=50))
+        self.people = Disappear(pi3d.ImageSprite(load_icon("icons/people.png"), flat, w=logo_d[0], h=logo_d[1],
+                                                 x=(1920 - logo_d[0]) / 2 - 40 - logo_d[0] - 20, y=(-1080 + logo_d[1]) / 2 + 40, z=50),
+                                duration = config.md_ev_interval + 1, fade=0.5)
+
 
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
@@ -303,10 +306,8 @@ class Gui():
             print("Win:", s)
         if ev.name == "set_game_mode":
             self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
-        if ev.name == "people_start_playing":
+        if ev.name == "movement_detected":
             self.people.show()
-        if ev.name == "people_stop_playing":
-            self.people.hide()
 
     def __get_winner_string(self, evdata):
         s = " Black wins %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
