@@ -3,10 +3,13 @@ import os
 from inotify_simple import INotify, flags
 import numpy as np
 import multiprocessing as mp
+import logging
 
 from foos.bus import Event
 import video_config
 import config
+
+logger = logging.getLogger(__name__)
 
 
 class EventGen:
@@ -27,7 +30,6 @@ class EventGen:
             if now - self.last_mv > self.max_interval:
                 self.last_mv = now
                 self.bus.notify(Event("movement_detected"))
-                #print(time.strftime("%H:%M:%S", time.localtime()), "movement_detected")
         else:
             if now - self.last_mv < self.absence_timeout:
                 # wait a bit before assuming people have left
@@ -35,7 +37,7 @@ class EventGen:
 
         if self.movement != newmovement:
             event = "people_start_playing" if newmovement else "people_stop_playing"
-            print(time.strftime("%H:%M:%S", time.localtime()), event)
+            logger.info(event)
             self.bus.notify(Event(event))
             self.movement = newmovement
 
@@ -92,6 +94,7 @@ class MotionDetector:
 
             movement_in_frame.append(self.frame_has_movement(frame))
 
+        logger.debug("Frame %s", "".join(map(lambda x: 'M' if x else '.', movement_in_frame)))
         # get runs of contiguous frames with or without movement
         rs = self.runs(movement_in_frame)
         # append a default value in case there are no frames with movement
@@ -99,7 +102,7 @@ class MotionDetector:
         # get the longest run of frames with movement
         streak = max([r[1] for r in rs if r[0]])
         mv = streak >= self.min_frames_movement
-        #print("Detected movement: %6s %d/%d" % (mv, streak, self.min_frames_movement))
+        logger.debug("Detected movement: %6s %d/%d", mv, streak, self.min_frames_movement)
         return mv
 
 
@@ -115,7 +118,7 @@ class Plugin:
     def run(self):
         inotify = INotify()
         watch_flags = flags.CLOSE_WRITE
-        print("Watching", self.watch_dir)
+        logger.info("Watching %s", self.watch_dir)
         wd = inotify.add_watch(self.watch_dir, watch_flags)
 
         # And see the corresponding events:

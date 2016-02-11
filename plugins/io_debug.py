@@ -1,7 +1,10 @@
 import time
 import os
+import logging
 from .io_base import IOBase
 from .arduino import getEventForButton
+
+logger = logging.getLogger(__name__)
 
 
 class Plugin(IOBase):
@@ -17,10 +20,11 @@ class Plugin(IOBase):
         while True:
             f = open(fifo_file, "r")
             if not f:
-                print("Error opening fifo file " + fifo_file)
+                logger.error("Error opening fifo file %s", fifo_file)
                 time.sleep(5)
                 continue
-            print("Opened new debugging session")
+
+            logger.info("Opened new debugging session")
             while True:
                 line = f.readline()
                 if not line:
@@ -48,6 +52,6 @@ class Plugin(IOBase):
                 except:
                     f = open(fifo_file, "w")
                     if not f:
-                        print("Error opening fifo file " + fifo_file)
+                        logger.error("Error opening fifo file %s", fifo_file)
                         time.sleep(5)
                     continue

@@ -2,8 +2,11 @@
 
 from threading import Thread
 import time
+import logging
 
 from foos.bus import Bus, Event
+
+logger = logging.getLogger(__name__)
 
 
 class Plugin:
@@ -29,7 +32,7 @@ class Plugin:
         if ev.name == "set_game_mode":
             self.game_win_score = ev.data["mode"]
             self.check_win()
-            print("Setting game mode", self.game_win_score)
+            logger.info("Setting game mode %s", self.game_win_score)
 
     def check_win(self):
         if self.game_win_score:

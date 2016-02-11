@@ -1,6 +1,9 @@
 import config
 import hipchat
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Plugin(object):
@@ -12,11 +15,11 @@ class Plugin(object):
         self.name = 'FoosBot'
 
     def send_message(self, msg, color='yellow', notify=False):
-        print("Sending Hipchat message:", msg)
+        logger.info("Sending Hipchat message: %s", msg)
         try:
             self.hc.message_room(self.room, self.name, msg, color=color, notify=notify)
         except Exception as e:
-            print("Hipbot error", e)
+            logger.error("Hipbot error %s", e)
 
     def process_event(self, ev):
         if ev.name == 'people_start_playing':

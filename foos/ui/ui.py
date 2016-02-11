@@ -13,6 +13,8 @@ import traceback
 import math
 import numpy
 import glob
+import logging
+
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 from .menu import Menu, MenuTree
 from .. bus import Event
@@ -21,6 +23,7 @@ import config
 import itertools
 
 media_path = ""
+logger = logging.getLogger(__name__)
 
 
 def img(filename):
@@ -54,7 +57,7 @@ class Counter(Delegate):
 
     def __init__(self, value, shader, color, **kwargs):
         if Counter.textures is None:
-            print("Loading numbers")
+            logger.info("Loading numbers")
             Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
@@ -165,12 +168,12 @@ class Gui():
             self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
             sf = 1920 / self.DISPLAY.width
         else:
-            print("Forcing size")
+            logger.info("Forcing size")
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(1920 / sf), h=int(1080 / sf),
                                                background=bgcolor, layer=1)
 
         self.DISPLAY.frames_per_second = fps
-        print("Display %dx%d@%d" % (self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second))
+        logger.info("Display %dx%d@%d", self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second)
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
 
@@ -195,7 +198,7 @@ class Gui():
         random.shuffle(bgs)
         bgs = bgs[0:self.bg_amount]
 
-        print("Loading %d bgs" % len(bgs), bgs)
+        logger.info("Loading %d bgs %s", len(bgs), bgs)
         return [load_bg(f) for f in bgs]
 
     def __setup_sprites(self):
@@ -205,7 +208,7 @@ class Gui():
         bg.set_shader(flat)
         self.bg = ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval)
 
-        print("Loading other images")
+        logger.info("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
@@ -218,7 +221,7 @@ class Gui():
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=50)
         self.instructions = Disappear(self.instructions, duration=5)
 
-        print("Loading font")
+        logger.info("Loading font")
         printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255)))
         font = OutlineFont(img("UbuntuMono-B.ttf"), font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
@@ -303,7 +306,7 @@ class Gui():
             self.winner.show()
             s = self.__get_winner_string(ev.data)
             self.winner.quick_change(s)
-            print("Win:", s)
+            logger.info(s)
         if ev.name == "set_game_mode":
             self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
         if ev.name == "movement_detected":
@@ -321,7 +324,6 @@ class Gui():
 
     def run(self):
         try:
-            print("Running")
             while self.DISPLAY.loop_running():
                 if not self.overlay_mode:
                     self.bg.draw()
@@ -344,8 +346,6 @@ class Gui():
 
                 if self.show_leds:
                     self.__draw_leds()
-
-            print("Loop finished")
 
         except:
             traceback.print_exc()

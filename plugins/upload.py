@@ -7,6 +7,7 @@ import sys
 import time
 import logging
 import subprocess
+import logging
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
@@ -17,6 +18,8 @@ from oauth2client.tools import argparser, run_flow
 import config
 from foos.bus import Event
 
+logger = logging.getLogger(__name__)
+
 # Explicitly tell the underlying HTTP transport library not to retry, since
 # we are handling retry logic ourselves.
 httplib2.RETRIES = 1
@@ -26,9 +29,9 @@ MAX_RETRIES = 10
 
 # Always retry when these exceptions are raised.
 RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnected,
-  http.client.IncompleteRead, http.client.ImproperConnectionState,
-  http.client.CannotSendRequest, http.client.CannotSendHeader,
-  http.client.ResponseNotReady, http.client.BadStatusLine)
+                        http.client.IncompleteRead, http.client.ImproperConnectionState,
+                        http.client.CannotSendRequest, http.client.CannotSendHeader,
+                        http.client.ResponseNotReady, http.client.BadStatusLine)
 
 # Always retry when an apiclient.errors.HttpError with one of these status
 # codes is raised.
@@ -75,6 +78,7 @@ def initialize_upload(title=None, file='/tmp/replay/replay_long.mp4'):
 
     return resumable_upload(insert_request)
 
+
 # This method implements an exponential backoff strategy to resume a
 # failed upload.
 def resumable_upload(insert_request):
@@ -85,10 +89,10 @@ def resumable_upload(insert_request):
         try:
             status, response = insert_request.next_chunk()
             if 'id' in response:
-                print("Video id '%s' was successfully uploaded." % response['id'])
+                logger.info("Video id '%s' was successfully uploaded.", response['id'])
                 return response['id']
             else:
-                print("The upload failed with an unexpected response: %s" % response)
+                logger.error("The upload failed with an unexpected response: %s", response)
                 return False
         except HttpError as e:
             if e.resp.status in RETRIABLE_STATUS_CODES:
@@ -99,14 +103,14 @@ def resumable_upload(insert_request):
             error = "A retriable error occurred: %s" % e
 
         if error is not None:
-            print(error)
+            logger.error(error)
             retry += 1
             if retry > MAX_RETRIES:
-                print("No longer attempting to retry.")
+                logger.error("No longer attempting to retry.")
 
             max_sleep = 2 ** retry
             sleep_seconds = random.random() * max_sleep
-            print("Sleeping %f seconds and then retrying..." % sleep_seconds)
+            logger.error("Sleeping %f seconds and then retrying...", sleep_seconds)
             time.sleep(sleep_seconds)
 
 
@@ -128,7 +132,7 @@ class Plugin:
 
         self.bus.notify(Event('upload_start'))
         title = "{} goal: {} - {}".format(self.last_goal, self.current_score[0], self.current_score[1])
-        print("Uploading video:", title)
+        logger.info("Uploading video: %s", title)
 
         try:
             filename = subprocess.check_output(["video/prepare-upload.sh"]).decode('utf-8').strip()
@@ -137,16 +141,16 @@ class Plugin:
             self.bus.notify(Event('upload_ok', url))
             return
         except HttpError as e:
-            print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+            logger.error("An HTTP error %d occurred:\n%s", e.resp.status, e.content)
         except Exception as e:
-            print("An error occurred: %s" % e)
+            logger.error("An error occurred: %s", e)
 
         self.bus.notify(Event('upload_error'))
 
 if __name__ == '__main__':
     file = sys.argv[1]
     if not os.path.exists(file):
-        print('File not found', file)
+        logger.error('File not found %s', file)
 
     title = file
     initialize_upload(title, file)

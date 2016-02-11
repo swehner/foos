@@ -5,6 +5,9 @@ import queue
 from functools import partial
 import time
 import multiprocessing as mp
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Event:
@@ -45,7 +48,7 @@ class Bus:
             try:
                 q.put_nowait(ev)
             except queue.Full:
-                print("Queue full for", f, ev)
+                logger.warning("Queue full when sending %s to %s", ev.name, f)
 
         t = Thread(target=trun, daemon=True).start()
         return fthread

@@ -4,12 +4,16 @@ import sys
 import getopt
 import os
 import importlib
+import logging.config
 from subprocess import check_output, call
 
 from foos.ui import ui
 import plugins.io_keyboard
 import config
 from foos.bus import Bus, Event
+
+logging.config.fileConfig('log.ini')
+logger = logging.getLogger(__name__)
 
 
 def replay_handler(ev):
@@ -56,13 +60,13 @@ bus.subscribe(replay_handler, thread=True)
 for plugin in config.plugins:
     module = importlib.import_module('plugins.' + plugin)
     module.Plugin(bus)
-    print("Loaded plugin " + plugin)
+    logger.info("Loaded plugin %s", plugin)
 
 if gui.is_x11():
-    print("Running Keyboard")
+    logger.info("Running Keyboard")
     plugins.io_keyboard.Plugin(bus)
 
 # Run main gui main loop
-print("Run GUI")
+logger.info("Run GUI")
 gui.run()
 gui.cleanup()

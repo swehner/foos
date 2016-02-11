@@ -4,12 +4,13 @@ import os
 import atexit
 import pickle
 from collections import namedtuple
-import traceback
+import logging
 
 from foos.clock import Clock
 from foos.bus import Bus, Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
+logger = logging.getLogger(__name__)
 
 
 class Plugin:
@@ -28,7 +29,7 @@ class Plugin:
     def score(self, team):
         d = self.last_goal_clock.get_diff()
         if d and d <= 3:
-            print("Ignoring goal command {} happening too soon".format(team))
+            logger.info("Ignoring goal command %s happening too soon", team)
             return
 
         self.last_goal_clock.reset()
@@ -59,8 +60,7 @@ class Plugin:
                     self.pushState()
                     loaded = True
         except:
-            print("State loading failed")
-            traceback.print_exc()
+            logger.exception("State loading failed")
 
         return loaded
 
