@@ -16,7 +16,9 @@ import glob
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
 from .menu import Menu, MenuTree
 from .. bus import Event
+from .OutlineFont import OutlineFont
 import config
+import itertools
 
 media_path = ""
 
@@ -209,8 +211,7 @@ class Gui():
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
         self.people = Disappear(pi3d.ImageSprite(load_icon("icons/people.png"), flat, w=logo_d[0], h=logo_d[1],
                                                  x=(1920 - logo_d[0]) / 2 - 40 - logo_d[0] - 20, y=(-1080 + logo_d[1]) / 2 + 40, z=50),
-                                duration = config.md_ev_interval + 1, fade=0.5)
-
+                                duration=config.md_ev_interval + 1, fade=0.5)
 
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
@@ -218,21 +219,17 @@ class Gui():
         self.instructions = Disappear(self.instructions, duration=5)
 
         print("Loading font")
-        font = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=40, image_size=1024)
+        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255)))
+        font = OutlineFont(img("UbuntuMono-B.ttf"), font_size=80, image_size=1024, outline_size=2,
+                           codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
                                       is_3d=False, y=380, z=50)
-        # scale text, because bigger font size creates weird artifacts
-        self.goal_time.scale(2, 2, 1)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
                                              is_3d=False, y=-380, z=40), duration=10)
-        # scale text, because bigger font size creates weird artifacts
-        self.winner.scale(2, 2, 1)
 
         self.game_mode = ChangingText(flat, font=font, string=self.__get_mode_string(None),
                                       is_3d=False, x=880, y=480, z=50)
-        # scale text, because bigger font size creates weird artifacts
-        self.game_mode.scale(2, 2, 1)
 
         self.feedback = KeysFeedback(flat)
 
@@ -240,7 +237,8 @@ class Gui():
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
 
-        menufont = pi3d.Font(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=1024)
+        menufont = OutlineFont(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=512,
+                               codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=10)
         self.menu = MenuTree(self.main_menu, menu, rootTitle="Game mode")
