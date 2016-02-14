@@ -167,7 +167,7 @@ class MenuTree(Delegate):
         menu = self.tree
         for b in self.breadcrumb:
             menu = menu[b][1]
-        self.menu.setOptions(self.tree)
+        self.menu.setOptions(menu)
 
     def setTitle(self):
         menu = self.tree
