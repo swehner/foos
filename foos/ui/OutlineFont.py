@@ -76,6 +76,7 @@ class OutlineFont(Texture):
       this isn't used.
     """
     super(OutlineFont, self).__init__(font, mipmap=mipmap, filter=filter)
+    self.row_margin = 2
     self.font = font
     try:
       imgfont = ImageFont.truetype(font, font_size)
@@ -125,11 +126,11 @@ class OutlineFont(Texture):
 
       if (curX + chwidth) > self.ix:
           curX = 0
-          if (curY + self.height) > self.ix:
+          if (curY + self.height + self.row_margin) > self.ix:
               # some chars will be cropped)
               raise Exception("Font image too small (%dx%d) for all characters - got to codepoint %d" % (self.ix, self.iy, i))
 
-          curY += self.height
+          curY += self.height + self.row_margin
 
 
       offset = 0
