@@ -24,11 +24,11 @@ import itertools
 
 media_path = ""
 logger = logging.getLogger(__name__)
-menuEntries = []
+menuGenerators = []
 
 
 def registerMenu(f):
-    menuEntries.append(f)
+    menuGenerators.append(f)
 
 
 def img(filename):
@@ -172,7 +172,7 @@ class Gui():
 
     def __setup_menu(self):
         self.main_menu = []
-        for f in menuEntries:
+        for f in menuGenerators:
             elems = f()
             if len(elems) > 0:
                 self.main_menu.extend(elems)
