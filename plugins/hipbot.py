@@ -44,6 +44,10 @@ class Plugin(object):
             msg = "New replay uploaded: " + ev.data
         elif ev.name == "set_players":
             self.players = ev.data
+        elif ev.name == "start_competition":
+            print(ev.data)
+            msg = "%s game starts now: %s" % (ev.data.get("division", "").lower(),
+                                              ", ".join(ev.data.get("players", [])))
         elif ev.name == "win_game":
             s = "%s wins %d-%d against %s!"
             winners = self.get_team_name(ev.data.get('team', None))
