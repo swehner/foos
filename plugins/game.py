@@ -5,6 +5,7 @@ import time
 import logging
 
 from foos.bus import Bus, Event
+from foos.ui.ui import registerMenu
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class Plugin:
         self.check_win_time = None
         self.check_delay = 2
         self.current_score = {}
+        registerMenu(self.getMenuEntries)
         Thread(target=self.__run, daemon=True).start()
 
     def process_event(self, ev):
@@ -50,3 +52,14 @@ class Plugin:
                 self.check_win()
 
             time.sleep(0.1)
+
+    def getMenuEntries(self):
+        def q(ev):
+            def f():
+                self.bus.notify(ev)
+                self.bus.notify(Event("menu_hide"))
+            return f
+
+        return [("Free mode", q(Event("set_game_mode", {"mode": None}))),
+                ("3 goals", q(Event("set_game_mode", {"mode": 3}))),
+                ("5 goals", q(Event("set_game_mode", {"mode": 5})))]

@@ -24,6 +24,11 @@ import itertools
 
 media_path = ""
 logger = logging.getLogger(__name__)
+menuEntries = []
+
+
+def registerMenu(f):
+    menuEntries.append(f)
 
 
 def img(filename):
@@ -133,6 +138,24 @@ class ChangingText(Delegate):
         self.s.draw()
 
 
+class Multiline():
+    def __init__(self, shader, font=None, string="", x=0, y=0, z=0, justify='C'):
+        ls = string.splitlines()
+        self.lines = []
+        for s in ls:
+            self.lines.append(ChangingText(shader, font=font, string=s,
+                                           is_3d=False, x=x, y=y, z=z, justify=justify))
+            y -= font.height
+
+    def quick_change(self, string):
+        for i, s in enumerate(string.splitlines()):
+            self.lines[i].quick_change(s)
+
+    def draw(self):
+        for l in self.lines:
+            l.draw()
+
+
 class Gui():
     def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
         self.state = GuiState()
@@ -148,18 +171,18 @@ class Gui():
         self.__setup_sprites()
 
     def __setup_menu(self):
-        def q(ev):
-            def f():
-                if (ev):
-                    self.bus.notify(ev)
-                self.bus.notify(Event("menu_hide"))
-            return f
+        self.main_menu = []
+        for f in menuEntries:
+            elems = f()
+            if len(elems) > 0:
+                self.main_menu.extend(elems)
+                self.main_menu.append(("", None))
 
-        self.main_menu = [("Free mode", q(Event("set_game_mode", {"mode": None}))),
-                          ("3 goals", q(Event("set_game_mode", {"mode": 3}))),
-                          ("5 goals", q(Event("set_game_mode", {"mode": 5}))),
-                          ("", None),
-                          ("« Back", q(None))]
+        self.main_menu.append(("« Back", lambda: self.bus.notify(Event("menu_hide"))))
+
+    def resetMenu(self):
+        self.__setup_menu()
+        self.menu.reset(self.main_menu)
 
     def __init_display(self, sf, fps):
         bgcolor = (0.0, 0.0, 0.0, 0.2)
@@ -226,19 +249,25 @@ class Gui():
         font = OutlineFont(img("UbuntuMono-B.ttf"), font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, y=380, z=50)
+                                      is_3d=False, justify='R', x=920, y=480, z=50)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
-                                             is_3d=False, y=-380, z=40), duration=10)
+                                             is_3d=False, y=380, z=40), duration=10)
 
         self.game_mode = ChangingText(flat, font=font, string=self.__get_mode_string(None),
-                                      is_3d=False, x=880, y=480, z=50)
+                                      is_3d=False, justify='R', x=920, y=380, z=50)
 
         self.feedback = KeysFeedback(flat)
 
         s = 512
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
+        playerfont = OutlineFont(img("UbuntuMono-B.ttf"), font_size=50, image_size=768, outline_size=2,
+                                 codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
+        self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
+                                  x=-380, y=-300, z=50, justify='C')
+        self.bPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=False),
+                                  x=380, y=-300, z=50, justify='C')
 
         menufont = OutlineFont(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=512,
                                codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
@@ -297,7 +326,7 @@ class Gui():
             self.menu.select()
         if ev.name == "menu_show":
             self.draw_menu = True
-            self.menu.reset()
+            self.resetMenu()
             self.bus.notify(Event("menu_visible", {}))
         if ev.name == "menu_hide":
             self.draw_menu = False
@@ -311,6 +340,8 @@ class Gui():
             self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
         if ev.name == "movement_detected":
             self.people.show()
+        if ev.name == "set_players":
+            self.setPlayers(ev.data['black'], ev.data['yellow'])
 
     def __get_winner_string(self, evdata):
         s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
@@ -321,6 +352,20 @@ class Gui():
             return "  "
         else:
             return "»%d" % mode
+
+    def getPlayers(self, players=[], left=True):
+        l = 15
+        if len(players) == 0:
+            players = ["", ""]
+
+        if left:
+            return "%s\n%s" % (players[0].center(l, " "), players[1].center(l, " "))
+        else:
+            return "%s\n%s" % (players[0].center(l, " "), players[1].center(l, " "))
+
+    def setPlayers(self, black, yellow):
+        self.yPlayers.quick_change(self.getPlayers(yellow, True))
+        self.bPlayers.quick_change(self.getPlayers(black, False))
 
     def run(self):
         try:
@@ -340,6 +385,8 @@ class Gui():
                 if not self.overlay_mode:
                     self.winner.draw()
                     self.game_mode.draw()
+                    self.yPlayers.draw()
+                    self.bPlayers.draw()
 
                     if self.draw_menu:
                         self.menu.draw()
@@ -368,7 +415,7 @@ class Gui():
         else:
             timestr = "--:--.-"
 
-        return "Last Goal: %s" % timestr
+        return "LG: %s" % timestr
 
     def set_state(self, state):
         self.state = self.__validate(state)

@@ -154,7 +154,10 @@ class MenuTree(Delegate):
         self.rootTitle = rootTitle
         self.reset()
 
-    def reset(self):
+    def reset(self, tree=None):
+        if tree:
+            self.tree = tree
+
         self.breadcrumb = []
         self.menu.setOptions(self.tree)
         self.setTitle()

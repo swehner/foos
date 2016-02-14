@@ -6,7 +6,9 @@ bg_amount = 3
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hipbot']
-# plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector']
+# plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
+
+league_file = 'league.json'
 
 # config parameters for motion detector
 # MV frame size
