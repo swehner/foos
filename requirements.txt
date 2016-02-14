@@ -1,4 +1,4 @@
-pi3d
+pi3d>=2.10
 numpy
 Pillow
 python-simple-hipchat
