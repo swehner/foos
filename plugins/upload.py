@@ -7,7 +7,6 @@ import sys
 import time
 import logging
 import subprocess
-import logging
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
@@ -38,7 +37,6 @@ RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnecte
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
 CLIENT_SECRETS_FILE = "client_secrets.json"
-logging.getLogger().setLevel(logging.WARNING)
 
 
 def get_authenticated_service():
