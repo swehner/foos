@@ -45,9 +45,12 @@ class Plugin(object):
         elif ev.name == "set_players":
             self.players = ev.data
         elif ev.name == "start_competition":
-            print(ev.data)
             msg = "%s game starts now: %s" % (ev.data.get("division", "").lower(),
                                               ", ".join(ev.data.get("players", [])))
+        elif ev.name == "end_competition":
+            ps = sorted(ev.data.get('points', {}).items())
+            text = ', '.join(map(lambda x: "%s: %s" % tuple(x), ps))
+            msg = "Official game ends, points: " + text
         elif ev.name == "win_game":
             s = "%s wins %d-%d against %s!"
             winners = self.get_team_name(ev.data.get('team', None))

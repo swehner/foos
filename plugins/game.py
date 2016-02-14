@@ -33,8 +33,8 @@ class Plugin:
             self.check_win_time = now + self.check_delay
         if ev.name == "set_game_mode":
             self.game_win_score = ev.data["mode"]
-            self.check_win()
             logger.info("Setting game mode %s", self.game_win_score)
+            self.check_win_time = now + self.check_delay
 
     def check_win(self):
         if self.game_win_score:

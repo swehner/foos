@@ -18,21 +18,25 @@ class Plugin:
         self.games = []
         self.current_game = 0
         self.enabled = False
+        self.points = {}
+        self.teams = {}
         registerMenu(self.getMenuEntries)
 
     def setPlayers(self):
         g = self.games[self.current_game]
-        self.bus.notify(Event("set_players", {"yellow": [g[0], g[1]],
-                                              "black": [g[2], g[3]]}))
+        self.teams = {"yellow": [g[0], g[1]],
+                      "black": [g[2], g[3]]}
+        self.bus.notify(Event("set_players", self.teams))
 
     def clearPlayers(self):
-        self.bus.notify(Event("set_players", {"yellow": [],
-                                              "black": []}))
+        self.teams = {"yellow": [], "black": []}
+        self.bus.notify(Event("set_players", self.teams))
 
     def process_event(self, ev):
         now = time.time()
         if ev.name == "start_competition":
             p = ev.data['players']
+            self.points = dict([(e, 0) for e in p])
             # shuffle players
             random.shuffle(p)
             # games is the full combination of players
@@ -44,12 +48,18 @@ class Plugin:
             self.setPlayers()
 
         if ev.name == "win_game" and self.enabled:
+            self.calcPoints(ev.data['team'])
             self.current_game += 1
             if self.current_game < len(self.games):
                 self.setPlayers()
             else:
+                self.bus.notify(Event("end_competition", {'points': self.points}))
                 self.enabled = False
                 self.clearPlayers()
+
+    def calcPoints(self, team):
+        for p in self.teams.get(team, []):
+            self.points[p] = self.points[p] + 1
 
     def getMenuEntries(self):
         def q(ev):
@@ -69,7 +79,13 @@ class Plugin:
                         ev = Event('start_competition', {"players": g, "division": name})
                         mgames.append((", ".join(g), q(ev)))
 
+                    mgames.append(("", None))
+                    mgames.append(("« Back", None))
+
                     menu.append((name, mgames))
+
+                menu.append(("", None))
+                menu.append(("« Back", None))
 
                 return [("League", menu)]
         except Exception as e:
