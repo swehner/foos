@@ -59,13 +59,14 @@ class Plugin:
                 self.bus.notify(ev)
                 self.bus.notify(Event("menu_hide"))
             return f
+
         def check(string, mode):
-            pre = "  "
-            if mode==self.game_win_score:
-                pre = "* "
+            pre = "○ "
+            if mode == self.game_win_score:
+                pre = "● "
 
             return pre + string
-        
+
         return [(check("Free mode", None), q(Event("set_game_mode", {"mode": None}))),
                 (check("3 goals", 3), q(Event("set_game_mode", {"mode": 3}))),
                 (check("5 goals", 5), q(Event("set_game_mode", {"mode": 5})))]

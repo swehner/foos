@@ -48,7 +48,7 @@ class Plugin(object):
             msg = "%s game starts now: %s" % (ev.data.get("division", "").lower(),
                                               ", ".join(ev.data.get("players", [])))
         elif ev.name == "end_competition":
-            ps = sorted(ev.data.get('points', {}).items())
+            ps = sorted(ev.data.get('points', {}).items(), key=lambda x: x[1], reverse=True)
             text = ', '.join(map(lambda x: "%s: %s" % tuple(x), ps))
             msg = "Official game ends, points: " + text
         elif ev.name == "win_game":

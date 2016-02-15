@@ -11,7 +11,7 @@ def makeImage(l):
     image = Image.new("LA", (512, 512), "white")
 
     #f = "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf"
-    f = "../../UbuntuMono-B.ttf"
+    f = "../../UbuntuMono-B_circle.ttf"
     font = ImageFont.truetype(f, 480)
     sx, sy = font.getsize(letter)
     #sy for ubuntumono seems to be off

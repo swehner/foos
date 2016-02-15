@@ -245,8 +245,9 @@ class Gui():
         self.instructions = Disappear(self.instructions, duration=5)
 
         logger.info("Loading font")
-        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255)))
-        font = OutlineFont(img("UbuntuMono-B.ttf"), font_size=80, image_size=1024, outline_size=2,
+        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●")]))
+        fontfile = img("UbuntuMono-B_circle.ttf")
+        font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
                                       is_3d=False, justify='R', x=920, y=480, z=50)
@@ -262,14 +263,14 @@ class Gui():
         s = 512
         self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
-        playerfont = OutlineFont(img("UbuntuMono-B.ttf"), font_size=50, image_size=768, outline_size=2,
+        playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
                                  codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
                                   x=-380, y=-300, z=50, justify='C')
         self.bPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=False),
                                   x=380, y=-300, z=50, justify='C')
 
-        menufont = OutlineFont(img("UbuntuMono-B.ttf"), (255, 255, 255, 255), font_size=50, image_size=512,
+        menufont = OutlineFont(fontfile, (255, 255, 255, 255), font_size=50, image_size=768,
                                codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=10)
