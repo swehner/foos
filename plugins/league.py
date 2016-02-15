@@ -57,6 +57,10 @@ class Plugin:
                 self.enabled = False
                 self.clearPlayers()
 
+        if ev.name == "cancel_competition":
+            self.enabled = False
+            self.clearPlayers()
+
     def calcPoints(self, team):
         for p in self.teams.get(team, []):
             self.points[p] = self.points[p] + 1
@@ -68,26 +72,29 @@ class Plugin:
                 self.bus.notify(Event("menu_hide"))
             return f
 
-        try:
-            with open(config.league_file) as f:
-                comp = json.load(f)
-                menu = []
-                for div in comp:
-                    name, games = div[0], div[1]
-                    mgames = []
-                    for g in games:
-                        ev = Event('start_competition', {"players": g, "division": name})
-                        mgames.append((", ".join(g), q(ev)))
+        if self.enabled:
+            return [("Cancel official game", q(Event("cancel_competition")))]
+        else:
+            try:
+                with open(config.league_file) as f:
+                    comp = json.load(f)
+                    menu = []
+                    for div in comp:
+                        name, games = div[0], div[1]
+                        mgames = []
+                        for g in games:
+                            ev = Event('start_competition', {"players": g, "division": name})
+                            mgames.append((", ".join(g), q(ev)))
 
-                    mgames.append(("", None))
-                    mgames.append(("« Back", None))
+                        mgames.append(("", None))
+                        mgames.append(("« Back", None))
 
-                    menu.append((name, mgames))
+                        menu.append((name, mgames))
 
-                menu.append(("", None))
-                menu.append(("« Back", None))
+                    menu.append(("", None))
+                    menu.append(("« Back", None))
 
-                return [("League", menu)]
-        except Exception as e:
-            logger.error(e)
-            return []
+                    return [("League", menu)]
+            except Exception as e:
+                logger.error(e)
+                return []

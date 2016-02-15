@@ -52,12 +52,12 @@ class Plugin(object):
             text = ', '.join(map(lambda x: "%s: %s" % tuple(x), ps))
             msg = "Official game ends, points: " + text
         elif ev.name == "win_game":
-            s = "%s wins %d-%d against %s!"
-            winners = self.get_team_name(ev.data.get('team', None))
-            lname = 'black' if ev.data.get('team', None) == 'yellow' else 'yellow'
-            losers = self.get_team_name(lname)
-
-            msg = (s % (winners, ev.data.get('yellow', 0), ev.data.get('black', 0), losers))
+            s = "%s wins! %s %d-%d %s!"
+            msg = (s % (ev.data.get('team', "").capitalize(),
+                        self.get_team_name('yellow'), ev.data.get('yellow', 0),
+                        ev.data.get('black', 0), self.get_team_name('black')))
+        elif ev.name == "cancel_competition":
+            msg = "Official game cancelled"
         else:
             return
 
