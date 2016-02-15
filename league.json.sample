@@ -1,4 +1,10 @@
 [
-    ["1st Division", [["p1", "p2", "p3", "p4"],
-		      ["p5", "p6", "p7", "p8"]]]
+    ["1st Division", [["dallas", "ripley", "lambert", "brett"],
+		      ["kane", "ash", "parker", "alien"],
+		      ["newt", "ripley", "burke", "bishop"]]],
+    ["2nd Division", [["tyler", "marla", "robert", "richard"],
+		      ["nick", "amy", "desi", "tanner"],
+		      ["somerset", "mills", "tracy", "davis"]]],
+    ["3rd Division", [["walter", "skyler", "jesse", "walter jr."],
+		      ["hank", "marie", "saul", "mike"]]]
 ]
