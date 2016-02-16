@@ -80,6 +80,14 @@ class Menu:
         else:
             if self.offset > 0:
                 self.offset -= 1
+            else:
+                # wrap around
+                idx = len(self.options) - 1
+                if idx < self.n:
+                    self.selectpos = idx
+                else:
+                    self.selectpos = self.n - 1
+                    self.offset = idx - self.selectpos
 
         self.changed = True
 
@@ -89,6 +97,10 @@ class Menu:
         else:
             if (self.offset + self.selectpos) < len(self.options) - 1:
                 self.offset += 1
+            else:
+                # wrap around
+                self.selectpos = 0
+                self.offset = 0
 
         self.changed = True
 

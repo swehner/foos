@@ -355,7 +355,7 @@ class Gui():
             return "»%d" % mode
 
     def getPlayers(self, players=[], left=True):
-        l = 15
+        l = 20
         if len(players) == 0:
             players = ["", ""]
 
