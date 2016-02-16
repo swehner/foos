@@ -1,10 +1,36 @@
 [
-    ["1st Division", [["dallas", "ripley", "lambert", "brett"],
-		      ["kane", "ash", "parker", "alien"],
-		      ["newt", "ripley", "burke", "bishop"]]],
-    ["2nd Division", [["tyler", "marla", "robert", "richard"],
-		      ["nick", "amy", "desi", "tanner"],
-		      ["somerset", "mills", "tracy", "davis"]]],
-    ["3rd Division", [["walter", "skyler", "jesse", "walter jr."],
-		      ["hank", "marie", "saul", "mike"]]]
+{"name":"1st Division",
+ "matches":[
+    {"id":17,
+     "submatches":[
+       [["Ripley","Dallas"],["Lambert","Brett"]],
+       [["Ripley","Lambert"],["Dallas","Brett"]],
+       [["Ripley","Brett"],["Dallas","Lambert"]]]},
+    {"id":18,
+     "submatches":[
+       [["Brett","Kane"],["Ash","Parker"]],
+       [["Brett","Ash"],["Kane","Parker"]],
+       [["Brett","Parker"],["Kane","Ash"]]]},
+    {"id":19,
+     "submatches":[
+        [["Bishop","Dallas"],["Alien","Kane"]],
+	[["Bishop","Alien"],["Dallas","Kane"]],
+	[["Bishop","Kane"],["Dallas","Alien"]]]}]},
+{"name":"2nd Division",
+ "matches":[
+   {"id":33,
+    "submatches":[
+      [["Skyler","Walter"],["Jesse","Hank"]],
+      [["Skyler","Jesse"],["Walter","Hank"]],
+      [["Skyler","Hank"],["Walter","Jesse"]]]},
+   {"id":34,
+    "submatches":[
+      [["Marie","Walter Jr."],["Mike","Jesse"]],
+      [["Marie","Mike"],["Walter Jr.","Jesse"]],
+      [["Marie","Jesse"],["Walter Jr.","Mike"]]]},
+   {"id":35,
+    "submatches":[
+      [["Saul","Gus"],["Marie","Badger"]],
+      [["Saul","Marie"],["Gus","Badger"]],
+      [["Saul","Badger"],["Gus","Marie"]]]}]}
 ]

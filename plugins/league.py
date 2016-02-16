@@ -8,7 +8,16 @@ from foos.bus import Bus, Event
 from foos.ui.ui import registerMenu
 import config
 import random
+import os
 logger = logging.getLogger(__name__)
+
+
+def flatten(x):
+    if isinstance(x, list):
+        for e in x:
+            yield from flatten(e)
+    else:
+        yield x
 
 
 class Plugin:
@@ -20,12 +29,13 @@ class Plugin:
         self.enabled = False
         self.points = {}
         self.teams = {}
+        self.match = {}
         registerMenu(self.getMenuEntries)
 
     def setPlayers(self):
         g = self.games[self.current_game]
-        self.teams = {"yellow": [g[0], g[1]],
-                      "black": [g[2], g[3]]}
+        self.teams = {"yellow": [g[0][0], g[0][1]],
+                      "black": [g[1][0], g[1][1]]}
         self.bus.notify(Event("set_players", self.teams))
 
     def clearPlayers(self):
@@ -37,10 +47,8 @@ class Plugin:
         if ev.name == "start_competition":
             p = ev.data['players']
             self.points = dict([(e, 0) for e in p])
-            # shuffle players
-            random.shuffle(p)
-            # games is the full combination of players
-            self.games = [p, [p[0], p[2], p[1], p[3]], [p[0], p[3], p[1], p[2]]]
+            self.games = ev.data['submatches']
+            self.match = ev.data
             self.current_game = 0
             self.enabled = True
             self.bus.notify(Event("reset_score"))
@@ -49,6 +57,8 @@ class Plugin:
 
         if ev.name == "win_game" and self.enabled:
             self.calcPoints(ev.data['team'])
+            rs = self.match.get('results', [])
+            self.match['results'] = rs + [[ev.data['yellow'], ev.data['black']]]
             self.current_game += 1
             if self.current_game < len(self.games):
                 self.setPlayers()
@@ -56,10 +66,21 @@ class Plugin:
                 self.bus.notify(Event("end_competition", {'points': self.points}))
                 self.enabled = False
                 self.clearPlayers()
+                self.writeResults()
 
         if ev.name == "cancel_competition":
             self.enabled = False
             self.clearPlayers()
+
+    def writeResults(self):
+        try:
+            os.makedirs(config.results_path)
+        except FileExistsError:
+            pass
+
+        fname = os.path.join(config.results_path, 'result_%d.json' % self.match.get('id', 0))
+        with open(fname, 'w') as f:
+            json.dump(self.match, f, indent=2)
 
     def calcPoints(self, team):
         for p in self.teams.get(team, []):
@@ -80,16 +101,19 @@ class Plugin:
                     comp = json.load(f)
                     menu = []
                     for div in comp:
-                        name, games = div[0], div[1]
-                        mgames = []
-                        for g in games:
-                            ev = Event('start_competition', {"players": g, "division": name})
-                            mgames.append((", ".join(g), q(ev)))
+                        name, matches = div['name'], div['matches']
+                        mmatches = []
+                        for m in matches:
+                            players = list(set(flatten(m['submatches'])))
+                            m['players'] = players
+                            m['division'] = name
+                            ev = Event('start_competition', m)
+                            mmatches.append((", ".join(players), q(ev)))
 
-                        mgames.append(("", None))
-                        mgames.append(("« Back", None))
+                        mmatches.append(("", None))
+                        mmatches.append(("« Back", None))
 
-                        menu.append((name, mgames))
+                        menu.append((name, mmatches))
 
                     menu.append(("", None))
                     menu.append(("« Back", None))
