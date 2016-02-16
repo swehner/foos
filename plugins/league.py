@@ -49,6 +49,7 @@ class Plugin:
             self.points = dict([(e, 0) for e in p])
             self.games = ev.data['submatches']
             self.match = ev.data
+            self.match['start'] = int(time.time())
             self.current_game = 0
             self.enabled = True
             self.bus.notify(Event("reset_score"))
@@ -64,6 +65,7 @@ class Plugin:
                 self.setPlayers()
             else:
                 self.bus.notify(Event("end_competition", {'points': self.points}))
+                self.match['end'] = int(time.time())
                 self.enabled = False
                 self.clearPlayers()
                 self.writeResults()
