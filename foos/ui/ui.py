@@ -245,7 +245,7 @@ class Gui():
         self.instructions = Disappear(self.instructions, duration=5)
 
         logger.info("Loading font")
-        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●")]))
+        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉")]))
         fontfile = img("UbuntuMono-B_circle.ttf")
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
