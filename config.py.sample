@@ -9,7 +9,7 @@ plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hip
 # plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
 
 league_file = 'league.json'
-results_path = '/tmp/results'
+league_results_dir = '/tmp/results'
 
 # config parameters for motion detector
 # MV frame size

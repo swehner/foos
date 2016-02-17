@@ -74,13 +74,17 @@ class Plugin:
             self.enabled = False
             self.clearPlayers()
 
+    def _getResultFileFor(self, match):
+        return os.path.join(config.league_results_dir,
+                            'result_%d.json' % match.get('id', random.randint(0, 1000000)))
+            
     def writeResults(self):
         try:
-            os.makedirs(config.results_path)
+            os.makedirs(config.league_results_dir)
         except FileExistsError:
             pass
 
-        fname = os.path.join(config.results_path, 'result_%d.json' % self.match.get('id', 0))
+        fname = self._getResultFileFor(self.match)
         with open(fname, 'w') as f:
             json.dump(self.match, f, indent=2)
 
@@ -106,6 +110,11 @@ class Plugin:
                         name, matches = div['name'], div['matches']
                         mmatches = []
                         for m in matches:
+                            if 'id' in m:
+                                # skip match if a result already exists for it
+                                if os.path.exists(self._getResultFileFor(m)):
+                                    continue
+                            
                             players = list(set(flatten(m['submatches'])))
                             m['players'] = players
                             m['division'] = name
