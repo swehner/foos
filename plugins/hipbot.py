@@ -45,7 +45,7 @@ class Plugin(object):
         elif ev.name == "set_players":
             self.players = ev.data
         elif ev.name == "start_competition":
-            msg = "%s game starts now: %s" % (ev.data.get("division", "").lower(),
+            msg = "%s game starts now: %s" % (ev.data.get("division", ""),
                                               ", ".join(ev.data.get("players", [])))
         elif ev.name == "end_competition":
             ps = sorted(ev.data.get('points', {}).items(), key=lambda x: x[1], reverse=True)

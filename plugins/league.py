@@ -119,7 +119,8 @@ class Plugin:
                             m['players'] = players
                             m['division'] = name
                             ev = Event('start_competition', m)
-                            mmatches.append((", ".join(players), q(ev)))
+                            entry = "{:<14} {:<14} {:<14} {:<14}".format(*players)
+                            mmatches.append((entry, q(ev)))
 
                         mmatches.append(("", None))
                         mmatches.append(("« Back", None))
