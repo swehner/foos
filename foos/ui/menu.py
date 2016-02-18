@@ -6,6 +6,7 @@ from .anim import Delegate
 
 class Menu:
     def __init__(self, font, arrow, n=10, options=[], wchar=20, z=5, title="Menu"):
+        self.first = True
         self.selectpos = 0
         self.offset = 0
         self.options = options
@@ -129,6 +130,12 @@ class Menu:
         self.changed = True
 
     def draw(self):
+        if self.changed and not self.first:
+            self.setText()
+            self.changed = False
+
+        self.first = False
+
         self.select.draw()
         self.bg_t.draw()
         self.bg.draw()
@@ -142,10 +149,6 @@ class Menu:
 
         for s in self.shapes:
             s.draw()
-
-        if self.changed:
-            self.setText()
-            self.changed = False
 
     def selected(self):
         idx = self.offset + self.selectpos
