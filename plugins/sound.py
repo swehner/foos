@@ -8,9 +8,9 @@ import os
 class Plugin:
     # This map scores => sounds
     sounds = {
-        (0, 3): 'perfect',
-        (0, 5): 'humiliation',
-        (4, 4): '1_frag'
+        (0, 3): ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
+        (0, 5): ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
+        (4, 4): ['musical035', 'musical041', 'musical105']
     }
     generic_goal_sounds = ['crowd1', 'crowd2']
 
@@ -43,12 +43,13 @@ class Plugin:
             score = (ev.data['yellow'], ev.data['black'])
             score = tuple(sorted(score))
             if score in self.sounds:
-                sounds.append(self.sounds[score])
-            else:
-                sounds.append(self.rand.choice(self.generic_goal_sounds))
+                s = self.rand.choice(self.sounds[score])
+                sounds.append(s)
+
+            sounds.append(self.rand.choice(self.generic_goal_sounds))
 
         elif ev.name == 'score_reset':
-            sounds = ['whistle_2short1long']
+            sounds = [self.rand.choice(['whistle_2short1long', 'Air Horn-SoundBible.com-964603082'])]
         else:
             return
 
