@@ -8,9 +8,8 @@ import os
 class Plugin:
     # This map scores => sounds
     sounds = {
-        (0, 3): ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
-        (0, 5): ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
-        (4, 4): ['musical035', 'musical041', 'musical105']
+        'X_0_win': ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
+        '1_goal_left': ['musical035', 'musical041', 'musical105']
     }
     generic_goal_sounds = ['crowd1', 'crowd2']
 
@@ -21,6 +20,7 @@ class Plugin:
         root = os.path.abspath(os.path.dirname(__file__))
         self.sounds_dir = root + "/../sounds"
         self.running = []
+        self.game_mode = None
 
     def wait_for(self):
         still_running = []
@@ -39,12 +39,16 @@ class Plugin:
 
     def process_event(self, ev):
         sounds = []
+        if ev.name == 'set_game_mode':
+            self.game_mode = ev.data['mode']
         if ev.name == 'score_goal':
-            score = (ev.data['yellow'], ev.data['black'])
-            score = tuple(sorted(score))
-            if score in self.sounds:
-                s = self.rand.choice(self.sounds[score])
-                sounds.append(s)
+            score = sorted((ev.data['yellow'], ev.data['black']))
+            if self.game_mode is not None:
+                if score[0] == score[1] and score[0] == self.game_mode - 1:
+                    sounds.append(self.rand.choice(self.sounds['1_goal_left']))
+
+                if score[0] == 0 and score[1] == self.game_mode:
+                    sounds.append(self.rand.choice(self.sounds['X_0_win']))
 
             sounds.append(self.rand.choice(self.generic_goal_sounds))
 
