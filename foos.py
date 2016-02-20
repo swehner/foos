@@ -3,14 +3,15 @@
 import sys
 import getopt
 import os
-import importlib
 import logging.config
+
 from subprocess import check_output, call
 
 from foos.ui import ui
 import plugins.io_keyboard
 import config
 from foos.bus import Bus, Event
+from foos.plugin_handler import PluginHandler
 
 logging.config.fileConfig('log.ini')
 logger = logging.getLogger(__name__)
@@ -57,14 +58,15 @@ gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
              bg_amount=config.bg_amount)
 bus.subscribe(replay_handler, thread=True)
 
-for plugin in config.plugins:
-    module = importlib.import_module('plugins.' + plugin)
-    module.Plugin(bus)
-    logger.info("Loaded plugin %s", plugin)
-
 if gui.is_x11():
     logger.info("Running Keyboard")
     plugins.io_keyboard.Plugin(bus)
+
+print("X1", logger.parent, logger.parent.level)
+
+# Load plugins
+PluginHandler(bus)
+print("X2", logger.parent, logger.parent.level)
 
 # Run main gui main loop
 logger.info("Run GUI")

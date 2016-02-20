@@ -119,17 +119,20 @@ class Plugin:
         inotify = INotify()
         watch_flags = flags.CLOSE_WRITE
         logger.info("Watching %s", self.watch_dir)
-        wd = inotify.add_watch(self.watch_dir, watch_flags)
+        try:
+            wd = inotify.add_watch(self.watch_dir, watch_flags)
 
-        # And see the corresponding events:
-        while True:
-            events = inotify.read()
-            matching = [f.name for f in events if f.name.startswith(self.prefix)]
-            if len(matching) > 0:
-                # take only the last file
-                self.processForMovement(os.path.join(self.watch_dir, matching[-1]))
+            # And see the corresponding events:
+            while True:
+                events = inotify.read()
+                matching = [f.name for f in events if f.name.startswith(self.prefix)]
+                if len(matching) > 0:
+                    # take only the last file
+                    self.processForMovement(os.path.join(self.watch_dir, matching[-1]))
 
-        inotify.close()
+            inotify.close()
+        except:
+            logger.exception("Error when setting up inotify")
 
     def processFile(self, f):
         with open(f, 'rb') as d:

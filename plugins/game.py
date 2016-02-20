@@ -70,3 +70,9 @@ class Plugin:
         return [(check("Free mode", None), q(Event("set_game_mode", {"mode": None}))),
                 (check("3 goals", 3), q(Event("set_game_mode", {"mode": 3}))),
                 (check("5 goals", 5), q(Event("set_game_mode", {"mode": 5})))]
+
+    def save(self):
+        return self.game_win_score
+
+    def load(self, game_win_score):
+        self.bus.notify(Event("set_game_mode", {"mode": game_win_score}))

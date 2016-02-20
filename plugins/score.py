@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 import os
-import atexit
-import pickle
 from collections import namedtuple
 import logging
 
@@ -14,17 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class Plugin:
-    status_file = '.status'
-
     def __init__(self, bus):
-        # Register save status on exit
-        atexit.register(self.save_info)
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
-        if not self.__load_info():
-            self.reset()
 
     def score(self, team):
         d = self.last_goal_clock.get_diff()
@@ -48,26 +40,14 @@ class Plugin:
         self.scores[team] = max(s - 1, 0)
         self.pushState()
 
-    def __load_info(self):
-        loaded = False
-        try:
-            if os.path.isfile(self.status_file):
-                with open(self.status_file, 'rb') as f:
-                    state = pickle.load(f)
-                    self.scores['yellow'] = state.yellow_goals
-                    self.scores['black'] = state.black_goals
-                    self.last_goal_clock.set(state.last_goal)
-                    self.pushState()
-                    loaded = True
-        except:
-            logger.exception("State loading failed")
+    def load(self, state):
+        self.scores['yellow'] = state.yellow_goals
+        self.scores['black'] = state.black_goals
+        self.last_goal_clock.set(state.last_goal)
+        self.pushState()
 
-        return loaded
-
-    def save_info(self):
-        state = State(self.scores['yellow'], self.scores['black'], self.last_goal())
-        with open(self.status_file, 'wb') as f:
-            pickle.dump(state, f)
+    def save(self):
+        return State(self.scores['yellow'], self.scores['black'], self.last_goal())
 
     def reset(self):
         self.scores = {'black': 0, 'yellow': 0}
