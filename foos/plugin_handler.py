@@ -1,3 +1,4 @@
+import os
 import atexit
 import pickle
 import importlib
@@ -41,6 +42,9 @@ class PluginHandler:
             pickle.dump(state, f)
 
     def load_state(self):
+        if not os.path.isfile(self.status_file):
+            logger.info("Not loading state: State file not found")
+            return
         try:
             with open(self.status_file, 'rb') as f:
                 state = pickle.load(f)
