@@ -9,9 +9,10 @@ class Plugin:
     # This map scores => sounds
     sounds = {
         'X_0_win': ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
-        '1_goal_left': ['musical035', 'musical041', 'musical105']
+        '1_goal_left': ['musical105-loud', 'dun_dun_dun-Delsym-719755295-delayed'],
+        'goal': ['crowd1', 'crowd2'],
+        'reset': ['whistle_2short1long', 'Air Horn-SoundBible.com-964603082-lower']
     }
-    generic_goal_sounds = ['crowd1', 'crowd2']
 
     def __init__(self, bus):
         self.bus = bus
@@ -37,6 +38,9 @@ class Plugin:
         p = subprocess.Popen(['play', '-V0', '-q', s])
         self.running.append(p)
 
+    def choose_sound(self, type):
+        return self.rand.choice(self.sounds.get(type, []))
+
     def process_event(self, ev):
         sounds = []
         if ev.name == 'set_game_mode':
@@ -45,15 +49,15 @@ class Plugin:
             score = sorted((ev.data['yellow'], ev.data['black']))
             if self.game_mode is not None:
                 if score[0] == score[1] and score[0] == self.game_mode - 1:
-                    sounds.append(self.rand.choice(self.sounds['1_goal_left']))
+                    sounds.append(self.choose_sound('1_goal_left'))
 
                 if score[0] == 0 and score[1] == self.game_mode:
-                    sounds.append(self.rand.choice(self.sounds['X_0_win']))
+                    sounds.append(self.choose_sound('X_0_win'))
 
-            sounds.append(self.rand.choice(self.generic_goal_sounds))
+            sounds.append(self.choose_sound('goal'))
 
         elif ev.name == 'score_reset':
-            sounds = [self.rand.choice(['whistle_2short1long', 'Air Horn-SoundBible.com-964603082'])]
+            sounds.append(self.choose_sound('reset'))
         else:
             return
 
