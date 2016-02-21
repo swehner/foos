@@ -24,30 +24,37 @@ class Plugin:
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
-        self.games = []
         self.current_game = 0
         self.enabled = False
-        self.points = {}
-        self.teams = {}
         self.match = {}
         registerMenu(self.getMenuEntries)
 
+    def save(self):
+        return {'match': self.match,
+                'current_game': self.current_game,
+                'enabled': self.enabled}
+
+    def load(self, state):
+        self.current_game = state['current_game']
+        self.match = state['match']
+        self.enabled = state['enabled']
+        self.setPlayers()
+
     def setPlayers(self):
-        g = self.games[self.current_game]
-        self.teams = {"yellow": g[0],
-                      "black": g[1]}
-        self.bus.notify(Event("set_players", self.teams))
+        g = self.match['submatches'][self.current_game]
+        teams = {"yellow": g[0],
+                 "black": g[1]}
+        self.bus.notify(Event("set_players", teams))
 
     def clearPlayers(self):
-        self.teams = {"yellow": [], "black": []}
-        self.bus.notify(Event("set_players", self.teams))
+        teams = {"yellow": [], "black": []}
+        self.bus.notify(Event("set_players", teams))
 
     def process_event(self, ev):
         now = time.time()
         if ev.name == "start_competition":
             p = ev.data['players']
             self.points = dict([(e, 0) for e in p])
-            self.games = ev.data['submatches']
             self.match = ev.data
             self.match['start'] = int(time.time())
             self.current_game = 0
@@ -57,14 +64,13 @@ class Plugin:
             self.setPlayers()
 
         if ev.name == "win_game" and self.enabled:
-            self.calcPoints(ev.data['team'])
             rs = self.match.get('results', [])
             self.match['results'] = rs + [[ev.data['yellow'], ev.data['black']]]
             self.current_game += 1
-            if self.current_game < len(self.games):
+            if self.current_game < len(self.match['submatches']):
                 self.setPlayers()
             else:
-                self.bus.notify(Event("end_competition", {'points': self.points}))
+                self.bus.notify(Event("end_competition", {'points': self.calcPoints()}))
                 self.match['end'] = int(time.time())
                 self.enabled = False
                 self.clearPlayers()
@@ -88,9 +94,15 @@ class Plugin:
         with open(fname, 'w') as f:
             json.dump(self.match, f, indent=2)
 
-    def calcPoints(self, team):
-        for p in self.teams.get(team, []):
-            self.points[p] = self.points[p] + 1
+    def calcPoints(self):
+        points = {}
+        for i, g in enumerate(self.match['submatches']):
+            result = self.match['results'][i]
+            wteam = 0 if result[0] > result[1] else 1
+            for p in g[wteam]:
+                points[p] = points.get(p, 0) + 1
+
+        return points
 
     def getMenuEntries(self):
         def q(ev):
