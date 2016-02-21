@@ -6,15 +6,11 @@ import logging
 import config
 
 logger = logging.getLogger(__name__)
-print(logger.level)
-print(logger.parent, logger.parent.level)
 
 
 class PluginHandler:
     def __init__(self, bus):
         self.status_file = '.status'
-        print("PH1", logger, logger.level, logger.handlers)
-        print("PH1", logger.parent, logger.parent.level, logger.parent.handlers)
         # Register save status on exit
         atexit.register(self.save)
         self.load(bus)
