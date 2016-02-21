@@ -11,7 +11,8 @@ class Plugin:
         'X_0_win': ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],
         '1_goal_left': ['musical105-loud', 'dun_dun_dun-Delsym-719755295-delayed'],
         'goal': ['crowd1', 'crowd2'],
-        'reset': ['whistle_2short1long', 'Air Horn-SoundBible.com-964603082-lower']
+        'reset': ['whistle_2short1long'],
+        'competition': ['Air Horn-SoundBible.com-964603082-lower']
     }
 
     def __init__(self, bus):
@@ -49,19 +50,21 @@ class Plugin:
             score = sorted((ev.data['yellow'], ev.data['black']))
             if self.game_mode is not None:
                 if score[0] == score[1] and score[0] == self.game_mode - 1:
-                    sounds.append(self.choose_sound('1_goal_left'))
+                    sounds.append('1_goal_left')
 
                 if score[0] == 0 and score[1] == self.game_mode:
-                    sounds.append(self.choose_sound('X_0_win'))
+                    sounds.append('X_0_win')
 
-            sounds.append(self.choose_sound('goal'))
+            sounds.append('goal')
 
         elif ev.name == 'score_reset':
-            sounds.append(self.choose_sound('reset'))
+            sounds.append('reset')
+        elif ev.name == 'start_competition' or ev.name == 'end_competition':
+            sounds.append('competition')
         else:
             return
 
-        sounds = [self.sounds_dir + "/{}.wav".format(sound) for sound in sounds]
+        sounds = [self.sounds_dir + "/{}.wav".format(self.choose_sound(sound)) for sound in sounds]
 
         for s in sounds:
             self.play(s)
