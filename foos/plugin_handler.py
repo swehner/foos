@@ -14,16 +14,14 @@ class PluginHandler:
         self.status_file = '.status'
         print("PH1", logger, logger.level, logger.handlers)
         print("PH1", logger.parent, logger.parent.level, logger.parent.handlers)
-        logger.critical("holas1")
         # Register save status on exit
         atexit.register(self.save)
-        logger.info("holas2")
         self.load(bus)
         self.load_state()
 
     def load(self, bus):
         self.running_plugins = {}
-        logger.info("holas", config.plugins)
+        logger.info("Loading plugins %s", config.plugins)
         for plugin in config.plugins:
             module = importlib.import_module('plugins.' + plugin)
             p = module.Plugin(bus)

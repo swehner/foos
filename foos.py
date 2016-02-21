@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+import logging.config
+
+logging.config.fileConfig('log.ini')
+logger = logging.getLogger(__name__)
+
 import sys
 import getopt
 import os
-import logging.config
-
 from subprocess import check_output, call
 
 from foos.ui import ui
@@ -13,8 +16,6 @@ import config
 from foos.bus import Bus, Event
 from foos.plugin_handler import PluginHandler
 
-logging.config.fileConfig('log.ini')
-logger = logging.getLogger(__name__)
 
 
 def replay_handler(ev):
@@ -62,11 +63,8 @@ if gui.is_x11():
     logger.info("Running Keyboard")
     plugins.io_keyboard.Plugin(bus)
 
-print("X1", logger.parent, logger.parent.level)
-
 # Load plugins
 PluginHandler(bus)
-print("X2", logger.parent, logger.parent.level)
 
 # Run main gui main loop
 logger.info("Run GUI")

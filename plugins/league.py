@@ -34,8 +34,8 @@ class Plugin:
 
     def setPlayers(self):
         g = self.games[self.current_game]
-        self.teams = {"yellow": [g[0][0], g[0][1]],
-                      "black": [g[1][0], g[1][1]]}
+        self.teams = {"yellow": g[0],
+                      "black": g[1]}
         self.bus.notify(Event("set_players", self.teams))
 
     def clearPlayers(self):
@@ -77,7 +77,7 @@ class Plugin:
     def _getResultFileFor(self, match):
         return os.path.join(config.league_results_dir,
                             'result_%d.json' % match.get('id', random.randint(0, 1000000)))
-            
+
     def writeResults(self):
         try:
             os.makedirs(config.league_results_dir)
@@ -114,7 +114,7 @@ class Plugin:
                                 # skip match if a result already exists for it
                                 if os.path.exists(self._getResultFileFor(m)):
                                     continue
-                            
+
                             players = list(set(flatten(m['submatches'])))
                             m['players'] = players
                             m['division'] = name
