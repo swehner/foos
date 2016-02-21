@@ -38,7 +38,8 @@ class Plugin:
         self.current_game = state['current_game']
         self.match = state['match']
         self.enabled = state['enabled']
-        self.setPlayers()
+        if self.enabled:
+            self.setPlayers()
 
     def setPlayers(self):
         g = self.match['submatches'][self.current_game]
