@@ -4,7 +4,9 @@ import sys
 import threading
 import queue
 import collections
+
 from foos.bus import Event, Bus
+from foos.plugin_handler import FoosPlugin
 
 class Pattern:
     def __init__(self, time, leds=[]):
@@ -21,7 +23,7 @@ def flatten(l):
             yield el
 
 
-class Plugin:
+class Leds(FoosPlugin):
     def __init__(self, bus):
         self.queue = queue.Queue()
         self.bus = bus

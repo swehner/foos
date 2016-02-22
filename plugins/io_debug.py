@@ -3,11 +3,12 @@ import os
 import logging
 from .io_base import IOBase
 from .arduino import getEventForButton
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin(IOBase):
+class IODebug(IOBase, FoosPlugin):
     def convert_data(self, data):
         return ("Leds: %s\n" % ', '.join(data))
 

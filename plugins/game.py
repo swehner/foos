@@ -6,11 +6,12 @@ import logging
 
 from foos.bus import Bus, Event
 from foos.ui.ui import registerMenu
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin:
+class Game(FoosPlugin):
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)

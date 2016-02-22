@@ -6,12 +6,13 @@ import logging
 
 from foos.clock import Clock
 from foos.bus import Bus, Event
+from foos.plugin_handler import FoosPlugin
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 logger = logging.getLogger(__name__)
 
 
-class Plugin:
+class Score(FoosPlugin):
     def __init__(self, bus):
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}

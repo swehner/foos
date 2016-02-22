@@ -61,7 +61,7 @@ bus.subscribe(replay_handler, thread=True)
 
 if gui.is_x11():
     logger.info("Running Keyboard")
-    plugins.io_keyboard.Plugin(bus)
+    plugins.io_keyboard.IOKeyboard(bus)
 
 # Load plugins
 PluginHandler(bus)

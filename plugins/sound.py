@@ -4,8 +4,9 @@ import subprocess
 import random
 import os
 
+from foos.plugin_handler import FoosPlugin
 
-class Plugin:
+class Sound(FoosPlugin):
     # This map scores => sounds
     sounds = {
         'X_0_win': ['Boxing_arena_sound-Samantha_Enrico-246597508', 'Morse Code-SoundBible.com-810471357'],

@@ -1,6 +1,7 @@
 from .buttons import *
+from foos.plugin_handler import FoosPlugin
 
-class Plugin(Buttons):
+class MenuButtons(Buttons, FoosPlugin):
     def __init__(self, bus):
         super().__init__(bus, long_press_delay=0.3, enabled=False)
 

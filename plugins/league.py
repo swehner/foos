@@ -3,12 +3,14 @@
 import time
 import logging
 import json
+import random
+import os
 
 from foos.bus import Bus, Event
 from foos.ui.ui import registerMenu
+from foos.plugin_handler import FoosPlugin
 import config
-import random
-import os
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +22,7 @@ def flatten(x):
         yield x
 
 
-class Plugin:
+class Leage(FoosPlugin):
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)

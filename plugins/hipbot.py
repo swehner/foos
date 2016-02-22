@@ -2,11 +2,12 @@ import config
 import hipchat
 import traceback
 import logging
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin(object):
+class HipBot(FoosPlugin):
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
