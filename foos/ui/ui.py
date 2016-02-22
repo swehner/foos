@@ -15,7 +15,7 @@ import numpy
 import glob
 import logging
 
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline
 from .menu import Menu, MenuTree
 from .. bus import Event
 from .OutlineFont import OutlineFont
@@ -116,44 +116,6 @@ class KeysFeedback:
             self.icon.show(**params)
         else:
             self.icon.hide()
-
-
-class ChangingText(Delegate):
-    def __init__(self, shader, **kwargs):
-        self.s = pi3d.String(**kwargs)
-        self.s.set_shader(shader)
-        self.newtext = None
-        self.first = True
-        super().__init__(self.s)
-
-    def quick_change(self, s):
-        self.newtext = s
-
-    def draw(self):
-        if self.newtext and not self.first:
-            self.s.quick_change(self.newtext)
-            self.newtext = None
-
-        self.first = False
-        self.s.draw()
-
-
-class Multiline():
-    def __init__(self, shader, font=None, string="", x=0, y=0, z=0, justify='C'):
-        ls = string.splitlines()
-        self.lines = []
-        for s in ls:
-            self.lines.append(ChangingText(shader, font=font, string=s,
-                                           is_3d=False, x=x, y=y, z=z, justify=justify))
-            y -= font.height
-
-    def quick_change(self, string):
-        for i, s in enumerate(string.splitlines()):
-            self.lines[i].quick_change(s)
-
-    def draw(self):
-        for l in self.lines:
-            l.draw()
 
 
 class Gui():

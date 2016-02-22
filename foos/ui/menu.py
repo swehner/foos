@@ -11,9 +11,10 @@ class Menu:
         self.offset = 0
         self.options = options
         self.n = n
-        self.lheight = 65
+        self.lheight = round(font.height * 1.2)
+        self.char_width = font.glyph_table["m"][0]
         arrow_size = 32
-        self.width = wchar * 25 + arrow_size * 2
+        self.width = wchar * self.char_width + arrow_size * 2
         self.shapes = []
         self.starty = self.lheight * (n - 1) / 2
         self.wchar = wchar

@@ -18,6 +18,7 @@ class Plugin:
         self.check_win_time = None
         self.check_delay = 2
         self.current_score = {}
+        self.modes = [None, 3, 5]
         registerMenu(self.getMenuEntries)
         Thread(target=self.__run, daemon=True).start()
 
@@ -67,9 +68,9 @@ class Plugin:
 
             return pre + string
 
-        return [(check("Free mode", None), q(Event("set_game_mode", {"mode": None}))),
-                (check("3 goals", 3), q(Event("set_game_mode", {"mode": 3}))),
-                (check("5 goals", 5), q(Event("set_game_mode", {"mode": 5})))]
+        return [(check("%d goals" % m if m else "Free mode", m),
+                 q(Event("set_game_mode", {"mode": m})))
+                for m in self.modes]
 
     def save(self):
         return self.game_win_score

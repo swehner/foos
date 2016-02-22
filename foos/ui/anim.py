@@ -1,6 +1,7 @@
 import math
 import time
 import numpy
+import pi3d
 
 
 class Delegate:
@@ -162,3 +163,41 @@ class ChangingTextures(Delegate):
             self.last_change = now
             self.idx = (self.idx + 1) % len(self.textures)
             self.shape.set_textures([self.textures[self.idx]])
+
+
+class ChangingText(Delegate):
+    def __init__(self, shader, **kwargs):
+        self.s = pi3d.String(**kwargs)
+        self.s.set_shader(shader)
+        self.newtext = None
+        self.first = True
+        super().__init__(self.s)
+
+    def quick_change(self, s):
+        self.newtext = s
+
+    def draw(self):
+        if self.newtext and not self.first:
+            self.s.quick_change(self.newtext)
+            self.newtext = None
+
+        self.first = False
+        self.s.draw()
+
+
+class Multiline():
+    def __init__(self, shader, font=None, string="", x=0, y=0, z=0, justify='C'):
+        ls = string.splitlines()
+        self.lines = []
+        for s in ls:
+            self.lines.append(ChangingText(shader, font=font, string=s,
+                                           is_3d=False, x=x, y=y, z=z, justify=justify))
+            y -= font.height
+
+    def quick_change(self, string):
+        for i, s in enumerate(string.splitlines()):
+            self.lines[i].quick_change(s)
+
+    def draw(self):
+        for l in self.lines:
+            l.draw()
