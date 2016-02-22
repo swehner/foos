@@ -5,11 +5,12 @@ import config
 import logging
 
 from foos.bus import Event, Bus
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin:
+class Standby(FoosPlugin):
     def __init__(self, bus, standby_timeout=500):
         self.standby_timeout = config.standby_timeout_secs
         self.bus = bus

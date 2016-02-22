@@ -5,11 +5,12 @@ import logging
 from .io_base import IOBase
 from .arduino import getEventForButton
 from foos.bus import Event
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin(IOBase):
+class IOSerial(IOBase, FoosPlugin):
     bitmap = {
         "YD": 0b00001,
         "YI": 0b00010,

@@ -16,6 +16,7 @@ from oauth2client.tools import argparser, run_flow
 
 import config
 from foos.bus import Event
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ def resumable_upload(insert_request):
             time.sleep(sleep_seconds)
 
 
-class Plugin:
+class Uploader(FoosPlugin):
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)

@@ -8,6 +8,7 @@ import logging
 from foos.bus import Event
 import video_config
 import config
+from foos.plugin_handler import FoosPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class MotionDetector:
         return mv
 
 
-class Plugin:
+class MotionDetectorPlugin(FoosPlugin):
     def __init__(self, bus):
         self.md = MotionDetector(config.md_size, config.md_mv_threshold,
                                  config.md_min_vectors, config.md_crop_x, config.md_min_frames)
