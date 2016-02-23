@@ -96,7 +96,8 @@ class Plugin:
             json.dump(self.match, f, indent=2)
 
     def calcPoints(self):
-        points = {}
+        players = self.match['players']
+        points = dict(zip(players, [0] * len(players)))
         for i, g in enumerate(self.match['submatches']):
             result = self.match['results'][i]
             wteam = 0 if result[0] > result[1] else 1
