@@ -5,7 +5,6 @@ import logging
 import json
 import random
 import os
-import requests
 import glob
 import threading
 import shutil
@@ -24,105 +23,61 @@ def flatten(x):
     else:
         yield x
 
+league_results_dir = os.path.join(config.league_dir, 'results')
+league_file = os.path.join(config.league_dir, 'league.json')
+processed_dir = os.path.join(config.league_dir, 'processed')
+
 
 class DiskBackend:
     def __init__(self):
-        self.league_results_dir = os.path.join(config.league_dir, 'results')
-        self.league_file = os.path.join(config.league_dir, 'league.json')
-        os.makedirs(self.league_results_dir, exist_ok=True)
+        os.makedirs(league_results_dir, exist_ok=True)
+        os.makedirs(processed_dir, exist_ok=True)
 
     def get_games(self):
-        with open(self.league_file) as f:
+        with open(league_file) as f:
             competition = json.load(f)
             return self.filterGames(competition)
 
     def write_games(self, competition):
-        with open(self.league_file, 'w') as f:
+        # avoid rewriting the same content
+        if os.path.exists(league_file):
+            with open(league_file) as f:
+                if competition == json.load(f):
+                    logger.info('Not writing league file')
+                    return
+
+        logger.info('Writing league file')
+        tmpfile = league_file + "_tmp"
+        with open(tmpfile, 'w') as f:
             json.dump(competition, f)
+
+        os.rename(tmpfile, league_file)
 
     def filterGames(self, competition):
         for div in competition:
             div['matches'] = [m for m in div['matches']
-                              if not os.path.exists(self._getResultFileFor(m))]
+                              if not os.path.exists(self._get_result_file_for(m))]
 
         return competition
 
     def write_results(self, match):
-        fname = self._getResultFileFor(match)
+        fname = self._get_result_file_for(match)
         with open(fname, 'w') as f:
             json.dump(match, f, indent=2)
 
-    def _getResultFileFor(self, match):
-        return os.path.join(self.league_results_dir,
+    def get_result_files(self):
+        pattern = os.path.join(league_results_dir, 'result_*.json')
+        return glob.glob(pattern)
+
+    def _get_result_file_for(self, match):
+        return os.path.join(league_results_dir,
                             'result_%d.json' % match.get('id', random.randint(0, 10000)))
 
+    def mark_result_as_processed(self, name):
+        target = os.path.join(processed_dir, os.path.basename(name))
+        shutil.move(name, target)
 
-class APIBackend:
-    def __init__(self):
-        self.diskbe = DiskBackend()
-        self.timeout = 1
-        self.upload_url = config.league_upload_url
-        self.games_url = config.league_games_url
-        self.process_interval = 5
-        self.processed_dir = os.path.join(config.league_dir, 'processed')
-        self.league_results_dir = os.path.join(config.league_dir, 'results')
-
-        self.lock = threading.Lock()
-
-        os.makedirs(self.processed_dir, exist_ok=True)
-
-        threading.Thread(daemon=True, target=self.retry_loop).start()
-
-    def get_games(self):
-        return self.diskbe.get_games()
-
-    def request_games(self):
-        try:
-            r = requests.get(self.games_url, timeout=self.timeout)
-            r.raise_for_status()
-            competition = r.json()
-            self.diskbe.write_games(competition)
-            # load through diskbe to filter games
-            return self.diskbe.get_games()
-        except Exception as e:
-            logger.error("API get games error: %s", e)
-
-    def write_results(self, match):
-        with self.lock:
-            try:
-                r = requests.post(self.upload_url, json=match, timeout=self.timeout)
-                r.raise_for_status()
-                # reload games from api
-                self.request_games()
-            except:
-                # store and process later
-                self.diskbe.write_results(match)
-                logger.error("Syncing result failed - storing to disk...")
-
-    def process_failures(self):
-        with self.lock:
-            pattern = os.path.join(self.league_results_dir, 'result_*.json')
-            files = glob.glob(pattern)
-            logger.info("Processing files %s", files)
-            try:
-                for fname in files:
-                    with open(fname, 'r') as f:
-                        r = requests.post(self.upload_url, json=json.load(f), timeout=self.timeout)
-                    r.raise_for_status()
-
-                # reload games from api
-                self.request_games()
-
-                # move all files to processed dir
-                for fname in files:
-                    shutil.move(fname, os.path.join(self.league_results_dir, 'processed'))
-            except Exception as e:
-                logger.error("Error processing results %s", e)
-
-    def retry_loop(self):
-        while True:
-            time.sleep(self.process_interval)
-            self.process_failures()
+diskbackend = DiskBackend()
 
 
 class Plugin:
@@ -132,7 +87,7 @@ class Plugin:
         self.current_game = 0
         self.enabled = False
         self.match = {}
-        self.backend = APIBackend()  # DiskBackend()
+        self.backend = diskbackend
         registerMenu(self.getMenuEntries)
 
     def save(self):
@@ -161,7 +116,6 @@ class Plugin:
         now = time.time()
         if ev.name == "start_competition":
             p = ev.data['players']
-            self.points = dict([(e, 0) for e in p])
             self.match = ev.data
             self.match['start'] = int(time.time())
             self.current_game = 0
@@ -182,6 +136,7 @@ class Plugin:
                 self.enabled = False
                 self.clearPlayers()
                 self.backend.write_results(self.match)
+                self.bus.notify(Event("results_written"))
 
         if ev.name == "cancel_competition":
             self.enabled = False
@@ -189,7 +144,7 @@ class Plugin:
 
     def calcPoints(self):
         players = self.match['players']
-        points = dict(zip(players, [0] * len(players)))
+        points = dict([(p, 0) for p in players])
         for i, g in enumerate(self.match['submatches']):
             result = self.match['results'][i]
             wteam = 0 if result[0] > result[1] else 1

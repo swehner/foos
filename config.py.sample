@@ -5,11 +5,11 @@ bg_change_secs = 300
 bg_amount = 3
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
-plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hipbot', 'league']
+plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hipbot', 'league', 'league_sync']
 # plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
 
-league_file = 'league.json'
-league_results_dir = '/tmp/results'
+league_dir = './league'
+league_url = 'http://localhost:8888/api'
 
 # config parameters for motion detector
 # MV frame size
