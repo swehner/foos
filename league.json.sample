@@ -2,16 +2,19 @@
 {"name":"1st Division",
  "matches":[
     {"id":17,
+     "players":["Ripley","Dallas","Lambert","Brett"],
      "submatches":[
        [["Ripley","Dallas"],["Lambert","Brett"]],
        [["Ripley","Lambert"],["Dallas","Brett"]],
        [["Ripley","Brett"],["Dallas","Lambert"]]]},
     {"id":18,
+     "players":["Brett","Kane","Ash","Parker"],
      "submatches":[
        [["Brett","Kane"],["Ash","Parker"]],
        [["Brett","Ash"],["Kane","Parker"]],
        [["Brett","Parker"],["Kane","Ash"]]]},
     {"id":19,
+     "players":["Bishop","Dallas","Alien","Kane"],
      "submatches":[
         [["Bishop","Dallas"],["Alien","Kane"]],
 	[["Bishop","Alien"],["Dallas","Kane"]],
@@ -19,16 +22,19 @@
 {"name":"2nd Division",
  "matches":[
    {"id":33,
+    "players":["Skyler","Walter","Jesse","Hank"],
     "submatches":[
       [["Skyler","Walter"],["Jesse","Hank"]],
       [["Skyler","Jesse"],["Walter","Hank"]],
       [["Skyler","Hank"],["Walter","Jesse"]]]},
    {"id":34,
+    "players":["Marie","Walter Jr.","Mike","Jesse"],
     "submatches":[
       [["Marie","Walter Jr."],["Mike","Jesse"]],
       [["Marie","Mike"],["Walter Jr.","Jesse"]],
       [["Marie","Jesse"],["Walter Jr.","Mike"]]]},
    {"id":35,
+    "players":["Saul","Gus","Marie","Badger"],
     "submatches":[
       [["Saul","Gus"],["Marie","Badger"]],
       [["Saul","Marie"],["Gus","Badger"]],

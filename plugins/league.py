@@ -15,14 +15,6 @@ import config
 
 logger = logging.getLogger(__name__)
 
-
-def flatten(x):
-    if isinstance(x, list):
-        for e in x:
-            yield from flatten(e)
-    else:
-        yield x
-
 league_results_dir = os.path.join(config.league_dir, 'results')
 league_file = os.path.join(config.league_dir, 'league.json')
 processed_dir = os.path.join(config.league_dir, 'processed')
@@ -170,11 +162,9 @@ class Plugin:
                     name, matches = div['name'], div['matches']
                     mmatches = []
                     for m in matches:
-                        players = list(set(flatten(m['submatches'])))
-                        m['players'] = players
                         m['division'] = name
                         ev = Event('start_competition', m)
-                        entry = "{:<14} {:<14} {:<14} {:<14}".format(*players)
+                        entry = "{:<14} {:<14} {:<14} {:<14}".format(*m['players'])
                         mmatches.append((entry, q(ev)))
 
                     mmatches.append(("", None))
