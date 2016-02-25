@@ -17,19 +17,21 @@ from foos.bus import Bus, Event
 from foos.plugin_handler import PluginHandler
 
 
-
 def replay_handler(ev):
     replay_type = 'short'
+    extra = {}
     if ev.name == 'score_goal':
-        pass
+        extra = ev.data
+        extra['type'] = 'goal'
     elif ev.name == 'replay_request':
         replay_type = 'long'
+        extra = {'type': 'manual'}
     else:
         return
 
     if config.replay_enabled:
         call(["video/generate-replay.sh"])
-        bus.notify(Event('replay_start'))
+        bus.notify(Event('replay_start', extra))
         call(["video/replay-last.sh", replay_type])
         bus.notify(Event('replay_end'))
 

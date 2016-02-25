@@ -116,20 +116,24 @@ class Plugin:
     def __init__(self, bus):
         self.bus = bus
         self.bus.subscribe(self.process_event, thread=True)
-        self.last_goal = None
-        self.current_score = ('-', '-')
+        self.replay_data = {}
+        self.current_score = ('?', '?')
 
     def process_event(self, ev):
-        if ev.name == 'score_goal':
-            self.last_goal = ev.data['team']
-        elif ev.name == 'score_changed':
+        if ev.name == 'score_changed':
             self.current_score = ev.data['yellow'], ev.data['black']
+        elif ev.name == 'replay_start':
+            self.replay_data = ev.data
 
         if ev.name != 'upload_request':
             return
 
         self.bus.notify(Event('upload_start'))
-        title = "{} goal: {} - {}".format(self.last_goal, self.current_score[0], self.current_score[1])
+        text = 'Replay'
+        if self.replay_data.get('type') == 'goal':
+            text = '{} goal'.format(self.replay_data.get('team', '?').capitalize())
+
+        title = "{}: {}-{}".format(text, self.current_score[0], self.current_score[1])
         logger.info("Uploading video: %s", title)
 
         try:
