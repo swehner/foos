@@ -67,7 +67,7 @@ class Plugin:
         self.bus.notify(Event("score_changed", self.__get_event_data()))
 
     def process_event(self, ev):
-        if ev.name == 'button_event' and ev.data['btn'] == 'goal':
+        if ev.name == 'goal_event':
             # process goals
             self.score(ev.data['team'])
         if ev.name == 'increment_score':

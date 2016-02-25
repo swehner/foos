@@ -13,7 +13,7 @@ class Plugin:
     def __init__(self, bus, standby_timeout=500):
         self.standby_timeout = config.standby_timeout_secs
         self.bus = bus
-        self.activation_events = ["button_event", "movement_detected"]
+        self.activation_events = ["button_event", "movement_detected", "goal_event"]
         self.last_active = time.time()
         self.active = True
 

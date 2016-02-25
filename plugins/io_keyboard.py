@@ -50,7 +50,7 @@ class Plugin(IOBase):
 
                     if code in self.goal_map and e.type == x.KeyPress:
                         team = self.goal_map[code]
-                        event = Event('button_event', {'source': 'keyboard', 'btn': 'goal', 'team': team})
+                        event = Event('goal_event', {'source': 'keyboard', 'team': team})
                         self.bus.notify(event)
 
                     if code == 60:  # PERIOD

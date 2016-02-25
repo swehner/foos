@@ -279,7 +279,7 @@ class Gui():
             self.feedback.setIcon("error")
         if ev.name == "serial_disconnected":
             self.feedback.setIcon("unplugged")
-        if ev.name == "button_event" and ev.data['btn'] != 'goal':
+        if ev.name == "button_event":
             self.instructions.show()
         if ev.name == "menu_down":
             self.menu.down()
