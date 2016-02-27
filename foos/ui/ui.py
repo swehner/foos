@@ -254,12 +254,27 @@ class Gui():
         self.__move_sprites(0)
 
     def process_event(self, ev):
+        fmap = {
+            'quit': lambda d: self.stop(),
+            'score_changed': lambda d: self.set_state(GuiState(d['yellow'], d['black'], d['last_goal'])),
+            "button_will_upload": lambda d: self.feedback.setIcon("will_upload"),
+            "button_will_replay": lambda d: self.feedback.setIcon("will_replay"),
+            "upload_start": lambda d: self.feedback.setIcon("uploading"),
+            "upload_ok": lambda d: self.feedback.setIcon("ok"),
+            "upload_error": lambda d: self.feedback.setIcon("error"),
+            "serial_disconnected": lambda d: self.feedback.setIcon("unplugged"),
+            "button_event": lambda d: self.instructions.show(),
+            "menu_down": lambda d: self.menu.down(),
+            "menu_up": lambda d: self.menu.up(),
+            "menu_select": lambda d: self.menu.select(),
+            "set_game_mode": lambda d: self.game_mode.quick_change(self.__get_mode_string(d["mode"])),
+            "movement_detected": lambda d: self.people.show(),
+            "set_players": lambda d: self.setPlayers(d['black'], d['yellow'])
+        }
+        if ev.name in fmap:
+            fmap[ev.name](ev.data)
         if ev.name == "leds_enabled":
             self.leds = ev.data
-        if ev.name == "quit":
-            self.stop()
-        if ev.name == "score_changed":
-            self.set_state(GuiState(ev.data['yellow'], ev.data['black'], ev.data['last_goal']))
         if ev.name == "replay_start":
             self.overlay_mode = True
             self.feedback.setIcon(None)
@@ -267,26 +282,6 @@ class Gui():
         if ev.name == "replay_end":
             self.overlay_mode = False
             self.__move_sprites()
-        if ev.name == "button_will_upload":
-            self.feedback.setIcon("will_upload")
-        if ev.name == "button_will_replay":
-            self.feedback.setIcon("will_replay")
-        if ev.name == "upload_start":
-            self.feedback.setIcon("uploading")
-        if ev.name == "upload_ok":
-            self.feedback.setIcon("ok")
-        if ev.name == "upload_error":
-            self.feedback.setIcon("error")
-        if ev.name == "serial_disconnected":
-            self.feedback.setIcon("unplugged")
-        if ev.name == "button_event":
-            self.instructions.show()
-        if ev.name == "menu_down":
-            self.menu.down()
-        if ev.name == "menu_up":
-            self.menu.up()
-        if ev.name == "menu_select":
-            self.menu.select()
         if ev.name == "menu_show":
             self.draw_menu = True
             self.resetMenu()
@@ -299,12 +294,6 @@ class Gui():
             s = self.__get_winner_string(ev.data)
             self.winner.quick_change(s)
             logger.info(s)
-        if ev.name == "set_game_mode":
-            self.game_mode.quick_change(self.__get_mode_string(ev.data["mode"]))
-        if ev.name == "movement_detected":
-            self.people.show()
-        if ev.name == "set_players":
-            self.setPlayers(ev.data['black'], ev.data['yellow'])
 
     def __get_winner_string(self, evdata):
         s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"

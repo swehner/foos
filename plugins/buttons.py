@@ -92,7 +92,7 @@ class Buttons:
         self.press = 'short'
 
     def process_event(self, ev):
-        if not self.enabled or ev.name != 'button_event' or 'state' not in ev.data:
+        if not self.enabled or ev.data is None or 'state' not in ev.data:
             return
 
         button, state = (ev.data['btn'], ev.data['state'])

@@ -6,6 +6,7 @@ import queue
 import collections
 from foos.bus import Event, Bus
 
+
 class Pattern:
     def __init__(self, time, leds=[]):
         self.time = time
@@ -25,7 +26,14 @@ class Plugin:
     def __init__(self, bus):
         self.queue = queue.Queue()
         self.bus = bus
-        self.bus.subscribe(self.process_event)
+        fmap = {'score_goal': lambda d: self.setMode(pat_goal),
+                'upload_ok': lambda d: self.setMode(pat_ok),
+                'tv_standby': lambda d: self.setMode(pat_standby, loop=True),
+                'tv_on': lambda d: self.setMode([]),
+                'button_will_upload': lambda d: self.setMode(pat_upload_feedback),
+                'upload_error': lambda d: self.setMode(pat_error)}
+
+        self.bus.subscribe_map(fmap)
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
@@ -62,20 +70,6 @@ class Plugin:
         self.stop = True
         self.queue.put((loop, mode))
 
-    def process_event(self, ev):
-        if ev.name == 'score_goal':
-            self.setMode(pat_goal)
-        if ev.name == 'upload_ok':
-            self.setMode(pat_ok)
-        if ev.name == 'tv_standby':
-            self.setMode(pat_standby, loop=True)
-        if ev.name == 'tv_on':
-            self.setMode([])
-        if ev.name == 'button_will_upload':
-            self.setMode(pat_upload_feedback)
-        # all error conditions
-        if ev.name in ['upload_error']:
-            self.setMode(pat_error)
 
 pat_reset = 3 * [Pattern(0.2, ["BI", "BD", "YI", "YD"]),
                  Pattern(0.1),

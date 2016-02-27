@@ -75,7 +75,10 @@ diskbackend = DiskBackend()
 class Plugin:
     def __init__(self, bus):
         self.bus = bus
-        self.bus.subscribe(self.process_event, thread=True)
+        self.bus.subscribe_map({"start_competition": self.start_competition,
+                                "win_game": self.win_game,
+                                "cancel_competition": self.cancel_competition},
+                               thread=True)
         self.current_game = 0
         self.enabled = False
         self.match = {}
@@ -104,25 +107,25 @@ class Plugin:
         teams = {"yellow": [], "black": []}
         self.bus.notify(Event("set_players", teams))
 
-    def process_event(self, ev):
-        now = time.time()
-        if ev.name == "start_competition":
-            p = ev.data['players']
-            self.match = ev.data
-            self.match['start'] = int(time.time())
-            self.current_game = 0
-            self.enabled = True
-            self.bus.notify(Event("reset_score"))
-            self.bus.notify(Event("set_game_mode", {"mode": 5}))
-            self.setPlayers()
+    def start_competition(self, data):
+        self.match = data
+        self.match['start'] = int(time.time())
+        self.current_game = 0
+        self.enabled = True
+        self.bus.notify(Event("reset_score"))
+        self.bus.notify(Event("set_game_mode", {"mode": 5}))
+        self.setPlayers()
 
-        if ev.name == "win_game" and self.enabled:
+    def win_game(self, data):
+        if self.enabled:
             rs = self.match.get('results', [])
-            self.match['results'] = rs + [[ev.data['yellow'], ev.data['black']]]
+            self.match['results'] = rs + [[data['yellow'], data['black']]]
             self.current_game += 1
             if self.current_game < len(self.match['submatches']):
                 self.setPlayers()
             else:
+                # small delay to allow other threads to process events
+                time.sleep(0.2)
                 self.bus.notify(Event("end_competition", {'points': self.calcPoints()}))
                 self.match['end'] = int(time.time())
                 self.enabled = False
@@ -130,9 +133,9 @@ class Plugin:
                 self.backend.write_results(self.match)
                 self.bus.notify(Event("results_written"))
 
-        if ev.name == "cancel_competition":
-            self.enabled = False
-            self.clearPlayers()
+    def cancel_competition(self, data):
+        self.enabled = False
+        self.clearPlayers()
 
     def calcPoints(self):
         players = self.match['players']

@@ -19,7 +19,7 @@ class Plugin:
 
         # disable if standby_timeout is 0
         if self.standby_timeout != 0:
-            self.bus.subscribe(self.process_event)
+            self.bus.subscribe(self.process_event, subscribed_events=self.activation_events)
             threading.Thread(daemon=True, target=self.run).start()
 
     def run(self):
@@ -41,7 +41,6 @@ class Plugin:
         self.bus.notify(Event("tv_on"))
 
     def process_event(self, ev):
-        if ev.name in self.activation_events:
-            self.last_active = time.time()
-            if not self.active:
-                self.turn_on()
+        self.last_active = time.time()
+        if not self.active:
+            self.turn_on()

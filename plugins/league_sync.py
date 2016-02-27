@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Plugin:
     def __init__(self, bus):
-        bus.subscribe(self.process_event)
+        bus.subscribe(self.process_event, thread=False, subscribed_events=['results_written'])
         self.diskbe = diskbackend
         self.timeout = 2
         self.process_interval = 60
@@ -20,12 +20,11 @@ class Plugin:
         threading.Thread(daemon=True, target=self.retry_loop).start()
 
     def process_event(self, ev):
-        if ev.name == 'results_written':
-            try:
-                self.do_process.release()
-            except ValueError:
-                #ignore too many increments
-                pass
+        try:
+            self.do_process.release()
+        except ValueError:
+            #ignore too many increments
+            pass
 
     def request_games(self):
         try:

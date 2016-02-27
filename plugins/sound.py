@@ -46,7 +46,7 @@ class Plugin:
         sounds = []
         if ev.name == 'set_game_mode':
             self.game_mode = ev.data['mode']
-        if ev.name == 'score_goal':
+        elif ev.name == 'score_goal':
             score = sorted((ev.data['yellow'], ev.data['black']))
             if self.game_mode is not None:
                 if score[0] == score[1] and score[0] == self.game_mode - 1:
@@ -56,7 +56,6 @@ class Plugin:
                     sounds.append('X_0_win')
 
             sounds.append('goal')
-
         elif ev.name == 'score_reset':
             sounds.append('reset')
         elif ev.name == 'start_competition' or ev.name == 'end_competition':

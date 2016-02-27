@@ -16,7 +16,11 @@ class Plugin:
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
         self.bus = bus
-        self.bus.subscribe(self.process_event, thread=True)
+        fmap = {'goal_event': lambda d: self.score(d['team']),
+                'increment_score': lambda d: self.increment(d['team']),
+                'decrement_score': lambda d: self.decrement(d['team']),
+                'reset_score': lambda d: self.reset()}
+        self.bus.subscribe_map(fmap, thread=True)
 
     def score(self, team):
         d = self.last_goal_clock.get_diff()
@@ -65,14 +69,3 @@ class Plugin:
 
     def pushState(self):
         self.bus.notify(Event("score_changed", self.__get_event_data()))
-
-    def process_event(self, ev):
-        if ev.name == 'goal_event':
-            # process goals
-            self.score(ev.data['team'])
-        if ev.name == 'increment_score':
-            self.increment(ev.data['team'])
-        if ev.name == 'decrement_score':
-            self.decrement(ev.data['team'])
-        if ev.name == 'reset_score':
-            self.reset()
