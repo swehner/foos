@@ -23,7 +23,7 @@ class Plugin:
         try:
             self.do_process.release()
         except ValueError:
-            #ignore too many increments
+            # ignore too many increments
             pass
 
     def request_games(self):

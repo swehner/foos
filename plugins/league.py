@@ -6,10 +6,9 @@ import json
 import random
 import os
 import glob
-import threading
 import shutil
 
-from foos.bus import Bus, Event
+from foos.bus import Event
 from foos.ui.ui import registerMenu
 import config
 
@@ -28,7 +27,7 @@ class DiskBackend:
     def get_games(self):
         with open(league_file) as f:
             competition = json.load(f)
-            return self.filterGames(competition)
+            return self.filter_played_games(competition)
 
     def write_games(self, competition):
         # avoid rewriting the same content
@@ -41,11 +40,11 @@ class DiskBackend:
         logger.info('Writing league file')
         tmpfile = league_file + "_tmp"
         with open(tmpfile, 'w') as f:
-            json.dump(competition, f)
+            json.dump(competition, f, indent=2)
 
         os.rename(tmpfile, league_file)
 
-    def filterGames(self, competition):
+    def filter_played_games(self, competition):
         for div in competition:
             div['matches'] = [m for m in div['matches']
                               if not os.path.exists(self._get_result_file_for(m))]
@@ -80,30 +79,27 @@ class Plugin:
                                 "cancel_competition": self.cancel_competition},
                                thread=True)
         self.current_game = 0
-        self.enabled = False
         self.match = {}
         self.backend = diskbackend
-        registerMenu(self.getMenuEntries)
+        registerMenu(self.get_menu_entries)
 
     def save(self):
         return {'match': self.match,
-                'current_game': self.current_game,
-                'enabled': self.enabled}
+                'current_game': self.current_game}
 
     def load(self, state):
         self.current_game = state['current_game']
         self.match = state['match']
-        self.enabled = state['enabled']
-        if self.enabled:
-            self.setPlayers()
+        if self.match:
+            self.update_players()
 
-    def setPlayers(self):
+    def update_players(self):
         g = self.match['submatches'][self.current_game]
         teams = {"yellow": g[0],
                  "black": g[1]}
         self.bus.notify(Event("set_players", teams))
 
-    def clearPlayers(self):
+    def clear_players(self):
         teams = {"yellow": [], "black": []}
         self.bus.notify(Event("set_players", teams))
 
@@ -111,33 +107,31 @@ class Plugin:
         self.match = data
         self.match['start'] = int(time.time())
         self.current_game = 0
-        self.enabled = True
         self.bus.notify(Event("reset_score"))
         self.bus.notify(Event("set_game_mode", {"mode": 5}))
-        self.setPlayers()
+        self.update_players()
 
     def win_game(self, data):
-        if self.enabled:
+        if self.match:
             rs = self.match.get('results', [])
             self.match['results'] = rs + [[data['yellow'], data['black']]]
             self.current_game += 1
             if self.current_game < len(self.match['submatches']):
-                self.setPlayers()
+                self.update_players()
             else:
                 # small delay to allow other threads to process events
                 time.sleep(0.2)
-                self.bus.notify(Event("end_competition", {'points': self.calcPoints()}))
+                self.bus.notify(Event("end_competition", {'points': self.calc_points()}))
                 self.match['end'] = int(time.time())
-                self.enabled = False
-                self.clearPlayers()
+                self.clear_players()
                 self.backend.write_results(self.match)
                 self.bus.notify(Event("results_written"))
 
     def cancel_competition(self, data):
-        self.enabled = False
-        self.clearPlayers()
+        self.match = None
+        self.clear_players()
 
-    def calcPoints(self):
+    def calc_points(self):
         players = self.match['players']
         points = dict([(p, 0) for p in players])
         for i, g in enumerate(self.match['submatches']):
@@ -148,14 +142,14 @@ class Plugin:
 
         return points
 
-    def getMenuEntries(self):
+    def get_menu_entries(self):
         def q(ev):
             def f():
                 self.bus.notify(ev)
                 self.bus.notify(Event("menu_hide"))
             return f
 
-        if self.enabled:
+        if self.match:
             return [("Cancel official game", q(Event("cancel_competition")))]
         else:
             try:
