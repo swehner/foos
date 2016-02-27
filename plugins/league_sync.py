@@ -1,11 +1,9 @@
-import time
 import requests
 import threading
 import logging
 import config
 import json
 
-from foos.bus import Bus, Event
 from plugins.league import diskbackend
 logger = logging.getLogger(__name__)
 

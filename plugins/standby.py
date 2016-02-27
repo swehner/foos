@@ -4,7 +4,7 @@ import subprocess
 import config
 import logging
 
-from foos.bus import Event, Bus
+from foos.bus import Event
 
 logger = logging.getLogger(__name__)
 

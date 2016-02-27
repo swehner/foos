@@ -1,7 +1,5 @@
 import logging
-import json
 
-from foos.bus import Bus, Event
 logger = logging.getLogger(__name__)
 
 

@@ -4,7 +4,7 @@ from threading import Thread
 import time
 import logging
 
-from foos.bus import Bus, Event
+from foos.bus import Event
 from foos.ui.ui import registerMenu
 
 logger = logging.getLogger(__name__)

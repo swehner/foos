@@ -52,7 +52,7 @@ class Plugin:
                         loop = False
                         break
 
-            #reset leds
+            # reset leds
             self.setLeds()
 
     def __safeSleep(self, t):
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     bus = Bus()
     bus.subscribe(write_data, thread=True)
-    controller = LedController(bus)
+    controller = Plugin(bus)
     controller.setMode(pat_standby, loop=True)
     time.sleep(5)
     controller.setMode(pat_goal)

@@ -1,7 +1,7 @@
 import time
 import queue
 from threading import Thread
-from foos.bus import Bus, Event
+from foos.bus import Event
 
 
 def key(btns, state, duration, ev, ar):

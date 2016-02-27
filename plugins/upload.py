@@ -14,7 +14,6 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
-import config
 from foos.bus import Event
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ def get_authenticated_service():
 
 def initialize_upload(title=None, file='/tmp/replay/replay_long.mp4'):
     youtube = get_authenticated_service()
-    tags = ['foos']
     if not title:
         title = 'Tuenti foos replay'
     body = {

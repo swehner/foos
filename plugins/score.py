@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import os
 from collections import namedtuple
 import logging
 
 from foos.clock import Clock
-from foos.bus import Bus, Event
+from foos.bus import Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 logger = logging.getLogger(__name__)

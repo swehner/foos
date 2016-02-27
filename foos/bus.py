@@ -65,7 +65,7 @@ class Bus:
             except queue.Full:
                 logger.warning("Queue full when sending %s to %s", ev.name, f)
 
-        t = Thread(target=trun, daemon=True).start()
+        Thread(target=trun, daemon=True).start()
         return fthread
 
     def __run(self):

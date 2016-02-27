@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 import sys
 import getopt
 import os
-from subprocess import check_output, call
+from subprocess import call
 
 from foos.ui import ui
 import plugins.io_keyboard

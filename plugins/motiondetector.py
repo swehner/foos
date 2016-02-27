@@ -84,7 +84,7 @@ class MotionDetector:
         return f.read(self.size[0] * self.size[1] * 4)
 
     def chunk_has_movement(self, d):
-        #skip first frame
+        # Skip first frame
         frame = self.readFrame(d)
         movement_in_frame = []
         while True:
@@ -120,7 +120,7 @@ class Plugin:
         watch_flags = flags.CLOSE_WRITE
         logger.info("Watching %s", self.watch_dir)
         try:
-            wd = inotify.add_watch(self.watch_dir, watch_flags)
+            inotify.add_watch(self.watch_dir, watch_flags)
 
             # And see the corresponding events:
             while True:
