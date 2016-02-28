@@ -18,7 +18,6 @@ from functools import partial
 
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline
 from .menu import Menu, MenuTree
-from .. bus import Event
 from .OutlineFont import OutlineFont
 import config
 import itertools
@@ -164,7 +163,7 @@ class Gui():
                 self.main_menu.extend(elems)
                 self.main_menu.append(("", None))
 
-        self.main_menu.append(("« Back", lambda: self.bus.notify(Event("menu_hide"))))
+        self.main_menu.append(("« Back", lambda: self.bus.notify("menu_hide")))
 
     def resetMenu(self):
         self.__setup_menu()
@@ -287,7 +286,7 @@ class Gui():
         self.draw_menu = show
         if show:
             self.resetMenu()
-        self.bus.notify(Event("menu_visible" if show else "menu_hidden", {}))
+        self.bus.notify("menu_visible" if show else "menu_hidden", {})
 
     def _handle_replay(self, start):
         self.overlay_mode = start

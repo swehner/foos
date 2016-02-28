@@ -32,7 +32,7 @@ class Plugin(IOBase):
                 line = line.strip()
                 ev = getEventForButton(line)
                 if ev:
-                    self.bus.notify(ev)
+                    self.bus.notify(*ev)
 
     def writer_thread(self):
         fifo_file = "/tmp/foos-debug.out"

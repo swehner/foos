@@ -14,8 +14,6 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
-from foos.bus import Event
-
 logger = logging.getLogger(__name__)
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -126,7 +124,7 @@ class Plugin:
         if ev.name != 'upload_request':
             return
 
-        self.bus.notify(Event('upload_start'))
+        self.bus.notify('upload_start')
         text = 'Replay'
         if self.replay_data.get('type') == 'goal':
             text = '{} goal'.format(self.replay_data.get('team', '?').capitalize())
@@ -138,14 +136,14 @@ class Plugin:
             filename = subprocess.check_output(["video/prepare-upload.sh"]).decode('utf-8').strip()
             video_id = initialize_upload(title, filename)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
-            self.bus.notify(Event('upload_ok', url))
+            self.bus.notify('upload_ok', url)
             return
         except HttpError as e:
             logger.error("An HTTP error %d occurred:\n%s", e.resp.status, e.content)
         except Exception as e:
             logger.error("An error occurred: %s", e)
 
-        self.bus.notify(Event('upload_error'))
+        self.bus.notify('upload_error')
 
 if __name__ == '__main__':
     file = sys.argv[1]

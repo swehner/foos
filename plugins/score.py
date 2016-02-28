@@ -4,7 +4,6 @@ from collections import namedtuple
 import logging
 
 from foos.clock import Clock
-from foos.bus import Event
 
 State = namedtuple('State', ['yellow_goals', 'black_goals', 'last_goal'])
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ class Plugin:
         self.increment(team)
         data = self.__get_event_data()
         data['team'] = team
-        self.bus.notify(Event('score_goal', data))
+        self.bus.notify('score_goal', data)
 
     def increment(self, team):
         s = self.scores.get(team, 0)
@@ -55,7 +54,7 @@ class Plugin:
     def reset(self):
         self.scores = {'black': 0, 'yellow': 0}
         self.last_goal_clock.reset()
-        self.bus.notify(Event('score_reset', self.__get_event_data()))
+        self.bus.notify('score_reset', self.__get_event_data())
         self.pushState()
 
     def last_goal(self):
@@ -67,4 +66,4 @@ class Plugin:
                 'last_goal': self.last_goal()}
 
     def pushState(self):
-        self.bus.notify(Event("score_changed", self.__get_event_data()))
+        self.bus.notify("score_changed", self.__get_event_data())

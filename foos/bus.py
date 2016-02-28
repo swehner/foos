@@ -41,8 +41,8 @@ class Bus:
 
         self.subscribers.append(fs if subscribed_events else f)
 
-    def notify(self, ev):
-        self.queue.put(ev)
+    def notify(self, ev, ev_data=None):
+        self.queue.put(Event(ev, ev_data))
 
     def __threaded_func(self, f, subscribed_events=None):
         q = queue.Queue(maxsize=20)

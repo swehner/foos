@@ -1,7 +1,6 @@
 import time
 import queue
 from threading import Thread
-from foos.bus import Event
 
 
 def key(btns, state, duration, ev, ar):
@@ -54,7 +53,7 @@ class Buttons:
 
         if keypress in self.keymap:
             ev, ar = self.keymap[keypress]
-            self.bus.notify(Event(*ev))
+            self.bus.notify(*ev)
 
     def run(self):
         while True:

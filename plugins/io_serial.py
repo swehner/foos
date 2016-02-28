@@ -4,7 +4,6 @@ import glob
 import logging
 from .io_base import IOBase
 from .arduino import getEventForButton
-from foos.bus import Event
 
 logger = logging.getLogger(__name__)
 
@@ -74,10 +73,10 @@ class Plugin(IOBase):
                     # seems like it's necessary to change the baudrate for it to be set correctly
                     self.ser = serial.Serial(tty_list[0], 9600, timeout=10)
                     self.ser.baudrate = 115200
-                    self.bus.notify(Event("serial_connected"))
+                    self.bus.notify("serial_connected")
                     return
                 except Exception as e:
                     logger.error("Error opening serial: %s", e)
 
-            self.bus.notify(Event("serial_disconnected"))
+            self.bus.notify("serial_disconnected")
             time.sleep(1)

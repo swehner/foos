@@ -8,7 +8,6 @@ import os
 import glob
 import shutil
 
-from foos.bus import Event
 from foos.ui.ui import registerMenu
 import config
 
@@ -97,18 +96,18 @@ class Plugin:
         g = self.match['submatches'][self.current_game]
         teams = {"yellow": g[0],
                  "black": g[1]}
-        self.bus.notify(Event("set_players", teams))
+        self.bus.notify("set_players", teams)
 
     def clear_players(self):
         teams = {"yellow": [], "black": []}
-        self.bus.notify(Event("set_players", teams))
+        self.bus.notify("set_players", teams)
 
     def start_competition(self, data):
         self.match = data
         self.match['start'] = int(time.time())
         self.current_game = 0
-        self.bus.notify(Event("reset_score"))
-        self.bus.notify(Event("set_game_mode", {"mode": 5}))
+        self.bus.notify("reset_score")
+        self.bus.notify("set_game_mode", {"mode": 5})
         self.update_players()
 
     def win_game(self, data):
@@ -121,11 +120,11 @@ class Plugin:
             else:
                 # small delay to allow other threads to process events
                 time.sleep(0.2)
-                self.bus.notify(Event("end_competition", {'points': self.calc_points()}))
+                self.bus.notify("end_competition", {'points': self.calc_points()})
                 self.match['end'] = int(time.time())
                 self.clear_players()
                 self.backend.write_results(self.match)
-                self.bus.notify(Event("results_written"))
+                self.bus.notify("results_written")
                 self.match = None
 
     def cancel_competition(self, data):
@@ -144,14 +143,14 @@ class Plugin:
         return points
 
     def get_menu_entries(self):
-        def q(ev):
+        def q(ev, data=None):
             def f():
-                self.bus.notify(ev)
-                self.bus.notify(Event("menu_hide"))
+                self.bus.notify(ev, data)
+                self.bus.notify("menu_hide")
             return f
 
         if self.match:
-            return [("Cancel official game", q(Event("cancel_competition")))]
+            return [("Cancel official game", q("cancel_competition"))]
         else:
             try:
                 comp = self.backend.get_games()
@@ -161,9 +160,8 @@ class Plugin:
                     mmatches = []
                     for m in matches:
                         m['division'] = name
-                        ev = Event('start_competition', m)
                         entry = "{:<14} {:<14} {:<14} {:<14}".format(*m['players'])
-                        mmatches.append((entry, q(ev)))
+                        mmatches.append((entry, q('start_competition', m)))
 
                     mmatches.append(("", None))
                     mmatches.append(("« Back", None))

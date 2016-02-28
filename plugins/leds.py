@@ -4,7 +4,7 @@ import sys
 import threading
 import queue
 import collections
-from foos.bus import Event, Bus
+from foos.bus import Bus
 
 
 class Pattern:
@@ -64,7 +64,7 @@ class Plugin:
         return self.queue.empty()
 
     def setLeds(self, leds=[]):
-        self.bus.notify(Event("leds_enabled", leds))
+        self.bus.notify("leds_enabled", leds)
 
     def setMode(self, mode, loop=False):
         self.stop = True

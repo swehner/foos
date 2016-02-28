@@ -9,7 +9,7 @@ from subprocess import call
 
 from foos.ui import ui
 import plugins.io_keyboard
-from foos.bus import Bus, Event
+from foos.bus import Bus
 from foos.plugin_handler import PluginHandler
 
 
@@ -24,9 +24,9 @@ class ReplayHandler:
 
         if config.replay_enabled:
             call(["video/generate-replay.sh"])
-            bus.notify(Event('replay_start', extra))
+            bus.notify('replay_start', extra)
             call(["video/replay-last.sh", replay_type])
-            bus.notify(Event('replay_end'))
+            bus.notify('replay_end')
 
 
 logging.config.dictConfig(config.log)

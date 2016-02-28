@@ -5,7 +5,6 @@ import numpy as np
 import multiprocessing as mp
 import logging
 
-from foos.bus import Event
 import video_config
 import config
 
@@ -29,7 +28,7 @@ class EventGen:
         if newmovement:
             if now - self.last_mv > self.max_interval:
                 self.last_mv = now
-                self.bus.notify(Event("movement_detected"))
+                self.bus.notify("movement_detected")
         else:
             if now - self.last_mv < self.absence_timeout:
                 # wait a bit before assuming people have left
@@ -38,7 +37,7 @@ class EventGen:
         if self.movement != newmovement:
             event = "people_start_playing" if newmovement else "people_stop_playing"
             logger.info(event)
-            self.bus.notify(Event(event))
+            self.bus.notify(event)
             self.movement = newmovement
 
 
