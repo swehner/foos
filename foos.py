@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
+import config
 import logging.config
-
-logging.config.fileConfig('log.ini')
-logger = logging.getLogger(__name__)
-
 import sys
 import getopt
 import os
@@ -12,7 +9,6 @@ from subprocess import call
 
 from foos.ui import ui
 import plugins.io_keyboard
-import config
 from foos.bus import Bus, Event
 from foos.plugin_handler import PluginHandler
 
@@ -31,6 +27,10 @@ class ReplayHandler:
             bus.notify(Event('replay_start', extra))
             call(["video/replay-last.sh", replay_type])
             bus.notify(Event('replay_end'))
+
+
+logging.config.dictConfig(config.log)
+logger = logging.getLogger(__name__)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
