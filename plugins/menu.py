@@ -1,5 +1,6 @@
 from .buttons import *
 
+
 class Plugin(Buttons):
     def __init__(self, bus):
         super().__init__(bus, long_press_delay=0.3, enabled=False)

@@ -5,7 +5,6 @@ import numpy as np
 import multiprocessing as mp
 import logging
 
-from foos.bus import Event
 import video_config
 import config
 
@@ -29,7 +28,7 @@ class EventGen:
         if newmovement:
             if now - self.last_mv > self.max_interval:
                 self.last_mv = now
-                self.bus.notify(Event("movement_detected"))
+                self.bus.notify("movement_detected")
         else:
             if now - self.last_mv < self.absence_timeout:
                 # wait a bit before assuming people have left
@@ -38,7 +37,7 @@ class EventGen:
         if self.movement != newmovement:
             event = "people_start_playing" if newmovement else "people_stop_playing"
             logger.info(event)
-            self.bus.notify(Event(event))
+            self.bus.notify(event)
             self.movement = newmovement
 
 
@@ -84,7 +83,7 @@ class MotionDetector:
         return f.read(self.size[0] * self.size[1] * 4)
 
     def chunk_has_movement(self, d):
-        #skip first frame
+        # Skip first frame
         frame = self.readFrame(d)
         movement_in_frame = []
         while True:
@@ -120,7 +119,7 @@ class Plugin:
         watch_flags = flags.CLOSE_WRITE
         logger.info("Watching %s", self.watch_dir)
         try:
-            wd = inotify.add_watch(self.watch_dir, watch_flags)
+            inotify.add_watch(self.watch_dir, watch_flags)
 
             # And see the corresponding events:
             while True:

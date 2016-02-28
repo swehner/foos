@@ -4,7 +4,6 @@ from threading import Thread
 import time
 import logging
 
-from foos.bus import Bus, Event
 from foos.ui.ui import registerMenu
 
 logger = logging.getLogger(__name__)
@@ -43,8 +42,8 @@ class Plugin:
                 if self.current_score.get(t, 0) >= self.game_win_score:
                     d = {'team': t}
                     d.update(self.current_score)
-                    self.bus.notify(Event('win_game', d))
-                    self.bus.notify(Event('reset_score', d))
+                    self.bus.notify('win_game', d)
+                    self.bus.notify('reset_score', d)
 
     def __run(self):
         while True:
@@ -55,10 +54,10 @@ class Plugin:
             time.sleep(0.1)
 
     def getMenuEntries(self):
-        def q(ev):
+        def q(ev, ev_data):
             def f():
-                self.bus.notify(ev)
-                self.bus.notify(Event("menu_hide"))
+                self.bus.notify(ev, ev_data)
+                self.bus.notify("menu_hide")
             return f
 
         def check(string, mode):
@@ -69,11 +68,11 @@ class Plugin:
             return pre + string
 
         return [(check("%d goals" % m if m else "Free mode", m),
-                 q(Event("set_game_mode", {"mode": m})))
+                q("set_game_mode", {"mode": m}))
                 for m in self.modes]
 
     def save(self):
         return self.game_win_score
 
     def load(self, game_win_score):
-        self.bus.notify(Event("set_game_mode", {"mode": game_win_score}))
+        self.bus.notify("set_game_mode", {"mode": game_win_score})

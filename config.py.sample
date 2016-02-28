@@ -27,3 +27,42 @@ md_min_frames = 9
 md_ev_absence_timeout = 30
 # send movement_detected every X seconds
 md_ev_interval = 2
+
+log = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s %(levelname)6s %(name)s - %(message)s",
+            "datefmt": "%H:%M:%S"
+        }
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "stream": "ext://sys.stdout"
+        },
+
+        "file_handler": {
+            "class": "logging.handlers.WatchedFileHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "filename": "/home/daniel/github/foos/event.log"
+        },
+    },
+
+    "loggers": {
+        "plugins.event_debugger": {
+            "level": "DEBUG",
+            "handlers": ["file_handler"],
+            "propagate": "no",
+
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": ["console"]
+    }
+}

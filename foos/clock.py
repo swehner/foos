@@ -5,7 +5,7 @@ class Clock:
     def __init__(self, name):
         self.name = name
         self.time = None
-        
+
     def set(self, ts):
         self.time = ts
 

@@ -2,7 +2,6 @@
 
 from threading import Thread
 import queue
-from functools import partial
 import time
 import multiprocessing as mp
 import logging
@@ -26,31 +25,47 @@ class Bus:
         self.subscribers = []
         Thread(target=self.__run, daemon=True).start()
 
-    def subscribe(self, f, thread=False):
+    def subscribe_map(self, fmap, thread=False):
+        def f(ev):
+            fmap[ev.name](ev.data)
+
+        self.subscribe(f, thread=thread, subscribed_events=fmap.keys())
+
+    def subscribe(self, f, thread=False, subscribed_events=None):
         if thread:
-            f = self.__threaded_func(f)
+            f = self.__threaded_func(f, subscribed_events)
 
-        self.subscribers.append(f)
+        def fs(ev):
+            if ev.name in subscribed_events:
+                f(ev)
 
-    def notify(self, ev):
-        self.queue.put(ev)
+        self.subscribers.append(fs if subscribed_events else f)
 
-    def __threaded_func(self, f):
+    def notify(self, ev, ev_data=None):
+        self.queue.put(Event(ev, ev_data))
+
+    def __threaded_func(self, f, subscribed_events=None):
         q = queue.Queue(maxsize=20)
 
         def trun():
             while True:
                 ev = q.get()
-                f(ev)
-                q.task_done()
+                try:
+                    f(ev)
+                except:
+                    logger.exception("Error delivering event")
+                finally:
+                    q.task_done()
 
         def fthread(ev):
             try:
-                q.put_nowait(ev)
+                if subscribed_events is None or ev.name in subscribed_events:
+                    q.put_nowait(ev)
+
             except queue.Full:
                 logger.warning("Queue full when sending %s to %s", ev.name, f)
 
-        t = Thread(target=trun, daemon=True).start()
+        Thread(target=trun, daemon=True).start()
         return fthread
 
     def __run(self):
@@ -61,6 +76,8 @@ class Bus:
 
 
 if __name__ == '__main__':
+    from functools import partial
+
     def log(*args):
         args = (time.time(),) + args
         print(*args)

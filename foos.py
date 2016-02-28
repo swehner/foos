@@ -1,40 +1,36 @@
 #!/usr/bin/env python3
 
+import config
 import logging.config
-
-logging.config.fileConfig('log.ini')
-logger = logging.getLogger(__name__)
-
 import sys
 import getopt
 import os
-from subprocess import check_output, call
+from subprocess import call
 
 from foos.ui import ui
 import plugins.io_keyboard
-import config
-from foos.bus import Bus, Event
+from foos.bus import Bus
 from foos.plugin_handler import PluginHandler
 
 
-def replay_handler(ev):
-    replay_type = 'short'
-    extra = {}
-    if ev.name == 'score_goal':
-        extra = ev.data
-        extra['type'] = 'goal'
-    elif ev.name == 'replay_request':
-        replay_type = 'long'
-        extra = {'type': 'manual'}
-    else:
-        return
+class ReplayHandler:
+    def __init__(self, bus):
+        bus.subscribe_map({'replay_request': lambda d: self.replay('long', 'manual', {}),
+                           'score_goal': lambda d: self.replay('short', 'goal', d)},
+                          thread=True)
 
-    if config.replay_enabled:
-        call(["video/generate-replay.sh"])
-        bus.notify(Event('replay_start', extra))
-        call(["video/replay-last.sh", replay_type])
-        bus.notify(Event('replay_end'))
+    def replay(self, replay_type, trigger, extra={}):
+        extra['type'] = trigger
 
+        if config.replay_enabled:
+            call(["video/generate-replay.sh"])
+            bus.notify('replay_start', extra)
+            call(["video/replay-last.sh", replay_type])
+            bus.notify('replay_end')
+
+
+logging.config.dictConfig(config.log)
+logger = logging.getLogger(__name__)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
@@ -59,7 +55,7 @@ bus = Bus()
 gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
              bg_change_interval=config.bg_change_secs,
              bg_amount=config.bg_amount)
-bus.subscribe(replay_handler, thread=True)
+ReplayHandler(bus)
 
 if gui.is_x11():
     logger.info("Running Keyboard")

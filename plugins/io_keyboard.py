@@ -1,6 +1,5 @@
 import time
 from .io_base import IOBase
-from foos.bus import Event
 
 
 class Plugin(IOBase):
@@ -45,19 +44,17 @@ class Plugin(IOBase):
                     if code in self.key_map:
                         btn = self.key_map[code]
                         state = "down" if e.type == x.KeyPress else "up"
-                        event = Event('button_event', {'source': 'keyboard', 'btn': btn, 'state': state})
-                        self.bus.notify(event)
+                        event_data = {'source': 'keyboard', 'btn': btn, 'state': state}
+                        self.bus.notify('button_event', event_data)
 
                     if code in self.goal_map and e.type == x.KeyPress:
                         team = self.goal_map[code]
-                        event = Event('goal_event', {'source': 'keyboard', 'team': team})
-                        self.bus.notify(event)
+                        self.bus.notify('goal_event', {'source': 'keyboard', 'team': team})
 
                     if code == 60:  # PERIOD
-                        self.bus.notify(Event('quit'))
+                        self.bus.notify('quit')
 
     def writer_thread(self):
         while True:
             self.write_queue.get()
-            # FIXME: What to do here? Make the num/caps/scroll lock keys blink? :P
             pass

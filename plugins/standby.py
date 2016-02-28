@@ -4,8 +4,6 @@ import subprocess
 import config
 import logging
 
-from foos.bus import Event, Bus
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +17,7 @@ class Plugin:
 
         # disable if standby_timeout is 0
         if self.standby_timeout != 0:
-            self.bus.subscribe(self.process_event)
+            self.bus.subscribe(self.process_event, subscribed_events=self.activation_events)
             threading.Thread(daemon=True, target=self.run).start()
 
     def run(self):
@@ -32,16 +30,15 @@ class Plugin:
         logger.info("Turning TV off...")
         self.active = False
         subprocess.call("echo 'standby 0' | cec-client -s >/dev/null", shell=True)
-        self.bus.notify(Event("tv_standby"))
+        self.bus.notify("tv_standby")
 
     def turn_on(self):
         logger.info("Turning TV on...")
         self.active = True
         subprocess.call("echo 'on 0' | cec-client -s >/dev/null", shell=True)
-        self.bus.notify(Event("tv_on"))
+        self.bus.notify("tv_on")
 
     def process_event(self, ev):
-        if ev.name in self.activation_events:
-            self.last_active = time.time()
-            if not self.active:
-                self.turn_on()
+        self.last_active = time.time()
+        if not self.active:
+            self.turn_on()
