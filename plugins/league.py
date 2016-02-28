@@ -79,7 +79,7 @@ class Plugin:
                                 "cancel_competition": self.cancel_competition},
                                thread=True)
         self.current_game = 0
-        self.match = {}
+        self.match = None
         self.backend = diskbackend
         registerMenu(self.get_menu_entries)
 
@@ -126,6 +126,7 @@ class Plugin:
                 self.clear_players()
                 self.backend.write_results(self.match)
                 self.bus.notify(Event("results_written"))
+                self.match = None
 
     def cancel_competition(self, data):
         self.match = None
