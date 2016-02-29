@@ -38,7 +38,7 @@ class Plugin(IOBase):
                     line = line.decode('ascii').strip()
                     ev = getEventForButton(line)
                     if ev:
-                        self.bus.notify(ev)
+                        self.bus.notify(*ev)
                 except Exception as e:
                     logger.exception("Error reading data")
 
