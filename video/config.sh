@@ -1,6 +1,6 @@
 #!/bin/sh
 
-base_path=/tmp/replay
+base_path=/home/pi/replay
 fragments_path=$base_path/fragments
 ignore_recent_chunks=1
 short_chunks=10
