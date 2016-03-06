@@ -18,8 +18,9 @@ goalmap = {
 
 
 def getEventForButton(line):
-    if line in goalmap:
-        return 'goal_event', {'source': 'serial', 'team': goalmap[line]}
+    if any([k in line for k in goalmap.keys()]):
+        parts = line.split()
+        return 'goal_event', {'source': 'serial', 'team': goalmap[parts[0]], 'extra': parts[1:]}
 
     if '_' in line:
         btn, state = line.split('_')

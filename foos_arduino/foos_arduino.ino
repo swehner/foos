@@ -4,7 +4,7 @@
 #define BTN_INTERVAL 10
 //time to ignore GOAL interrupts after the first one has occurred (ms)
 #define GOAL_DEBOUNCE_TIME 500
-// Send Pings 'P' every X ms 
+// Send Pings 'P' every X ms
 #define PING_INTERVAL 5000
 
 // Pin for goals (interrupt pins)
@@ -22,15 +22,15 @@
 
 // btn events
 char* btnEvents[5][2] = {{"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"OK_D", "OK_U"}};
-#define GOAL_BLACK_STR "BG"
-#define GOAL_YELLOW_STR "YG"
+#define GOAL_BLACK_STR "BG "
+#define GOAL_YELLOW_STR "YG "
 
 void setup() {
   //analog pins for button leds as output
   DDRC = 0xFF;
   PORTC = 0;
 
-  //Pin 8 button input 
+  //Pin 8 button input
   pinMode(8, INPUT_PULLUP);
   // 4,5,6,7 input and pullup
   DDRD &= !BTN_MASK_D;
@@ -48,31 +48,12 @@ void setup() {
   // setup serial
   Serial.begin(115200);
 
-  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_BLACK), goalBlack, RISING);
-  attachInterrupt(digitalPinToInterrupt(PIN_GOAL_YELLOW), goalYellow, RISING);
 }
 
 // goal event processing
-byte goalsEnabled = 0;
+bool goalsEnabled = false;
 // enable goals a bit after startup to avoid false events
 unsigned long reenableGoalsAt = 1000;
-inline void goal(char* str) {
-  if (goalsEnabled) {
-    Serial.println(str);
-    //disable goal processing until the debounce time has elapsed
-    goalsEnabled = 0;
-    reenableGoalsAt = millis() + GOAL_DEBOUNCE_TIME;
-  }
-}
-
-//interrupt functions
-void goalBlack() {
-  goal(GOAL_BLACK_STR);
-}
-
-void goalYellow() {
-  goal(GOAL_YELLOW_STR);
-}
 
 
 //button processing
@@ -122,20 +103,56 @@ void processInstructions() {
   }
 }
 
+inline bool processGoal(byte state, byte mask, unsigned long *counter, unsigned long *counterOff, char *goalString) {
+  if ((state & mask) > 0) {
+    (*counter)++;
+    return true;
+  } else {
+    (*counterOff)++;
+    if (*counter > 0) {
+      Serial.print(goalString);
+      Serial.print(*counter);
+      Serial.print(" ");
+      Serial.println(*counterOff);
+      *counter = 0;
+      *counterOff = 0;      
+    }
+    return false;
+  }
+}
+
 unsigned long nextBtnCheck = 0;
 unsigned long nextPing = 0;
+unsigned long loops = 0;
+unsigned long counterY = 0;
+unsigned long counterB = 0;
+unsigned long counterYOff = 0;
+unsigned long counterBOff = 0;
+unsigned long start = 0;
+byte prev_goals = 0;
 #define TIME_ELAPSED(now, ts) ((long)(now - ts) >= 0)
 void loop() {
-  processInstructions();
   if (testMode) {
     digitalWrite(TEST_LED_BLACK, digitalRead(PIN_GOAL_BLACK));
     digitalWrite(TEST_LED_YELLOW, digitalRead(PIN_GOAL_YELLOW));
   } else {
+    bool processingGoal = 0;
+    byte d = PIND;
+    if (goalsEnabled) {
+      processingGoal |= processGoal(d, 1 << PIN_GOAL_YELLOW, &counterY, &counterYOff, GOAL_YELLOW_STR);
+      processingGoal |= processGoal(d, 1 << PIN_GOAL_BLACK, &counterB, &counterBOff, GOAL_BLACK_STR);
+    }
+    // don't process buttons or instructions during goal checking
+    if (processingGoal) {
+      return;
+    }
+
     unsigned long now = millis();
     if (goalsEnabled == 0 && TIME_ELAPSED(now, reenableGoalsAt)) {
       goalsEnabled = 1;
       reenableGoalsAt = 0;
     }
+
     if (TIME_ELAPSED(now, nextBtnCheck)) {
       nextBtnCheck = now + BTN_INTERVAL;
       processButtons(PIND >> 4 | ((PINB & 0x01)<< 4));
@@ -145,4 +162,5 @@ void loop() {
       Serial.println("P");
     }
   }
+  processInstructions();
 }
