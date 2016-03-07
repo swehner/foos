@@ -103,31 +103,34 @@ void processInstructions() {
   }
 }
 
-inline bool processGoal(byte state, byte mask, unsigned long *counter, unsigned long *counterOff, char *goalString) {
+inline void processGoal(byte state, byte mask, bool *goal, unsigned long *goalTime, unsigned long *offTime, char *goalString) {
   if ((state & mask) > 0) {
-    (*counter)++;
-    return true;
-  } else {
-    (*counterOff)++;
-    if (*counter > 0) {
-      Serial.print(goalString);
-      Serial.print(*counter);
-      Serial.print(" ");
-      Serial.println(*counterOff);
-      *counter = 0;
-      *counterOff = 0;      
+    if (!*goal) {
+      *goal = true;
+      *goalTime = micros();
     }
-    return false;
+  } else {
+    if (*goal) {
+      unsigned long now = micros();
+      *goal = false;
+      Serial.print(goalString);
+      Serial.print(now - *goalTime);
+      Serial.print(" ");
+      Serial.println(*goalTime - *offTime);
+      *offTime = now;
+    }
   }
 }
 
 unsigned long nextBtnCheck = 0;
 unsigned long nextPing = 0;
 unsigned long loops = 0;
-unsigned long counterY = 0;
-unsigned long counterB = 0;
-unsigned long counterYOff = 0;
-unsigned long counterBOff = 0;
+unsigned long goalTimeY = 0;
+unsigned long goalTimeB = 0;
+unsigned long offTimeY = 0;
+unsigned long offTimeB = 0;
+bool goalY = false;
+bool goalB = false;
 unsigned long start = 0;
 byte prev_goals = 0;
 #define TIME_ELAPSED(now, ts) ((long)(now - ts) >= 0)
@@ -139,11 +142,11 @@ void loop() {
     bool processingGoal = 0;
     byte d = PIND;
     if (goalsEnabled) {
-      processingGoal |= processGoal(d, 1 << PIN_GOAL_YELLOW, &counterY, &counterYOff, GOAL_YELLOW_STR);
-      processingGoal |= processGoal(d, 1 << PIN_GOAL_BLACK, &counterB, &counterBOff, GOAL_BLACK_STR);
+      processGoal(d, 1 << PIN_GOAL_YELLOW, &goalY, &goalTimeY, &offTimeY, GOAL_YELLOW_STR);
+      processGoal(d, 1 << PIN_GOAL_BLACK,  &goalB, &goalTimeB, &offTimeB, GOAL_BLACK_STR);
     }
     // don't process buttons or instructions during goal checking
-    if (processingGoal) {
+    if (goalY | goalB) {
       return;
     }
 
