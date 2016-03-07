@@ -185,8 +185,7 @@ class Gui():
         logger.info("Display %dx%d@%d", self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second)
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
-        opengles.glBlendFuncSeparate(pi3d.constants.GL_SRC_ALPHA, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA, 
-                                     pi3d.constants.GL_ONE_MINUS_DST_ALPHA, pi3d.constants.GL_DST_ALPHA)
+        opengles.glBlendFuncSeparate(pi3d.constants.GL_SRC_ALPHA, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA, 1, 1)
 
     def __move_sprites(self, now=None):
         if now is None:
