@@ -115,6 +115,10 @@ class Plugin:
         mp.Process(daemon=True, target=self.run).start()
 
     def run(self):
+        while not os.path.exists(self.watch_dir):
+            logger.info("Waiting for %s...", self.watch_dir)
+            time.sleep(30)
+
         inotify = INotify()
         watch_flags = flags.CLOSE_WRITE
         logger.info("Watching %s", self.watch_dir)

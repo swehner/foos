@@ -5,28 +5,11 @@ import logging.config
 import sys
 import getopt
 import os
-from subprocess import call
 
 from foos.ui import ui
 import plugins.io_keyboard
 from foos.bus import Bus
 from foos.plugin_handler import PluginHandler
-
-
-class ReplayHandler:
-    def __init__(self, bus):
-        bus.subscribe_map({'replay_request': lambda d: self.replay('long', 'manual', {}),
-                           'score_goal': lambda d: self.replay('short', 'goal', d)},
-                          thread=True)
-
-    def replay(self, replay_type, trigger, extra={}):
-        extra['type'] = trigger
-
-        if config.replay_enabled:
-            call(["video/generate-replay.sh"])
-            bus.notify('replay_start', extra)
-            call(["video/replay-last.sh", replay_type])
-            bus.notify('replay_end')
 
 
 logging.config.dictConfig(config.log)
@@ -55,7 +38,6 @@ bus = Bus()
 gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
              bg_change_interval=config.bg_change_secs,
              bg_amount=config.bg_amount)
-ReplayHandler(bus)
 
 if gui.is_x11():
     logger.info("Running Keyboard")
