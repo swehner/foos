@@ -7,6 +7,7 @@ import sys
 import time
 import logging
 import subprocess
+import config
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
@@ -133,8 +134,10 @@ class Plugin:
         logger.info("Uploading video: %s", title)
 
         try:
-            filename = subprocess.check_output(["video/prepare-upload.sh"]).decode('utf-8').strip()
-            video_id = initialize_upload(title, filename)
+            in_file = os.path.join(config.replay_path, 'replay_long.h264')
+            out_file = os.path.join(config.replay_path, 'replay_long.mp4')
+            subprocess.call(["video/convert.sh", in_file, out_file])
+            video_id = initialize_upload(title, out_file)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
             self.bus.notify('upload_ok', url)
             return

@@ -5,7 +5,6 @@ import numpy as np
 import multiprocessing as mp
 import logging
 
-import video_config
 import config
 
 logger = logging.getLogger(__name__)
@@ -110,7 +109,7 @@ class Plugin:
         self.md = MotionDetector(config.md_size, config.md_mv_threshold,
                                  config.md_min_vectors, config.md_crop_x, config.md_min_frames)
         self.eg = EventGen(bus, config.md_ev_absence_timeout, config.md_ev_interval)
-        self.watch_dir = video_config.fragments_path
+        self.watch_dir = os.path.join(config.replay_path, 'fragments')
         self.prefix = 'mv'
         mp.Process(daemon=True, target=self.run).start()
 

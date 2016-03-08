@@ -1,12 +1,16 @@
-replay_enabled = False
 onscreen_leds_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
-bg_amount = 3
+bg_amount = 100
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
-plugins = ['score', 'game', 'sound', 'leds', 'io_debug', 'menu', 'control', 'hipbot', 'league', 'league_sync']
+plugins = ['camera', 'replay', 'score', 'game', 'sound', 'leds', 'io_debug', 'io_serial', 'menu', 'control', 'hipbot', 'league', 'league_sync', 'event_debugger', 'motiondetector']
 # plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
+
+replay_path = '/home/pi/replay'
+ignore_recent_chunks = 1
+short_chunks = 10
+long_chunks = 25
 
 league_dir = './league'
 league_url = 'http://localhost:8888/api'
@@ -49,7 +53,7 @@ log = {
             "class": "logging.handlers.WatchedFileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": "/home/daniel/github/foos/event.log"
+            "filename": "/home/pi/event.log"
         },
     },
 

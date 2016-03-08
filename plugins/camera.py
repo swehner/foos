@@ -1,6 +1,7 @@
 from subprocess import call
 from threading import Thread
 import time
+import config
 
 
 class Plugin:
@@ -10,5 +11,5 @@ class Plugin:
     # Run camera
     def runCamera(self):
         while True:
-            call("video/run-camera.sh")
+            call(["video/run-camera.sh", config.replay_path])
             time.sleep(30)
