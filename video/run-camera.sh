@@ -1,6 +1,9 @@
 #!/bin/sh
 
-. $(dirname $0)/config.sh
+base_path=$1
+fragments_path=$1/fragments
+
+pkill raspivid 2>/dev/null
 
 mkdir -p $base_path
 

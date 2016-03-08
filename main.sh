@@ -2,6 +2,6 @@
 
 while true; do
   sleep 10
-  LD_LIBRARY_PATH=/opt/vc/lib python3 foos.py
+  python3 foos.py
 done
 
