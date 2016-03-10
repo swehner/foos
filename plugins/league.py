@@ -175,7 +175,7 @@ class Plugin:
                     mmatches = []
                     for m in matches:
                         m['division'] = name
-                        entry = "{:<14} {:<14} {:<14} {:<14}".format(*m['players'])
+                        entry = "{:<14.14} {:<14.14} {:<14.14} {:<14.14}".format(*m['players'])
                         mmatches.append((entry, q('start_competition', m)))
 
                     mmatches.append(("", None))
