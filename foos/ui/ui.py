@@ -128,6 +128,7 @@ class Gui():
         self.bg_change_interval = bg_change_interval
         self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
+        self.game_mode = None
         self.draw_menu = False
         self.__init_display(scaling_factor, fps)
         self.__setup_menu()
@@ -146,7 +147,7 @@ class Gui():
                 "menu_down": lambda d: self.menu.down(),
                 "menu_up": lambda d: self.menu.up(),
                 "menu_select": lambda d: self.menu.select(),
-                "set_game_mode": lambda d: self.game_mode.quick_change(self.__get_mode_string(d["mode"])),
+                "set_game_mode": lambda d: setattr(self, 'game_mode', d["mode"]),
                 "movement_detected": lambda d: self.people.show(),
                 "set_players": lambda d: self.setPlayers(d['black'], d['yellow'],
                                                          d.get('black_points', []), d.get('yellow_points', [])),
@@ -238,13 +239,13 @@ class Gui():
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, justify='R', x=920, y=480, z=50)
+                                      is_3d=False, justify='R', x=920, y=380, z=50)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
                                              is_3d=False, y=380, z=40), duration=10)
 
-        self.game_mode = ChangingText(flat, font=font, string=self.__get_mode_string(None),
-                                      is_3d=False, justify='R', x=920, y=380, z=50)
+        self.game_mode_ui = ChangingText(flat, font=font, string=self.__get_mode_string(None),
+                                         is_3d=False, justify='R', x=920, y=480, z=50)
 
         self.feedback = KeysFeedback(flat)
 
@@ -301,21 +302,26 @@ class Gui():
         s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
         return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
-    def __get_mode_string(self, mode):
-        if mode is None:
-            return "  "
+    def __get_mode_string(self, mode=None):
+        if self.game_mode is None:
+            mode = "  "
         else:
-            return "»%d" % mode
+            mode = "»%d" % self.game_mode
+
+        timestr = time.strftime("%H:%M", time.gmtime()).replace("0", "O")
+
+        return mode + " " + timestr
 
     def getPlayers(self, players=[], points=[], left=True):
-        l = 17
+        l = 20
         if len(players) == 0:
             players = ["", ""]
         if len(points) == 0:
             points = ["", ""]
 
-        p0 = players[0].ljust(l - len(points[0]), " ") + points[0]
-        p1 = players[1].ljust(l - len(points[1]), " ") + points[1]
+        f = "{:<%d.%d} {}" % (l - len(points[0]), l - len(points[0]))
+        p0 = f.format(players[0], points[0])
+        p1 = f.format(players[1], points[1])
         return "%s\n%s" % (p0, p1)
 
     def setPlayers(self, black, yellow, black_points, yellow_points):
@@ -339,7 +345,8 @@ class Gui():
                 self.bCounter.draw()
                 if not self.overlay_mode:
                     self.winner.draw()
-                    self.game_mode.draw()
+                    self.game_mode_ui.quick_change(self.__get_mode_string())
+                    self.game_mode_ui.draw()
                     self.yPlayers.draw()
                     self.bPlayers.draw()
 
@@ -366,11 +373,11 @@ class Gui():
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
             # replace 0 with O because of dots in 0 in the chosen font
-            timestr = ("%s.%d" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))).replace("0", "O")
+            timestr = ("%s.%d0" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))).replace("0", "O")
         else:
-            timestr = "--:--.-"
+            timestr = "--:--.--"
 
-        return "LG: %s" % timestr
+        return "LG %s" % timestr
 
     def set_state(self, state):
         self.state = self.__validate(state)
