@@ -91,11 +91,19 @@ class Plugin:
         self.match = state['match']
         if self.match:
             self.update_players()
+            self.bus.notify("set_game_mode", {"mode": 5})
 
     def update_players(self):
+        def pstring(ps):
+            return "".join(["●" if p == 1 else "○" for p in ps]).ljust(3, "·")
+
         g = self.match['submatches'][self.current_game]
+        points = self.get_player_points_per_match()
+
         teams = {"yellow": g[0],
-                 "black": g[1]}
+                 "black": g[1],
+                 "yellow_points": [pstring(points[p]) for p in g[0]],
+                 "black_points": [pstring(points[p]) for p in g[1]]}
         self.bus.notify("set_players", teams)
 
     def clear_players(self):
@@ -114,33 +122,40 @@ class Plugin:
         if self.match:
             rs = self.match.get('results', [])
             self.match['results'] = rs + [[data['yellow'], data['black']]]
-            self.current_game += 1
-            if self.current_game < len(self.match['submatches']):
+            if self.current_game < len(self.match['submatches']) - 1:
+                self.update_players()
+                time.sleep(1)
+                self.current_game += 1
                 self.update_players()
             else:
+                self.update_players()
                 # small delay to allow other threads to process events
                 time.sleep(0.2)
                 self.bus.notify("end_competition", {'points': self.calc_points()})
                 self.match['end'] = int(time.time())
-                self.clear_players()
                 self.backend.write_results(self.match)
                 self.bus.notify("results_written")
+                # wait for UI
+                time.sleep(2)
+                self.clear_players()
                 self.match = None
 
     def cancel_competition(self, data):
         self.match = None
         self.clear_players()
 
-    def calc_points(self):
+    def get_player_points_per_match(self):
         players = self.match['players']
-        points = dict([(p, 0) for p in players])
-        for i, g in enumerate(self.match['submatches']):
-            result = self.match['results'][i]
+        points = dict([(p, []) for p in players])
+        for match, result in zip(self.match['submatches'], self.match.get('results', [])):
             wteam = 0 if result[0] > result[1] else 1
-            for p in g[wteam]:
-                points[p] = points.get(p, 0) + 1
+            for name, ps in points.items():
+                ps.append(1 if name in match[wteam] else 0)
 
         return points
+
+    def calc_points(self):
+        return dict([(name, sum(ps)) for name, ps in self.get_player_points_per_match().items()])
 
     def get_menu_entries(self):
         def q(ev, data=None):

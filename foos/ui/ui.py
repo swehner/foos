@@ -148,7 +148,8 @@ class Gui():
                 "menu_select": lambda d: self.menu.select(),
                 "set_game_mode": lambda d: self.game_mode.quick_change(self.__get_mode_string(d["mode"])),
                 "movement_detected": lambda d: self.people.show(),
-                "set_players": lambda d: self.setPlayers(d['black'], d['yellow']),
+                "set_players": lambda d: self.setPlayers(d['black'], d['yellow'],
+                                                         d.get('black_points', []), d.get('yellow_points', [])),
                 "leds_enabled": partial(setattr, self, 'leds'),
                 "replay_start": lambda d: self._handle_replay(True),
                 "replay_end": lambda d: self._handle_replay(False),
@@ -306,19 +307,20 @@ class Gui():
         else:
             return "»%d" % mode
 
-    def getPlayers(self, players=[], left=True):
-        l = 20
+    def getPlayers(self, players=[], points=[], left=True):
+        l = 17
         if len(players) == 0:
             players = ["", ""]
+        if len(points) == 0:
+            points = ["", ""]
 
-        if left:
-            return "%s\n%s" % (players[0].center(l, " "), players[1].center(l, " "))
-        else:
-            return "%s\n%s" % (players[0].center(l, " "), players[1].center(l, " "))
+        p0 = players[0].ljust(l - len(points[0]), " ") + points[0]
+        p1 = players[1].ljust(l - len(points[1]), " ") + points[1]
+        return "%s\n%s" % (p0, p1)
 
-    def setPlayers(self, black, yellow):
-        self.yPlayers.quick_change(self.getPlayers(yellow, True))
-        self.bPlayers.quick_change(self.getPlayers(black, False))
+    def setPlayers(self, black, yellow, black_points, yellow_points):
+        self.yPlayers.quick_change(self.getPlayers(yellow, points=yellow_points, left=True))
+        self.bPlayers.quick_change(self.getPlayers(black, points=black_points, left=False))
 
     def run(self):
         try:
