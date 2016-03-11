@@ -308,7 +308,7 @@ class Gui():
         else:
             mode = "»%d" % self.game_mode
 
-        timestr = time.strftime("%H:%M", time.gmtime()).replace("0", "O")
+        timestr = time.strftime("%H:%M", time.localtime()).replace("0", "O")
 
         return mode + " " + timestr
 
