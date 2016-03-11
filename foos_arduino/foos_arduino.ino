@@ -2,22 +2,20 @@
 
 //check buttons every X ms
 #define BTN_INTERVAL 10
-//time to ignore GOAL interrupts after the first one has occurred (ms)
-#define GOAL_DEBOUNCE_TIME 500
 // Send Pings 'P' every X ms
 #define PING_INTERVAL 5000
 
-// Pin for goals (interrupt pins)
-#define PIN_GOAL_YELLOW 2
-#define PIN_GOAL_BLACK 3
+// Pin for goals
+#define PIN_GOAL_YELLOW 10
+#define PIN_MASK_YELLOW 0b00000100
+#define PIN_GOAL_BLACK 11
+#define PIN_MASK_BLACK 0b00001000
 
 #define TEST_LED_BLACK A0
 #define TEST_LED_YELLOW A2
 
 //input buttons, part on PORTD and one (OK) button on PORTB
-#define BTN_MASK_D 0b11110000
-#define BTN_MASK_B 0b00000001
-//mask for all button data together
+#define BTN_MASK_D 0b01111100
 #define BTN_MASK   0b00011111
 
 // btn events
@@ -30,13 +28,11 @@ void setup() {
   DDRC = 0xFF;
   PORTC = 0;
 
-  //Pin 8 button input
-  pinMode(8, INPUT_PULLUP);
-  // 4,5,6,7 input and pullup
+  // 2,3,4,5,6 input and pullup
   DDRD &= !BTN_MASK_D;
   PORTD |= BTN_MASK_D;
 
-  //set pin 2,3 to input
+  //set pin for goals as input
   pinMode(PIN_GOAL_BLACK, INPUT);
   pinMode(PIN_GOAL_YELLOW, INPUT);
 
@@ -49,12 +45,6 @@ void setup() {
   Serial.begin(115200);
 
 }
-
-// goal event processing
-bool goalsEnabled = false;
-// enable goals a bit after startup to avoid false events
-unsigned long reenableGoalsAt = 1000;
-
 
 //button processing
 inline void checkButton(byte changed, byte state, byte idx) {
@@ -124,7 +114,6 @@ inline void processGoal(byte state, byte mask, bool *goal, unsigned long *goalTi
 
 unsigned long nextBtnCheck = 0;
 unsigned long nextPing = 0;
-unsigned long loops = 0;
 unsigned long goalTimeY = 0;
 unsigned long goalTimeB = 0;
 unsigned long offTimeY = 0;
@@ -134,16 +123,20 @@ bool goalB = false;
 unsigned long start = 0;
 byte prev_goals = 0;
 #define TIME_ELAPSED(now, ts) ((long)(now - ts) >= 0)
+bool goalsEnabled = false;
+// enable goals a bit after startup to avoid false events
+unsigned long reenableGoalsAt = 1000;
+
 void loop() {
   if (testMode) {
     digitalWrite(TEST_LED_BLACK, digitalRead(PIN_GOAL_BLACK));
     digitalWrite(TEST_LED_YELLOW, digitalRead(PIN_GOAL_YELLOW));
   } else {
     bool processingGoal = 0;
-    byte d = PIND;
+    byte d = PINB;
     if (goalsEnabled) {
-      processGoal(d, 1 << PIN_GOAL_YELLOW, &goalY, &goalTimeY, &offTimeY, GOAL_YELLOW_STR);
-      processGoal(d, 1 << PIN_GOAL_BLACK,  &goalB, &goalTimeB, &offTimeB, GOAL_BLACK_STR);
+      processGoal(d, PIN_MASK_YELLOW, &goalY, &goalTimeY, &offTimeY, GOAL_YELLOW_STR);
+      processGoal(d, PIN_MASK_BLACK,  &goalB, &goalTimeB, &offTimeB, GOAL_BLACK_STR);
     }
     // don't process buttons or instructions during goal checking
     if (goalY | goalB) {
@@ -158,7 +151,7 @@ void loop() {
 
     if (TIME_ELAPSED(now, nextBtnCheck)) {
       nextBtnCheck = now + BTN_INTERVAL;
-      processButtons(PIND >> 4 | ((PINB & 0x01)<< 4));
+      processButtons(PIND >> 2);
     }
     if (TIME_ELAPSED(now, nextPing)) {
       nextPing = now + PING_INTERVAL;
