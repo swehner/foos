@@ -1,4 +1,5 @@
 #include <TimerOne.h>
+#include <stdio.h>
 
 //check buttons every X ms
 #define BTN_INTERVAL 10
@@ -19,9 +20,9 @@
 #define BTN_MASK   0b00011111
 
 // btn events
-char* btnEvents[5][2] = {{"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"OK_D", "OK_U"}};
-#define GOAL_BLACK_STR "BG "
-#define GOAL_YELLOW_STR "YG "
+const char* btnEvents[5][2] = {{"YD_D", "YD_U"}, {"YI_D", "YI_U"}, {"BD_D", "BD_U"}, {"BI_D", "BI_U"}, {"OK_D", "OK_U"}};
+#define GOAL_BLACK_STR "BG %lu %lu"
+#define GOAL_YELLOW_STR "YG %lu %lu"
 
 void setup() {
   //analog pins for button leds as output
@@ -93,7 +94,8 @@ void processInstructions() {
   }
 }
 
-inline void processGoal(byte state, byte mask, bool *goal, unsigned long *goalTime, unsigned long *offTime, char *goalString) {
+inline void processGoal(byte state, byte mask, bool *goal, unsigned long *goalTime, unsigned long *offTime, const char *goalString) {
+  static char l[100];
   if ((state & mask) > 0) {
     if (!*goal) {
       *goal = true;
@@ -103,10 +105,8 @@ inline void processGoal(byte state, byte mask, bool *goal, unsigned long *goalTi
     if (*goal) {
       unsigned long now = micros();
       *goal = false;
-      Serial.print(goalString);
-      Serial.print(now - *goalTime);
-      Serial.print(" ");
-      Serial.println(*goalTime - *offTime);
+      sprintf(l, goalString, now - *goalTime, *goalTime - *offTime);
+      Serial.println(l);
       *offTime = now;
     }
   }
