@@ -61,7 +61,7 @@ class Plugin:
             return f
 
         def check(string, mode):
-            pre = "◌ "  # ◌○
+            pre = "○ "  # ◌○
             if mode == self.game_win_score:
                 pre = "◉ "  # ◉●
 
