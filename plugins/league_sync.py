@@ -35,9 +35,9 @@ class Plugin:
 
     def process_files(self):
         files = self.diskbe.get_result_files()
-        logger.info("Processing files %s", files)
         try:
             for fname in files:
+                logger.info("Processing file %s", fname)
                 with open(fname, 'r') as f:
                     r = requests.post(config.league_url + '/set_result', json=json.load(f), timeout=self.timeout)
                 r.raise_for_status()

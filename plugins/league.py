@@ -33,7 +33,7 @@ class DiskBackend:
         if os.path.exists(league_file):
             with open(league_file) as f:
                 if competition == json.load(f):
-                    logger.info('Not writing league file')
+                    logger.debug('Not writing league file')
                     return
 
         logger.info('Writing league file')
