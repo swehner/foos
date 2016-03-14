@@ -373,9 +373,9 @@ class Gui():
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
             # replace 0 with O because of dots in 0 in the chosen font
-            timestr = ("%s.%d0" % (time.strftime("%M:%S", time.gmtime(diff)), int(fract * 10))).replace("0", "O")
+            timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
         else:
-            timestr = "--:--.--"
+            timestr = "--:--"
 
         return "LG %s" % timestr
 
