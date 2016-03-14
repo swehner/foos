@@ -95,7 +95,7 @@ class Plugin:
 
     def update_players(self):
         def pstring(ps):
-            return "".join(["●" if p == 1 else "○" for p in ps]).ljust(3, "·")
+            return "".join(["●" if p == 1 else "○" for p in ps]).ljust(3, " ")
 
         g = self.match['submatches'][self.current_game]
         points = self.get_player_points_per_match()
