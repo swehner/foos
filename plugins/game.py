@@ -20,7 +20,10 @@ class Plugin:
         self.party_timeout = None
         self.game_end_time = None
         self.sudden_death = False
-        self.modes = [(None, None), (3, None), (5, None), (3, 120), (3, 180)]
+        self.modes = [(None, None), (3, None), (5, None), (3, 120), (3, 180), (3, 240)]
+
+        # Turn off party mode after this time in sudden death
+        self.party_mode_auto_off = 600
         registerMenu(self.getMenuEntries)
         Thread(target=self.__run, daemon=True).start()
 
@@ -78,15 +81,21 @@ class Plugin:
 
     def __run(self):
         while True:
-            if self.check_win_time and time.time() > self.check_win_time:
+            now = time.time()
+            if self.check_win_time and now > self.check_win_time:
                 self.check_win_time = None
                 if self.sudden_death:
                     self.check_party_win()
                 else:
                     self.check_win()
 
-            if self.game_end_time and not self.sudden_death and time.time() > max(self.game_end_time, self.check_win_time if self.check_win_time else 0):
+            # check party mode
+            if self.game_end_time and not self.sudden_death and now > max(self.game_end_time, self.check_win_time if self.check_win_time else 0):
                 self.check_party_win()
+
+            if self.sudden_death and now > self.game_end_time + self.party_mode_auto_off:
+                logger.info("Automatically turning off party mode")
+                self.bus.notify("set_game_mode", {"mode": self.game_win_score, "timeout": None})
 
             time.sleep(0.1)
 
@@ -108,7 +117,7 @@ class Plugin:
             if mode is None:
                 return "Free mode"
             if party_timeout is not None:
-                return "%d goals (Party-mode %dmin)" % (mode, party_timeout/60)
+                return "%d goals (Party-mode %dmin)" % (mode, party_timeout / 60)
             else:
                 return "%d goals" % mode
 
