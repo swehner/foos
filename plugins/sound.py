@@ -12,7 +12,8 @@ class Plugin:
         '1_goal_left': ['musical105-loud', 'dun_dun_dun-Delsym-719755295-delayed'],
         'goal': ['crowd1', 'crowd2'],
         'reset': ['whistle_2short1long'],
-        'competition': ['Air Horn-SoundBible.com-964603082-lower']
+        'competition': ['Air Horn-SoundBible.com-964603082-lower'],
+        'sudden_death': ['buzzer']
     }
 
     def __init__(self, bus):
@@ -58,6 +59,8 @@ class Plugin:
             sounds.append('goal')
         elif ev.name == 'score_reset':
             sounds.append('reset')
+        elif ev.name == 'sudden_death':
+            sounds.append('sudden_death')
         elif ev.name == 'start_competition' or ev.name == 'end_competition':
             sounds.append('competition')
         else:

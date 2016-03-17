@@ -130,6 +130,7 @@ class Gui():
         self.show_leds = show_leds
         self.game_mode = None
         self.draw_menu = False
+        self.countdown = None
         self.__init_display(scaling_factor, fps)
         self.__setup_menu()
         self.__setup_sprites()
@@ -147,7 +148,7 @@ class Gui():
                 "menu_down": lambda d: self.menu.down(),
                 "menu_up": lambda d: self.menu.up(),
                 "menu_select": lambda d: self.menu.select(),
-                "set_game_mode": lambda d: setattr(self, 'game_mode', d["mode"]),
+                "set_game_mode": self.__set_game_mode,
                 "movement_detected": lambda d: self.people.show(),
                 "set_players": lambda d: self.setPlayers(d['black'], d['yellow'],
                                                          d.get('black_points', []), d.get('yellow_points', [])),
@@ -156,7 +157,13 @@ class Gui():
                 "replay_end": lambda d: self._handle_replay(False),
                 "menu_show": lambda d: self._handle_menu(True),
                 "menu_hide": lambda d: self._handle_menu(False),
-                "win_game": self._win_game}
+                "win_game": self._win_game,
+                "countdown": lambda d: setattr(self, 'countdown', d['end_time'])}
+
+    def __set_game_mode(self, d):
+        self.game_mode = d["mode"]
+        if d.get("timeout", None) is None:
+            self.countdown = None
 
     def __setup_menu(self):
         self.main_menu = []
@@ -234,7 +241,7 @@ class Gui():
         self.instructions = Disappear(self.instructions, duration=5)
 
         logger.info("Loading font")
-        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉")]))
+        printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉"), ord('Ω')]))
         fontfile = img("UbuntuMono-B_circle.ttf")
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
@@ -369,15 +376,25 @@ class Gui():
             s.draw()
 
     def __get_time_since_last_goal(self):
+        if self.countdown:
+            return self.__get_countdown()
+
         if self.state.lastGoal:
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
             # replace 0 with O because of dots in 0 in the chosen font
-            timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
+            timestr = ("%.2d:%.2d" % (diff / 60, diff % 60)).replace("0", "O")
         else:
             timestr = "--:--"
 
         return "LG %s" % timestr
+
+    def __get_countdown(self):
+        diff = max(self.countdown - time.time(), 0)
+        # replace 0 with O because of dots in 0 in the chosen font
+        timestr = ("%.2d:%.2d" % (diff / 60, diff % 60)).replace("0", "O")
+
+        return "»Ω %s" % timestr
 
     def set_state(self, state):
         self.state = self.__validate(state)

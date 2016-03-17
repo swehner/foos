@@ -17,7 +17,10 @@ class Plugin:
         self.check_win_time = None
         self.check_delay = 2
         self.current_score = {}
-        self.modes = [None, 3, 5]
+        self.party_timeout = None
+        self.game_end_time = None
+        self.sudden_death = False
+        self.modes = [(None, None), (3, None), (5, None), (3, 120), (3, 180)]
         registerMenu(self.getMenuEntries)
         Thread(target=self.__run, daemon=True).start()
 
@@ -33,23 +36,57 @@ class Plugin:
             self.check_win_time = now + self.check_delay
         if ev.name == "set_game_mode":
             self.game_win_score = ev.data["mode"]
-            logger.info("Setting game mode %s", self.game_win_score)
+            self.party_timeout = ev.data["timeout"]
+            logger.info("Setting game mode %s %s", self.game_win_score, self.party_timeout)
             self.check_win_time = now + self.check_delay
+            self.reset()
+        if ev.name == "score_reset":
+            self.reset()
+
+    def reset(self):
+        if self.party_timeout:
+            self.game_end_time = time.time() + self.party_timeout
+            self.bus.notify("countdown", {"end_time": self.game_end_time})
+        else:
+            self.game_end_time = None
+
+        self.sudden_death = False
+
+    def notifyWinner(self, t):
+        d = {'team': t}
+        d.update(self.current_score)
+        self.bus.notify('win_game', d)
+        self.bus.notify('reset_score', d)
 
     def check_win(self):
         if self.game_win_score:
             for t in ['yellow', 'black']:
                 if self.current_score.get(t, 0) >= self.game_win_score:
-                    d = {'team': t}
-                    d.update(self.current_score)
-                    self.bus.notify('win_game', d)
-                    self.bus.notify('reset_score', d)
+                    self.notifyWinner(t)
+
+    def check_party_win(self):
+        ys = self.current_score['yellow']
+        yb = self.current_score['black']
+        if ys > yb:
+            self.notifyWinner('yellow')
+        elif yb > ys:
+            self.notifyWinner('black')
+        else:
+            logger.info("Timeout - No one wins yet. Sudden death activated")
+            self.sudden_death = True
+            self.bus.notify("sudden_death")
 
     def __run(self):
         while True:
             if self.check_win_time and time.time() > self.check_win_time:
                 self.check_win_time = None
-                self.check_win()
+                if self.sudden_death:
+                    self.check_party_win()
+                else:
+                    self.check_win()
+
+            if self.game_end_time and not self.sudden_death and time.time() > max(self.game_end_time, self.check_win_time if self.check_win_time else 0):
+                self.check_party_win()
 
             time.sleep(0.1)
 
@@ -60,19 +97,28 @@ class Plugin:
                 self.bus.notify("menu_hide")
             return f
 
-        def check(string, mode):
+        def check(string, mode, party_timeout):
             pre = "○ "  # ◌○
-            if mode == self.game_win_score:
+            if mode == self.game_win_score and party_timeout == self.party_timeout:
                 pre = "◉ "  # ◉●
 
             return pre + string
 
-        return [(check("%d goals" % m if m else "Free mode", m),
-                q("set_game_mode", {"mode": m}))
-                for m in self.modes]
+        def name(mode, party_timeout):
+            if mode is None:
+                return "Free mode"
+            if party_timeout is not None:
+                return "%d goals (Party-mode %dmin)" % (mode, party_timeout/60)
+            else:
+                return "%d goals" % mode
+
+        return [(check(name(m, p), m, p),
+                 q("set_game_mode", {"mode": m, "timeout": p}))
+                for m, p in self.modes]
 
     def save(self):
-        return self.game_win_score
+        return (self.game_win_score, self.party_timeout)
 
-    def load(self, game_win_score):
-        self.bus.notify("set_game_mode", {"mode": game_win_score})
+    def load(self, p):
+        game_win_score, timeout = p
+        self.bus.notify("set_game_mode", {"mode": game_win_score, "timeout": timeout})
