@@ -247,7 +247,7 @@ class Gui():
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, justify='R', x=920, y=380, z=50)
+                                      is_3d=False, justify='C', x=0, y=-480, z=50)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
                                              is_3d=False, y=380, z=40), duration=10)
@@ -376,31 +376,36 @@ class Gui():
             s.set_material(color)
             s.draw()
 
+    def __as_time(self, secs):
+        if secs:
+            mins = (secs/60) % 60
+            secs = secs % 60
+            frac = (secs - int(secs)) * 10
+            # replace 0 with O because of dots in 0 in the chosen font
+            return ("%.2d:%.2d.%.1d" % (mins, secs, frac)).replace("0", "O")
+        else:
+            return "--:--.-"
+
     def __get_time_since_last_goal(self):
         if self.countdown:
             s = self.__get_countdown()
         else:
+            diff = None
             if self.state.lastGoal:
                 diff = time.time() - self.state.lastGoal
                 fract = diff - int(diff)
-                # replace 0 with O because of dots in 0 in the chosen font
-                timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
-            else:
-                timestr = "--:--"
 
-            s = "LG %s" % timestr
+            s = "LG %s" % self.__as_time(diff)
 
-        return "{:>15.15}".format(s)
+        return "{:^16.16}".format(s)
 
     def __get_countdown(self):
         if isinstance(self.countdown, str):
             return self.countdown
         
         diff = max(self.countdown - time.time(), 0)
-        # replace 0 with O because of dots in 0 in the chosen font
-        timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
 
-        return "»Ω %s" % timestr
+        return "»Ω %s" % self.__as_time(diff)
 
     def set_state(self, state):
         self.state = self.__validate(state)
