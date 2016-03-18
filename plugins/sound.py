@@ -14,7 +14,7 @@ class Plugin:
         'reset': ['whistle_2short1long'],
         'competition': ['Air Horn-SoundBible.com-964603082-lower'],
         'sudden_death': ['buzzer'],
-        'timeout_close': ['Ticking_Clock-KevanGC-1934595011']
+        'timeout_close': ['Woop_Woop-SoundBible.com-198943467']
     }
 
     def __init__(self, bus):
