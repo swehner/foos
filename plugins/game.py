@@ -41,7 +41,7 @@ class Plugin:
             self.check_win_time = now + self.check_delay
         if ev.name == "set_game_mode":
             self.game_win_score = ev.data["mode"]
-            self.party_timeout = ev.data["timeout"]
+            self.party_timeout = ev.data.get("timeout", None)
             logger.info("Setting game mode %s %s", self.game_win_score, self.party_timeout)
             self.check_win_time = now + self.check_delay
             self.reset()

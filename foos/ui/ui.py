@@ -158,7 +158,8 @@ class Gui():
                 "menu_show": lambda d: self._handle_menu(True),
                 "menu_hide": lambda d: self._handle_menu(False),
                 "win_game": self._win_game,
-                "countdown": lambda d: setattr(self, 'countdown', d['end_time'])}
+                "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
+                "sudden_death": lambda d: setattr(self, 'countdown', 'Sudden death')}
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -377,19 +378,24 @@ class Gui():
 
     def __get_time_since_last_goal(self):
         if self.countdown:
-            return self.__get_countdown()
-
-        if self.state.lastGoal:
-            diff = time.time() - self.state.lastGoal
-            fract = diff - int(diff)
-            # replace 0 with O because of dots in 0 in the chosen font
-            timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
+            s = self.__get_countdown()
         else:
-            timestr = "--:--"
+            if self.state.lastGoal:
+                diff = time.time() - self.state.lastGoal
+                fract = diff - int(diff)
+                # replace 0 with O because of dots in 0 in the chosen font
+                timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
+            else:
+                timestr = "--:--"
 
-        return "LG %s" % timestr
+            s = "LG %s" % timestr
+
+        return "{:>15.15}".format(s)
 
     def __get_countdown(self):
+        if isinstance(self.countdown, str):
+            return self.countdown
+        
         diff = max(self.countdown - time.time(), 0)
         # replace 0 with O because of dots in 0 in the chosen font
         timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
