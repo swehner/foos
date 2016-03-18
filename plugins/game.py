@@ -126,7 +126,7 @@ class Plugin:
             if mode is None:
                 return "Free mode"
             if party_timeout is not None:
-                return "Party-mode: %d min %d goals" % (party_timeout / 60, mode)
+                return "Party-mode: %d min %d goals (beta)" % (party_timeout / 60, mode)
             else:
                 return "%d goals" % mode
 
