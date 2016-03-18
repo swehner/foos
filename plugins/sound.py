@@ -13,7 +13,8 @@ class Plugin:
         'goal': ['crowd1', 'crowd2'],
         'reset': ['whistle_2short1long'],
         'competition': ['Air Horn-SoundBible.com-964603082-lower'],
-        'sudden_death': ['buzzer']
+        'sudden_death': ['buzzer'],
+        'timeout_close': ['Ticking_Clock-KevanGC-1934595011']
     }
 
     def __init__(self, bus):
@@ -61,6 +62,8 @@ class Plugin:
             sounds.append('reset')
         elif ev.name == 'sudden_death':
             sounds.append('sudden_death')
+        elif ev.name == 'timeout_close':
+            sounds.append('timeout_close')
         elif ev.name == 'start_competition' or ev.name == 'end_competition':
             sounds.append('competition')
         else:

@@ -19,8 +19,10 @@ class Plugin:
         self.current_score = {}
         self.party_timeout = None
         self.game_end_time = None
+        self.timeout_close_time = None
         self.sudden_death = False
-        self.modes = [(None, None), (3, None), (5, None), (3, 120), (3, 180), (3, 240)]
+        self.timeout_close_secs = 15
+        self.modes = [(None, None), (3, None), (5, None), (3, 121), (3, 181), (3, 241)]
 
         # Turn off party mode after this time in sudden death
         self.party_mode_auto_off = 600
@@ -49,9 +51,11 @@ class Plugin:
     def reset(self):
         if self.party_timeout:
             self.game_end_time = time.time() + self.party_timeout
+            self.timeout_close_time = self.game_end_time - self.timeout_close_secs
             self.bus.notify("countdown", {"end_time": self.game_end_time})
         else:
             self.game_end_time = None
+            self.timeout_close_time = None
 
         self.sudden_death = False
 
@@ -93,6 +97,11 @@ class Plugin:
             if self.game_end_time and not self.sudden_death and now > max(self.game_end_time, self.check_win_time if self.check_win_time else 0):
                 self.check_party_win()
 
+            # check timeout close
+            if self.timeout_close_time and now > self.timeout_close_time:
+                self.bus.notify("timeout_close")
+                self.timeout_close_time = None
+
             if self.sudden_death and now > self.game_end_time + self.party_mode_auto_off:
                 logger.info("Automatically turning off party mode")
                 self.bus.notify("set_game_mode", {"mode": self.game_win_score, "timeout": None})
@@ -117,7 +126,7 @@ class Plugin:
             if mode is None:
                 return "Free mode"
             if party_timeout is not None:
-                return "%d goals (Party-mode %dmin)" % (mode, party_timeout / 60)
+                return "Party-mode: %d min %d goals" % (party_timeout / 60, mode)
             else:
                 return "%d goals" % mode
 

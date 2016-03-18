@@ -383,7 +383,7 @@ class Gui():
             diff = time.time() - self.state.lastGoal
             fract = diff - int(diff)
             # replace 0 with O because of dots in 0 in the chosen font
-            timestr = ("%.2d:%.2d" % (diff / 60, diff % 60)).replace("0", "O")
+            timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
         else:
             timestr = "--:--"
 
@@ -392,7 +392,7 @@ class Gui():
     def __get_countdown(self):
         diff = max(self.countdown - time.time(), 0)
         # replace 0 with O because of dots in 0 in the chosen font
-        timestr = ("%.2d:%.2d" % (diff / 60, diff % 60)).replace("0", "O")
+        timestr = time.strftime("%M:%S", time.gmtime(diff)).replace("0", "O")
 
         return "»Ω %s" % timestr
 
