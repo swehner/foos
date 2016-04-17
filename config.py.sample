@@ -4,8 +4,13 @@ bg_change_secs = 300
 bg_amount = 100
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
-plugins = ['camera', 'replay', 'score', 'game', 'sound', 'leds', 'io_debug', 'io_serial', 'menu', 'control', 'hipbot', 'league', 'league_sync', 'event_debugger', 'motiondetector']
-# plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
+
+# dev set
+plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
+
+# full blown set: arduino, camera, league & sync, upload, chat
+# plugins = ['replay', 'camera', 'score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league', 'event_debugger', 'league_sync']
+
 show_instructions = True
 
 replay_path = '/home/pi/replay'
