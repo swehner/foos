@@ -136,7 +136,7 @@ class Gui():
         self.__setup_sprites()
 
     def __event_map(self):
-        return {'quit': lambda d: self.stop(),
+        evnt = {'quit': lambda d: self.stop(),
                 'score_changed': lambda d: self.set_state(GuiState(d['yellow'], d['black'], d['last_goal'])),
                 "button_will_upload": lambda d: self.feedback.setIcon("will_upload"),
                 "button_will_replay": lambda d: self.feedback.setIcon("will_replay"),
@@ -144,7 +144,6 @@ class Gui():
                 "upload_ok": lambda d: self.feedback.setIcon("ok"),
                 "upload_error": lambda d: self.feedback.setIcon("error"),
                 "serial_disconnected": lambda d: self.feedback.setIcon("unplugged"),
-                "button_event": lambda d: self.instructions.show(),
                 "menu_down": lambda d: self.menu.down(),
                 "menu_up": lambda d: self.menu.up(),
                 "menu_select": lambda d: self.menu.select(),
@@ -160,6 +159,11 @@ class Gui():
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
                 "sudden_death": lambda d: setattr(self, 'countdown', '» Sudden death «')}
+
+        if config.show_instructions:
+            evnt["button_event"] = lambda d: self.instructions.show()
+
+        return evnt
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]

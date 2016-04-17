@@ -6,6 +6,7 @@ hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 plugins = ['camera', 'replay', 'score', 'game', 'sound', 'leds', 'io_debug', 'io_serial', 'menu', 'control', 'hipbot', 'league', 'league_sync', 'event_debugger', 'motiondetector']
 # plugins = ['score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league']
+show_instructions = True
 
 replay_path = '/home/pi/replay'
 ignore_recent_chunks = 1
