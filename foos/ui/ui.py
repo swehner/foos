@@ -93,6 +93,27 @@ class Counter(Delegate):
         self.disk.scale(sx, sz, sy)
 
 
+class LazyTrigger(Delegate):
+    def __init__(self, sprite, min=2):
+        super().__init__(sprite)
+        self.__last_time = time.time()
+        self.value = 0
+        self.min = min
+
+    def draw(self):
+        # decrement counter
+        now = time.time()
+        self.value = max(0, self.value - (time.time() - self.__last_time))
+        self.__last_time = now
+        self.delegate.draw()
+
+    def show(self):
+        self.value += 1
+        if (self.value >= self.min):
+            self.delegate.show()
+            self.value = 0
+
+
 class KeysFeedback:
     def __init__(self, shader):
         icon = pi3d.Sprite(w=256, h=256, z=50, y=-400)
@@ -161,7 +182,8 @@ class Gui():
                 "sudden_death": lambda d: setattr(self, 'countdown', '» Sudden death «')}
 
         if config.show_instructions:
-            evnt["button_event"] = lambda d: self.instructions.show()
+            evnt["increment_score"] = lambda d: self.instructions.show()
+            evnt["decrement_score"] = lambda d: self.instructions.show()
 
         return evnt
 
@@ -243,7 +265,7 @@ class Gui():
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=50)
-        self.instructions = Disappear(self.instructions, duration=5)
+        self.instructions = LazyTrigger(Disappear(self.instructions, duration=5))
 
         logger.info("Loading font")
         printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉"), ord('Ω')]))
