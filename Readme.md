@@ -1,11 +1,12 @@
-#Foosball instant replay
+#Foosball slow motion instant replay
 
 Ever wanted to relive your best foosball shots? Now you can with this project!
 Featuring:
  * Automatic goal detection & score-keeping
- * Automatic instant replay of the last goal
+ * Automatic instant replay (2x slow motion) of the last goal
  * Upload replays to Youtube
  * HipChat integration to send Youtube URLs and report game progress
+ * Integration with a league system
 
 See a video of it in action:
 
@@ -19,7 +20,7 @@ To build it you'll need
  * A TV
  * A Raspberry Pi to run the UI
  * The Raspberry Pi camera module to record video
- * An arduino and some electornic components for the goal detection
+ * An arduino and some electronic components for the goal detection
 
 You can find more info on how to build its components in the [doc folder](doc/HWSetup.md)
 
@@ -27,7 +28,7 @@ You can find more info on how to build its components in the [doc folder](doc/HW
 
 To run the UI you'll need to install a few dependencies - you can find a list of the python packages in requirements.txt.
 Other dependencies you'll need on your system (raspbian packages) are: `libav-tools sox cec-utils`
-Copy the sample confiuration and customize it according to your needs:
+Copy the sample configuration and customize it according to your needs:
 ```
 cp config.py.sample config.py
 vi config.py
@@ -35,7 +36,7 @@ vi config.py
 
 On the Raspberry Pi you can run the UI simply doing
 ```
-LD_LIBRARY_PATH=/opt/vc/lib python3 foos.py
+python3 foos.py
 ```
 
 Using X11 you can change the window size changing the scaling factor (-s 3 runs at 1/3 of the size)
@@ -43,7 +44,7 @@ Using X11 you can change the window size changing the scaling factor (-s 3 runs 
 python3 foos.py -s 3
 ```
 
-Keys:
+Keys in X11:
  * Increment goal counter: `q, e`
  * Decrement goal counter: `z, c`
  * Ok: `s`
