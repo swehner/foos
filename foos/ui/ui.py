@@ -159,7 +159,7 @@ class Gui():
                 "menu_hide": lambda d: self._handle_menu(False),
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
-                "sudden_death": lambda d: setattr(self, 'countdown', 'Sudden death')}
+                "sudden_death": lambda d: setattr(self, 'countdown', '» Sudden death «')}
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -210,8 +210,8 @@ class Gui():
             self.bCounter.moveTo((posx + 65, posy, posz), scale)
         else:
             scale = (1, 1, 1)
-            self.yCounter.moveTo((-380, 0, posz), scale)
-            self.bCounter.moveTo((380, 0, posz), scale)
+            self.yCounter.moveTo((-380, 50, posz), scale)
+            self.bCounter.moveTo((380, 50, posz), scale)
 
     def __get_bg_textures(self):
         bgs = glob.glob(img("bg/*.jpg"))
@@ -247,7 +247,7 @@ class Gui():
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, justify='C', x=0, y=-480, z=50)
+                                      is_3d=False, justify='C', x=0, y=-450, z=50)
 
         self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
                                              is_3d=False, y=380, z=40), duration=10)
@@ -263,9 +263,9 @@ class Gui():
         playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
                                  codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
-                                  x=-380, y=-300, z=50, justify='C')
+                                  x=-380, y=-250, z=50, justify='C')
         self.bPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=False),
-                                  x=380, y=-300, z=50, justify='C')
+                                  x=380, y=-250, z=50, justify='C')
 
         menufont = OutlineFont(fontfile, (255, 255, 255, 255), font_size=50, image_size=768,
                                codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
@@ -311,14 +311,17 @@ class Gui():
         return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
     def __get_mode_string(self, mode=None):
-        if self.game_mode is None:
-            mode = "  "
-        else:
+        l = 20
+        mode = ""
+        if self.game_mode is not None:
             mode = "»%d" % self.game_mode
+
+        if self.countdown is not None:
+            mode = "Party! " + mode
 
         timestr = time.strftime("%H:%M", time.localtime()).replace("0", "O")
 
-        return mode + " " + timestr
+        return (mode + " " + timestr).rjust(l)
 
     def getPlayers(self, players=[], points=[], left=True):
         l = 20
@@ -378,7 +381,7 @@ class Gui():
 
     def __as_time(self, secs):
         if secs:
-            mins = (secs/60) % 60
+            mins = (secs / 60) % 60
             secs = secs % 60
             frac = (secs - int(secs)) * 10
             # replace 0 with O because of dots in 0 in the chosen font
@@ -395,17 +398,17 @@ class Gui():
                 diff = time.time() - self.state.lastGoal
                 fract = diff - int(diff)
 
-            s = "LG %s" % self.__as_time(diff)
+            s = "LG: %s" % self.__as_time(diff)
 
         return "{:^16.16}".format(s)
 
     def __get_countdown(self):
         if isinstance(self.countdown, str):
             return self.countdown
-        
+
         diff = max(self.countdown - time.time(), 0)
 
-        return "»Ω %s" % self.__as_time(diff)
+        return "» %s «" % self.__as_time(diff)
 
     def set_state(self, state):
         self.state = self.__validate(state)
