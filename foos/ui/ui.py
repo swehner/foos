@@ -17,7 +17,7 @@ import logging
 from functools import partial
 from pi3d import opengles
 
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline, Flashing
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 import config
@@ -179,13 +179,18 @@ class Gui():
                 "menu_hide": lambda d: self._handle_menu(False),
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
-                "sudden_death": lambda d: setattr(self, 'countdown', '» Sudden death «')}
+                "sudden_death": self.__sudden_death,
+                "timeout_close": lambda x: self.bg.flash(speed=3, times=2, color=(1, 0.8, 0, 0))}
 
         if config.show_instructions:
             evnt["increment_score"] = lambda d: self.instructions.show()
             evnt["decrement_score"] = lambda d: self.instructions.show()
 
         return evnt
+
+    def __sudden_death(self, d):
+        self.countdown = '» Sudden death «'
+        self.bg.flash(speed=5, times=5, color=(1, 0, 0, 0))
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -252,7 +257,7 @@ class Gui():
 
         bg = pi3d.Sprite(w=1920, h=1080, z=100)
         bg.set_shader(flat)
-        self.bg = ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval)
+        self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
 
         logger.info("Loading other images")
         logo_d = (80, 80)
@@ -318,6 +323,7 @@ class Gui():
         self.winner.show()
         s = self.__get_winner_string(data)
         self.winner.quick_change(s)
+        self.bg.flash(speed=8, times=3, color=(1, 1, 1, 0))
         logger.info(s)
 
     def _handle_menu(self, show):

@@ -12,6 +12,35 @@ class Delegate:
         return getattr(self.delegate, name)
 
 
+class Flashing(Delegate):
+    def __init__(self, delegate):
+        super().__init__(delegate)
+        self.color = (1, 0, 0, 0)
+        self.start = None
+        self.end = None
+
+    def flash(self, speed=3, times=3, color=(1, 0, 0, 0)):
+        self.color = color
+        self.start = time.time()
+        self.end = self.start + times / speed
+        self.speed = speed
+
+    def draw(self):
+        if self.start:
+            now = time.time()
+            if now > self.end:
+                self.start = None
+                self.end = None
+                self.set_material((0.5, 0.5, 0.5, 0.5))
+            else:
+                d = (now - self.start) * self.speed
+                r = (1 - d) % 1
+                l = [x * r - 0.5 for x in self.color]
+                self.set_material(tuple(l))
+
+        self.delegate.draw()
+
+
 class Wiggle(Delegate):
     def __init__(self, shape, speed, maxAngle, duration):
         super().__init__(shape)
