@@ -34,8 +34,10 @@ class Flashing(Delegate):
                 self.set_material((0.5, 0.5, 0.5, 0.5))
             else:
                 d = (now - self.start) * self.speed
-                r= math.sin(d) * 0.5
-                l = [((x * r) if r>0 else r) + 0.5 for x in self.color]
+                r = math.sin(d) * 0.5
+                # use color when making image lighter
+                # use gray when it gets darker
+                l = [((x * r) if r > 0 else r) + 0.5 for x in self.color]
                 self.set_material(tuple(l))
 
         self.delegate.draw()
@@ -179,6 +181,7 @@ class ChangingTextures(Delegate):
         self.textures = textures
         self.last_change = time.time()
         self.interval = interval
+        self.do_change = False
 
     def draw(self):
         if self.interval > 0:
@@ -187,11 +190,18 @@ class ChangingTextures(Delegate):
         self.shape.draw()
 
     def __change_texture(self):
+        """Changes the bg if forced, or if the double interval time has passed"""
         now = time.time()
-        if now > (self.last_change + self.interval):
+        if self.do_change or now > (self.last_change + self.interval * 2):
+            self.do_change = False
             self.last_change = now
             self.idx = (self.idx + 1) % len(self.textures)
             self.shape.set_textures([self.textures[self.idx]])
+
+    def encourage_change(self):
+        """Call this at a good time to do the bg change"""
+        if self.interval > 0 and time.time() > (self.last_change + self.interval):
+            self.do_change = True
 
 
 class ChangingText(Delegate):

@@ -26,8 +26,9 @@ import itertools
 media_path = ""
 logger = logging.getLogger(__name__)
 menuGenerators = []
-flash_yellow=(0.5, 0.4, 0, 0)
-flash_red=(0.5, 0, 0, 0)
+flash_yellow = (0.5, 0.4, 0, 0)
+flash_red = (0.5, 0, 0, 0)
+
 
 def registerMenu(f):
     menuGenerators.append(f)
@@ -341,6 +342,8 @@ class Gui():
         self.__move_sprites()
         if start:
             self.feedback.setIcon(None)
+        else:
+            self.bg.encourage_change()
 
     def __get_winner_string(self, evdata):
         s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
