@@ -22,8 +22,8 @@ class Flashing(Delegate):
     def flash(self, speed=3, times=3, color=(1, 0, 0, 0)):
         self.color = color
         self.start = time.time()
-        self.end = self.start + times / speed
-        self.speed = speed
+        self.speed = speed * 2 * math.pi
+        self.end = self.start + times * 2 * math.pi / self.speed
 
     def draw(self):
         if self.start:
@@ -34,8 +34,8 @@ class Flashing(Delegate):
                 self.set_material((0.5, 0.5, 0.5, 0.5))
             else:
                 d = (now - self.start) * self.speed
-                r = (1 - d) % 1
-                l = [x * r - 0.5 for x in self.color]
+                r= math.sin(d) * 0.5
+                l = [((x * r) if r>0 else r) + 0.5 for x in self.color]
                 self.set_material(tuple(l))
 
         self.delegate.draw()

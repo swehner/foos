@@ -59,8 +59,8 @@ class Plugin:
 
         self.sudden_death = False
 
-    def notifyWinner(self, t):
-        d = {'team': t}
+    def notifyWinner(self, t, due_to_timeout=False):
+        d = {'team': t, 'due_to_timeout': due_to_timeout}
         d.update(self.current_score)
         self.bus.notify('win_game', d)
         self.bus.notify('reset_score', d)
@@ -71,13 +71,13 @@ class Plugin:
                 if self.current_score.get(t, 0) >= self.game_win_score:
                     self.notifyWinner(t)
 
-    def check_party_win(self):
+    def check_party_win(self, due_to_timeout=False):
         ys = self.current_score['yellow']
         yb = self.current_score['black']
         if ys > yb:
-            self.notifyWinner('yellow')
+            self.notifyWinner('yellow', due_to_timeout)
         elif yb > ys:
-            self.notifyWinner('black')
+            self.notifyWinner('black', due_to_timeout)
         else:
             logger.info("Timeout - No one wins yet. Sudden death activated")
             self.sudden_death = True
@@ -95,7 +95,7 @@ class Plugin:
 
             # check party mode
             if self.game_end_time and not self.sudden_death and now > max(self.game_end_time, self.check_win_time if self.check_win_time else 0):
-                self.check_party_win()
+                self.check_party_win(now > self.game_end_time)
 
             # check timeout close
             if self.timeout_close_time and now > self.timeout_close_time:

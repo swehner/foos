@@ -13,7 +13,7 @@ class Plugin:
         'goal': ['crowd1', 'crowd2'],
         'reset': ['whistle_2short1long'],
         'competition': ['Air Horn-SoundBible.com-964603082-lower'],
-        'sudden_death': ['buzzer'],
+        'sudden_death': ['buzzer2'],
         'timeout_close': ['Woop_Woop-SoundBible.com-198943467']
     }
 
