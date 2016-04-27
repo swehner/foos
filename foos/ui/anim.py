@@ -15,12 +15,12 @@ class Delegate:
 class Flashing(Delegate):
     def __init__(self, delegate):
         super().__init__(delegate)
-        self.color = (1, 0, 0, 0)
         self.start = None
         self.end = None
 
-    def flash(self, speed=3, times=3, color=(1, 0, 0, 0)):
+    def flash(self, speed=3, times=3, color=(1, 0, 0), color2=(-0.5, -0.5, -0.5)):
         self.color = color
+        self.color2 = color2
         self.start = time.time()
         self.speed = speed * 2 * math.pi
         self.end = self.start + times * 2 * math.pi / self.speed
@@ -31,13 +31,14 @@ class Flashing(Delegate):
             if now > self.end:
                 self.start = None
                 self.end = None
-                self.set_material((0.5, 0.5, 0.5, 0.5))
+                self.set_material((0.5, 0.5, 0.5))
             else:
                 d = (now - self.start) * self.speed
-                r = math.sin(d) * 0.5
+                r = math.sin(d)
                 # use color when making image lighter
                 # use gray when it gets darker
-                l = [((x * r) if r > 0 else r) + 0.5 for x in self.color]
+                color = self.color if r > 0 else self.color2
+                l = [x * abs(r) + 0.5 for x in color]
                 self.set_material(tuple(l))
 
         self.delegate.draw()

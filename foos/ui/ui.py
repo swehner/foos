@@ -26,8 +26,9 @@ import itertools
 media_path = ""
 logger = logging.getLogger(__name__)
 menuGenerators = []
-flash_yellow = (0.5, 0.4, 0, 0)
-flash_red = (0.5, 0, 0, 0)
+flash_yellow = (0.2, 0.15, -0.3)
+flash_red = (0.2, -0.3, -0.3)
+flash_black = (-0.2, -0.2, -0.2)
 
 
 def registerMenu(f):
@@ -182,7 +183,7 @@ class Gui():
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
                 "sudden_death": self.__sudden_death,
-                "timeout_close": lambda x: self.bg.flash(speed=3, times=2, color=flash_yellow)}
+                "timeout_close": lambda x: self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)}
 
         if config.show_instructions:
             evnt["increment_score"] = lambda d: self.instructions.show()
@@ -192,7 +193,7 @@ class Gui():
 
     def __sudden_death(self, d):
         self.countdown = '» Sudden death «'
-        self.bg.flash(speed=1, times=2, color=flash_red)
+        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -327,7 +328,7 @@ class Gui():
         self.winner.quick_change(s)
 
         if self.countdown:
-            self.bg.flash(speed=5, times=5, color=flash_red)
+            self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
 
         logger.info(s)
 
