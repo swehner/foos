@@ -16,6 +16,9 @@ class Plugin:
         self.process_interval = 60
         self.do_process = threading.BoundedSemaphore(value=1)
         threading.Thread(daemon=True, target=self.retry_loop).start()
+        self.params = {}
+        if hasattr(config, 'league_apikey'):
+            self.params['apiKey'] = config.league_apikey
 
     def process_event(self, ev):
         try:
@@ -26,7 +29,7 @@ class Plugin:
 
     def request_games(self):
         try:
-            r = requests.get(config.league_url + '/get_open_matches', timeout=self.timeout)
+            r = requests.get(config.league_url + '/get_open_matches', timeout=self.timeout, params=self.params)
             r.raise_for_status()
             competition = r.json()
             self.diskbe.write_games(competition)
@@ -39,7 +42,7 @@ class Plugin:
             for fname in files:
                 logger.info("Processing file %s", fname)
                 with open(fname, 'r') as f:
-                    r = requests.post(config.league_url + '/set_result', json=json.load(f), timeout=self.timeout)
+                    r = requests.post(config.league_url + '/set_result', json=json.load(f), timeout=self.timeout, params=self.params)
                 r.raise_for_status()
 
             # reload games from api

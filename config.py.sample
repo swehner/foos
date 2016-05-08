@@ -20,6 +20,7 @@ long_chunks = 25
 
 league_dir = './league'
 league_url = 'http://localhost:8888/api'
+league_apikey = 'put-your-apikey-here'
 
 # config parameters for motion detector
 # MV frame size
