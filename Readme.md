@@ -10,7 +10,7 @@ Featuring:
 
 See a video of it in action:
 
-[![Instant replay video](https://img.youtube.com/vi/zIOYY5FBt6w/0.jpg)](https://www.youtube.com/watch?v=zIOYY5FBt6w)
+[![Instant replay video](https://img.youtube.com/vi/BXMhitiaXEE/0.jpg)](https://www.youtube.com/watch?v=BXMhitiaXEE)
 
 ![table]
 (doc/table.jpg)
