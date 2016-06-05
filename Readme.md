@@ -53,10 +53,9 @@ Keys in X11:
 
 ## Acknowledgments
 
-Big thanks to [.Tuenti](http://www.tuenti.com) (the company we work at) where this project started as a HackMeUp.
+Big thanks to [Tuenti](http://www.tuenti.com), where this project started as a HackMeUp and to Laura Andina for the UI design!
 
 Team:
- * Laura Andina
  * Jesús Bravo
  * Daniel Pañeda
  * Stefan Wehner

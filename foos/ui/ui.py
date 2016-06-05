@@ -20,6 +20,7 @@ from pi3d import opengles
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline, Flashing
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
+from .FixedOutlineString import FixedOutlineString
 import config
 import itertools
 
@@ -74,17 +75,31 @@ class Counter(Delegate):
         self.disk.set_material(color)
         self.number = Wiggle(pi3d.ImageSprite(Counter.textures[value], shader, **kwargs),
                              5, 10, 0.8)
+        self.override = None
+        self.last_shown = None
         super().__init__(self.number)
 
     def draw(self):
+        v = self.getFaceValue()
+        if v != self.last_shown:
+            self.last_shown = v
+            self.number.set_textures([Counter.textures[self.value % 10]])
+            self.wiggle()
+
         self.disk.draw()
         self.number.draw()
 
+    def getFaceValue(self):
+        if self.override is None:
+            return self.value
+        else:
+            return self.override
+
     def setValue(self, value):
-        if self.value != value:
-            self.value = value
-            self.number.set_textures([Counter.textures[self.value % 10]])
-            self.wiggle()
+        self.value = value
+
+    def setOverride(self, value):
+        self.override = value
 
     def position(self, x, y, z):
         self.number.position(x, y, z)
@@ -143,6 +158,29 @@ class KeysFeedback:
             self.icon.hide()
 
 
+class WinnerString:
+    def __init__(self, shader, teams=["yellow", "black"]):
+        font = img("Ubuntu-B.ttf")
+        duration = 5
+        self.shapes = {}
+        for team in teams:
+            s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=200, shader=shader)
+            s.sprite.position(0, 300, 40)
+            s = Disappear(s.sprite, duration=duration)
+            self.shapes[team] = s
+
+    def draw(self):
+        for team, s in self.shapes.items():
+            s.draw()
+
+    def show_winner(self, team):
+        for t, s in self.shapes.items():
+            if team == t:
+                s.show()
+            else:
+                s.hide()
+
+
 class Gui():
     def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
         self.state = GuiState()
@@ -158,6 +196,7 @@ class Gui():
         self.__init_display(scaling_factor, fps)
         self.__setup_menu()
         self.__setup_sprites()
+        self.schedules = []
 
     def __event_map(self):
         evnt = {'quit': lambda d: self.stop(),
@@ -247,6 +286,11 @@ class Gui():
             self.yCounter.moveTo((-380, 50, posz), scale)
             self.bCounter.moveTo((380, 50, posz), scale)
 
+    def __move_winner(self):
+        scale = (0.75, 0.75, 0.75)
+        self.yCounter.moveTo((-380, 0, 50), scale)
+        self.bCounter.moveTo((380, 0, 50), scale)
+
     def __get_bg_textures(self):
         bgs = glob.glob(img("bg/*.jpg"))
         random.shuffle(bgs)
@@ -283,9 +327,6 @@ class Gui():
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
                                       is_3d=False, justify='C', x=0, y=-450, z=50)
 
-        self.winner = Disappear(ChangingText(flat, font=font, string=self.__get_winner_string({}),
-                                             is_3d=False, y=380, z=40), duration=10)
-
         self.game_mode_ui = ChangingText(flat, font=font, string=self.__get_mode_string(None),
                                          is_3d=False, justify='R', x=920, y=480, z=50)
 
@@ -319,18 +360,27 @@ class Gui():
         self.blackColor = (0, 0, 0, 0)
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
+
+        self.winner = WinnerString(flat)
         # move immediately to position
         self.__move_sprites(0)
 
     def _win_game(self, data):
-        self.winner.show()
-        s = self.__get_winner_string(data)
-        self.winner.quick_change(s)
+        self.schedule(time.time() + 5, self._reset_winner)
+        self.winner.show_winner(data['team'])
+        self.yCounter.setOverride(data['yellow'])
+        self.bCounter.setOverride(data['black'])
+        self.__move_winner()
 
         if self.countdown:
             self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
 
-        logger.info(s)
+        logger.info("Game winner: {}".format(data))
+
+    def _reset_winner(self):
+        self.__move_sprites()
+        self.yCounter.setOverride(None)
+        self.bCounter.setOverride(None)
 
     def _handle_menu(self, show):
         self.draw_menu = show
@@ -345,10 +395,6 @@ class Gui():
             self.feedback.setIcon(None)
         else:
             self.bg.encourage_change()
-
-    def __get_winner_string(self, evdata):
-        s = "Black wins  %d-%d" if evdata.get('team', None) == 'black' else "Yellow wins %d-%d"
-        return (s % (evdata.get('yellow', 0), evdata.get('black', 0))).replace('0', 'O')
 
     def __get_mode_string(self, mode=None):
         l = 20
@@ -379,9 +425,22 @@ class Gui():
         self.yPlayers.quick_change(self.getPlayers(yellow, points=yellow_points, left=True))
         self.bPlayers.quick_change(self.getPlayers(black, points=black_points, left=False))
 
+    def schedule(self, when, fun):
+        self.schedules.append((when, fun))
+
+    def checkSchedules(self):
+        if len(self.schedules) > 0:
+            now = time.time()
+            to_run = [(t, fun) for t, fun in self.schedules if t <= now]
+            for t, fun in to_run:
+                fun()
+                self.schedules.remove((t, fun))
+
     def run(self):
         try:
             while self.DISPLAY.loop_running():
+                self.checkSchedules()
+
                 if not self.overlay_mode:
                     self.bg.draw()
                     self.instructions.draw()
