@@ -83,7 +83,7 @@ class Counter(Delegate):
         v = self.getFaceValue()
         if v != self.last_shown:
             self.last_shown = v
-            self.number.set_textures([Counter.textures[self.value % 10]])
+            self.number.set_textures([Counter.textures[v % 10]])
             self.wiggle()
 
         self.disk.draw()
@@ -366,7 +366,7 @@ class Gui():
         self.__move_sprites(0)
 
     def _win_game(self, data):
-        self.schedule(time.time() + 5, self._reset_winner)
+        self.schedule(time.time() + 5, self._reset_winner, True)
         self.winner.show_winner(data['team'])
         self.yCounter.setOverride(data['yellow'])
         self.bCounter.setOverride(data['black'])
@@ -375,7 +375,7 @@ class Gui():
         if self.countdown:
             self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
 
-        logger.info("Game winner: {}".format(data))
+        logger.info("Wins: {team} {yellow}-{black}".format(**data))
 
     def _reset_winner(self):
         self.__move_sprites()
@@ -425,7 +425,10 @@ class Gui():
         self.yPlayers.quick_change(self.getPlayers(yellow, points=yellow_points, left=True))
         self.bPlayers.quick_change(self.getPlayers(black, points=black_points, left=False))
 
-    def schedule(self, when, fun):
+    def schedule(self, when, fun, unique=False):
+        if unique:
+            self.schedules = list(filter(lambda x: x[1]!=fun, self.schedules))
+
         self.schedules.append((when, fun))
 
     def checkSchedules(self):
