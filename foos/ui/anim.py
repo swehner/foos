@@ -139,10 +139,10 @@ class ShowHide(Delegate):
 
 
 class Move(Delegate):
-    def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1)):
+    def __init__(self, shape, opos=(0, 0, 0), oscale=(1, 1, 1), duration=0.3):
         super().__init__(shape)
         self.tstart = 0
-        self.duration = 0.3
+        self.duration = duration
         self.pos = opos
         self.scale, self.shape = oscale, shape
         self.tpos, self.tscale = self.pos, self.scale

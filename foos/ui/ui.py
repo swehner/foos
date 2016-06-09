@@ -162,11 +162,11 @@ class WinnerString:
     def __init__(self, shader, teams=["yellow", "black"]):
         font = img("Ubuntu-B.ttf")
         duration = 5
+        drop_duration = 0.2
         self.shapes = {}
         for team in teams:
             s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=200, shader=shader)
-            s.sprite.position(0, 300, 40)
-            s = Disappear(s.sprite, duration=duration)
+            s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
             self.shapes[team] = s
 
     def draw(self):
@@ -176,6 +176,8 @@ class WinnerString:
     def show_winner(self, team):
         for t, s in self.shapes.items():
             if team == t:
+                s.position(0, 650, 40)
+                s.moveTo((0, 300, 40), (1, 1, 1))
                 s.show()
             else:
                 s.hide()
@@ -270,10 +272,7 @@ class Gui():
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
         opengles.glBlendFuncSeparate(pi3d.constants.GL_SRC_ALPHA, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA, 1, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA)
 
-    def __move_sprites(self, now=None):
-        if now is None:
-            now = time.time()
-
+    def __move_sprites(self):
         posz = 50
         if self.overlay_mode:
             posx = 800
@@ -288,8 +287,8 @@ class Gui():
 
     def __move_winner(self):
         scale = (0.75, 0.75, 0.75)
-        self.yCounter.moveTo((-380, 0, 50), scale)
-        self.bCounter.moveTo((380, 0, 50), scale)
+        self.yCounter.moveTo((-300, 0, 50), scale)
+        self.bCounter.moveTo((300, 0, 50), scale)
 
     def __get_bg_textures(self):
         bgs = glob.glob(img("bg/*.jpg"))
@@ -363,7 +362,7 @@ class Gui():
 
         self.winner = WinnerString(flat)
         # move immediately to position
-        self.__move_sprites(0)
+        self.__move_sprites()
 
     def _win_game(self, data):
         self.schedule(time.time() + 5, self._reset_winner, True)
