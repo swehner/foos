@@ -43,16 +43,20 @@ def img(filename):
         return media_path + "/" + filename
 
 
-def load_texture(filename, i_format=None, mipmap=False):
-    return pi3d.Texture(img(filename), defer=False, free_after_load=True, i_format=i_format, mipmap=mipmap, filter=GL_LINEAR)
+def load_texture(filename, i_format=None, mipmap=False, fallback=None):
+    f = img(filename)
+    if fallback is not None and not os.path.exists(f):
+        f = img(fallback)
+    print("loading", f) 
+    return pi3d.Texture(f, defer=False, free_after_load=True, i_format=i_format, mipmap=mipmap, filter=GL_LINEAR)
 
 
 def load_bg(filename):
     return load_texture(filename)
 
 
-def load_icon(filename):
-    return load_texture(filename, i_format=GL_LUMINANCE_ALPHA)
+def load_icon(filename, fallback=None):
+    return load_texture(filename, i_format=GL_LUMINANCE_ALPHA, fallback=fallback)
 
 
 class GuiState():
@@ -307,7 +311,7 @@ class Gui():
 
         logger.info("Loading other images")
         logo_d = (80, 80)
-        self.logo = pi3d.ImageSprite(load_icon("icons/logo.png"), flat, w=logo_d[0], h=logo_d[1],
+        self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
         self.people = Disappear(pi3d.ImageSprite(load_icon("icons/people.png"), flat, w=logo_d[0], h=logo_d[1],
                                                  x=(1920 - logo_d[0]) / 2 - 40 - logo_d[0] - 20, y=(-1080 + logo_d[1]) / 2 + 40, z=50),
