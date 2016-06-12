@@ -5,6 +5,9 @@ bg_amount = 100
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 
+min_goal_usecs = 1000
+min_secs_between_goals = 3
+
 # dev set
 plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
 

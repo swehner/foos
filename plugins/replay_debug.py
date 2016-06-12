@@ -15,7 +15,6 @@ class Plugin:
     def replay(self, replay_type, trigger, extra={}):
         extra['type'] = trigger
 
-        if config.replay_enabled:
-            self.bus.notify('replay_start', extra)
-            time.sleep(2)
-            self.bus.notify('replay_end')
+        self.bus.notify('replay_start', extra)
+        time.sleep(2)
+        self.bus.notify('replay_end')

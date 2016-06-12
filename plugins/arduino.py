@@ -20,7 +20,15 @@ goalmap = {
 def getEventForButton(line):
     if any([k in line for k in goalmap.keys()]):
         parts = line.split()
-        return 'goal_event', {'source': 'serial', 'team': goalmap[parts[0]], 'extra': parts[1:]}
+        data = {'source': 'serial', 'team': goalmap[parts[0]]}
+
+        if len(parts) > 1:
+            data['duration'] = int(parts[1])
+
+        if len(parts) > 2:
+            data['elapsed'] = int(parts[2])
+
+        return 'goal_event', data
 
     if '_' in line:
         btn, state = line.split('_')

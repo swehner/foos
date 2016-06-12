@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 import logging
+import config
 
 from foos.clock import Clock
 
@@ -14,15 +15,23 @@ class Plugin:
         self.last_goal_clock = Clock('last_goal_clock')
         self.scores = {'black': 0, 'yellow': 0}
         self.bus = bus
-        fmap = {'goal_event': lambda d: self.score(d['team']),
+        fmap = {'goal_event': self.score,
                 'increment_score': lambda d: self.increment(d['team']),
                 'decrement_score': lambda d: self.decrement(d['team']),
                 'reset_score': lambda d: self.reset()}
         self.bus.subscribe_map(fmap, thread=True)
 
-    def score(self, team):
+    def score(self, event):
+        team = event['team']
+        if 'duration' in event:
+            # check goal duration for minimum
+            duration = event['duration']
+            if duration < config.min_goal_usecs:
+                logger.info("Ignoring short goal - duration %d", duration)
+                return
+
         d = self.last_goal_clock.get_diff()
-        if d and d <= 3:
+        if d and d <= config.min_secs_between_goals:
             logger.info("Ignoring goal command %s happening too soon", team)
             return
 
