@@ -24,6 +24,7 @@ from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
 from .bg import BGRotater
 from .monkey_patch import monkey_patch
+from .. import utils
 import foos.config as config
 import itertools
 from foos.platform import is_x11, is_pi
@@ -176,7 +177,7 @@ class WinnerString:
         drop_duration = 0.2
         self.shapes = {}
         for team in teams:
-            s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=180, shader=shader)
+            s = FixedOutlineString(font, "{} wins!".format(utils.teamName(team).capitalize()), outline_size=2, font_size=180, shader=shader)
             s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
             self.shapes[team] = s
 
@@ -366,8 +367,8 @@ class Gui():
         self.feedback = KeysFeedback(flat)
 
         s = 512
-        self.yCounter = Move(Counter(0, flat, (1, 0.7, 0), w=s, h=s, z=50))
-        self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
+        self.yCounter = Move(Counter(0, flat, config.team_colors['yellow'], w=s, h=s, z=50))
+        self.bCounter = Move(Counter(0, flat, config.team_colors['black'], w=s, h=s, z=50))
         playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
                                  codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
@@ -461,7 +462,7 @@ class Gui():
 
     def schedule(self, when, fun, unique=False):
         if unique:
-            self.schedules = list(filter(lambda x: x[1]!=fun, self.schedules))
+            self.schedules = list(filter(lambda x: x[1] != fun, self.schedules))
 
         self.schedules.append((when, fun))
 

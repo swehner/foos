@@ -12,6 +12,9 @@ min_secs_between_goals = 3
 
 show_instructions = True
 
+team_names = {"yellow": "yellow", "black": "black"}
+team_colors = {"yellow": (1, 0.7, 0), "black": (0, 0, 0)}
+
 # game modes: tuples of (winning score, timeout in minutes)
 game_modes = [(None, None), (3, None), (5, None), (3, 120)]
 
