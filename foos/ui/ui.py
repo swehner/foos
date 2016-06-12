@@ -47,7 +47,6 @@ def load_texture(filename, i_format=None, mipmap=False, fallback=None):
     f = img(filename)
     if fallback is not None and not os.path.exists(f):
         f = img(fallback)
-    print("loading", f) 
     return pi3d.Texture(f, defer=False, free_after_load=True, i_format=i_format, mipmap=mipmap, filter=GL_LINEAR)
 
 
@@ -169,7 +168,7 @@ class WinnerString:
         drop_duration = 0.2
         self.shapes = {}
         for team in teams:
-            s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=200, shader=shader)
+            s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=180, shader=shader)
             s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
             self.shapes[team] = s
 
@@ -181,7 +180,7 @@ class WinnerString:
         for t, s in self.shapes.items():
             if team == t:
                 s.position(0, 650, 40)
-                s.moveTo((0, 300, 40), (1, 1, 1))
+                s.moveTo((0, 330, 40), (1, 1, 1))
                 s.show()
             else:
                 s.hide()
