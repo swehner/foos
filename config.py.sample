@@ -63,7 +63,7 @@ log = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": "/home/pi/event.log"
+            "filename": "/home/pi/event.log",
             "maxBytes": 1000000,
             "backupCount": 3
         },
