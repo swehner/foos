@@ -14,6 +14,9 @@ import math
 import numpy
 import glob
 import logging
+import fractions
+import subprocess
+import re
 from functools import partial
 from pi3d import opengles
 
@@ -258,11 +261,31 @@ class Gui():
         self.__setup_menu()
         self.menu.reset(self.main_menu)
 
+    def __validate_gpu_mem(self):
+        try:
+            output = subprocess.check_output(["vcgencmd", "get_mem", "gpu"]).decode("utf-8")
+            size = re.findall("[0-9]+", output)
+            if len(size) != 1:
+                logger.error("Can't parse vcgencmd get_mem gpu output: %s", output)
+            else:
+                detected_size = int(size[0])
+                if detected_size < 128:
+                    logger.error("Detected GPU memory of %dM - please use at least 128M or you might experience rendering issues", detected_size)
+        except:
+            logger.exception("Error trying to get GPU memory")
+
     def __init_display(self, sf, fps):
         bgcolor = (0.0, 0.0, 0.0, 0.2)
+
+        if self.is_pi():
+            self.__validate_gpu_mem()
+
         if sf == 0:
             #adapt to screen size
             self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
+            aspect = fractions.Fraction(self.DISPLAY.width, self.DISPLAY.height)
+            if aspect != fractions.Fraction(16, 9):
+                logger.warn("Your display aspect ratio is %s instead of 16/9 expect some black bars", aspect)
             sf = 1920 / self.DISPLAY.width
         else:
             logger.info("Forcing size")
@@ -530,6 +553,9 @@ class Gui():
 
     def is_x11(self):
         return pi3d.PLATFORM != pi3d.PLATFORM_PI and pi3d.PLATFORM != pi3d.PLATFORM_ANDROID
+
+    def is_pi(self):
+        return pi3d.PLATFORM == pi3d.PLATFORM_PI
 
 
 class RandomScore(threading.Thread):
