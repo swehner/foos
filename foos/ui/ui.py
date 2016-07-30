@@ -24,7 +24,7 @@ from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingT
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
-import config
+import foos.config as config
 import itertools
 
 media_path = ""

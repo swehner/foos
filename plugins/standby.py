@@ -1,7 +1,7 @@
 import time
 import threading
 import subprocess
-import config
+import foos.config as config
 import logging
 
 logger = logging.getLogger(__name__)
