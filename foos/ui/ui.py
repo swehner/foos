@@ -73,7 +73,7 @@ class Counter(Delegate):
 
     def __init__(self, value, shader, color, **kwargs):
         if Counter.textures is None:
-            logger.info("Loading numbers")
+            logger.debug("Loading numbers")
             Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
@@ -288,7 +288,7 @@ class Gui():
                 logger.warn("Your display aspect ratio is %s instead of 16/9 expect some black bars", aspect)
             sf = 1920 / self.DISPLAY.width
         else:
-            logger.info("Forcing size")
+            logger.debug("Forcing size")
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(1920 / sf), h=int(1080 / sf),
                                                background=bgcolor, layer=1)
 
@@ -321,7 +321,7 @@ class Gui():
         random.shuffle(bgs)
         bgs = bgs[0:self.bg_amount]
 
-        logger.info("Loading %d bgs %s", len(bgs), bgs)
+        logger.debug("Loading %d bgs %s", len(bgs), bgs)
         return [load_bg(f) for f in bgs]
 
     def __setup_sprites(self):
@@ -331,7 +331,7 @@ class Gui():
         bg.set_shader(flat)
         self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
 
-        logger.info("Loading other images")
+        logger.debug("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
                                      x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
@@ -344,7 +344,7 @@ class Gui():
                                              x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=50)
         self.instructions = LazyTrigger(Disappear(self.instructions, duration=5))
 
-        logger.info("Loading font")
+        logger.debug("Loading font")
         printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉"), ord('Ω')]))
         fontfile = img("UbuntuMono-B_circle.ttf")
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,

@@ -6,7 +6,7 @@ import random
 import sys
 import time
 import logging
-import subprocess
+from foos.process import call_and_log
 import config
 from apiclient.discovery import build
 from apiclient.errors import HttpError
@@ -136,7 +136,7 @@ class Plugin:
         try:
             in_file = os.path.join(config.replay_path, 'replay_long.h264')
             out_file = os.path.join(config.replay_path, 'replay_long.mp4')
-            subprocess.call(["video/convert.sh", in_file, out_file])
+            call_and_log(["video/convert.sh", in_file, out_file])
             video_id = initialize_upload(title, out_file)
             url = 'http://www.youtube.com/watch?v={}'.format(video_id)
             self.bus.notify('upload_ok', url)

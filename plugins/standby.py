@@ -1,6 +1,6 @@
 import time
 import threading
-import subprocess
+from foos.process import call_and_log
 import config
 import logging
 
@@ -29,13 +29,13 @@ class Plugin:
     def turn_off(self):
         logger.info("Turning TV off...")
         self.active = False
-        subprocess.call("echo 'standby 0' | cec-client -s >/dev/null", shell=True)
+        call_and_log("echo 'standby 0' | cec-client -s >/dev/null", shell=True)
         self.bus.notify("tv_standby")
 
     def turn_on(self):
         logger.info("Turning TV on...")
         self.active = True
-        subprocess.call("echo 'on 0' | cec-client -s >/dev/null", shell=True)
+        call_and_log("echo 'on 0' | cec-client -s >/dev/null", shell=True)
         self.bus.notify("tv_on")
 
     def process_event(self, ev):
