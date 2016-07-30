@@ -7,7 +7,7 @@ import sys
 import time
 import logging
 from foos.process import call_and_log
-import config
+import foos.config as config
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload

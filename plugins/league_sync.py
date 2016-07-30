@@ -1,7 +1,7 @@
 import requests
 import threading
 import logging
-import config
+import foos.config as config
 import json
 
 from plugins.league import diskbackend

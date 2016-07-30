@@ -5,7 +5,7 @@ import numpy as np
 import multiprocessing as mp
 import logging
 
-import config
+import foos.config as config
 
 logger = logging.getLogger(__name__)
 

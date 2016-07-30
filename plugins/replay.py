@@ -1,4 +1,4 @@
-import config
+import foos.config as config
 import os
 from foos.process import call_and_log
 

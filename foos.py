@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import config
+import foos.config as config
+
 import logging.config
 import sys
 import getopt

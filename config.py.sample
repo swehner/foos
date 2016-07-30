@@ -1,90 +1,41 @@
-onscreen_leds_enabled = False
-standby_timeout_secs = 600
-bg_change_secs = 300
-bg_amount = 100
-hipchat_token = 'your_token'
-hipchat_room = 'your_room_id'
+""" Override config values from config_base using this file """
+from config_base import *
 
-min_goal_usecs = 1000
-min_secs_between_goals = 3
 
-# dev set
-plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger', 'io_evdev_keyboard']
+""" Configure the plugin set """
 
-# full blown set: arduino, camera, league & sync, upload, chat
-# plugins = ['replay', 'camera', 'score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league', 'event_debugger', 'league_sync']
+# -- Enable camera, replays and video motiondetector
+#plugins.update(set(['replay', 'camera', 'motiondetector']))
 
-show_instructions = True
+# -- Enable league sync with server
+#plugins.add('league_sync')
 
-replay_path = '/home/pi/replay'
-ignore_recent_chunks = 1
-short_chunks = 10
-long_chunks = 25
+# -- Enable Youtube video upload
+#plugins.add('upload')
 
-league_dir = './league'
-league_url = 'http://localhost:8888/api'
-league_apikey = 'put-your-apikey-here'
+# -- Enable hipchat bot
+#plugins.add('hipbot')
 
-video_size=(1280, 720)
+# -- Enable Arduino serial input and led output
+#plugins.add('io_serial')
 
-# config parameters for motion detector
-# MV frame size
-md_size = (video_size[0] // 16 + 1, video_size[1] // 16)
-# crop pixels on each size of the frame to avoid detecting movement outside of the table
-md_crop_x = 25
-# threshold to consider MV movement
-md_mv_threshold = 100000
-# number of vectors to consider frame to contain movement
-md_min_vectors = 30
-# number of contiguous frames to required to consider it movemen
-md_min_frames = 9
+# -- Enable auto-TV standby
+#plugins.add('standby')
 
-# send people_stop_playing event after X seconds without movement
-md_ev_absence_timeout = 30
-# send movement_detected every X seconds
-md_ev_interval = 2
 
-log = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "simple": {
-            "format": "%(asctime)s %(levelname)7s %(name)s - %(message)s",
-            "datefmt": "%H:%M:%S"
-        },
-        "console": {
-            "format": "%(levelname)7s - %(message)s"
-        }
-    },
+""" Configure paths """
 
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "level": "DEBUG",
-            "formatter": "console",
-            "stream": "ext://sys.stdout"
-        },
+# -- replay path
+#replay_path = "..."
 
-        "file_handler": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "level": "DEBUG",
-            "formatter": "simple",
-            "filename": "/home/pi/event.log",
-            "maxBytes": 1000000,
-            "backupCount": 3
-        },
-    },
+# -- or the location of the file_handler
+#log["handlers"]["file_handler"]["filename"] = ""
 
-    "loggers": {
-        "plugins.event_debugger": {
-            "level": "DEBUG",
-            "handlers": ["file_handler"],
-            "propagate": "no",
 
-        }
-    },
-    "root": {
-        "level": "INFO",
-        "handlers": ["console", "file_handler"]
-    }
-}
+""" Override tokens for plugins """
+
+#hipchat_token = 'your_token'
+#hipchat_room = 'your_room_id'
+
+#league_url = 'http://localhost:8888/api'
+#league_apikey = 'put-your-apikey-here'

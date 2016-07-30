@@ -1,7 +1,7 @@
 from foos.process import long_running
 from threading import Thread
 import time
-import config
+import foos.config as config
 
 
 class Plugin:
