@@ -23,7 +23,7 @@ class PluginHandler:
             module = importlib.import_module('plugins.' + plugin)
             p = module.Plugin(bus)
             self.running_plugins[plugin] = p
-            logger.info("Loaded plugin %s", plugin)
+            logger.debug("Loaded plugin %s", plugin)
 
     def save(self):
         state = {}
