@@ -1,24 +1,42 @@
 """ Override config values from config_base using this file """
 from config_base import *
 
+
 """ Configure the plugin set """
-# -- Dev set
-# plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
 
-# -- Replays
-# plugins = ['replay', 'camera', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
+# -- Enable camera, replays and video motiondetector
+#plugins.update(set(['replay', 'camera', 'motiondetector']))
 
-# -- Full blown set: arduino, camera, league & sync, upload, chat
-# plugins = ['replay', 'camera', 'score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league', 'event_debugger', 'league_sync']
+# -- Enable league sync with server
+#plugins.add('league_sync')
+
+# -- Enable Youtube video upload
+#plugins.add('upload')
+
+# -- Enable hipchat bot
+#plugins.add('hipbot')
+
+# -- Enable Arduino serial input and led output
+#plugins.add('io_serial')
+
+# -- Enable auto-TV standby
+#plugins.add('standby')
+
+# -- For development: sleep during replay
+#plugins.add('replay_debug')
+
 
 """ Configure paths """
+
 # -- replay path
 #replay_path = "..."
 
 # -- or the location of the file_handler
 #log["handlers"]["file_handler"]["filename"] = ""
 
+
 """ Override tokens for plugins """
+
 #hipchat_token = 'your_token'
 #hipchat_room = 'your_room_id'
 

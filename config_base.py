@@ -8,11 +8,8 @@ hipchat_room = 'your_room_id'
 min_goal_usecs = 1000
 min_secs_between_goals = 3
 
-# dev set
-plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
-
-# full blown set: arduino, camera, league & sync, upload, chat
-# plugins = ['replay', 'camera', 'score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league', 'event_debugger', 'league_sync']
+# basic set of plugins
+plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'leds'])
 
 show_instructions = True
 
