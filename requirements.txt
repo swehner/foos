@@ -1,5 +1,4 @@
 pi3d>=2.10
-numpy
 Pillow
 python-simple-hipchat
 pyserial
@@ -7,3 +6,4 @@ google-api-python-client
 six==1.10.0
 inotify_simple
 requests
+evdev

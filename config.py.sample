@@ -9,7 +9,7 @@ min_goal_usecs = 1000
 min_secs_between_goals = 3
 
 # dev set
-plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger']
+plugins = ['replay_debug', 'score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'event_debugger', 'io_evdev_keyboard']
 
 # full blown set: arduino, camera, league & sync, upload, chat
 # plugins = ['replay', 'camera', 'score', 'game', 'upload', 'sound', 'leds', 'io_debug', 'io_serial', 'standby', 'menu', 'control', 'hipbot', 'motiondetector', 'league', 'event_debugger', 'league_sync']
