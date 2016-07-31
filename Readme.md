@@ -34,6 +34,33 @@ cp config.py.sample config.py
 vi config.py
 ```
 
+To verify that you have all the dependencies you can run the check script. It will check most of the dependencies for you.
+```
+pi@raspberrypi:~/foos $ ./check
+Checking environment...
+
+* Binary deps:
+[ OK] play (needed for sound) found
+[ OK] avconv (needed for upload) found
+[ OK] cec-client (needed for standby) found
+[ OK] python3 (needed for foos) found
+[ OK] pip3 (needed for foos) found
+
+* RaspberryPi specific deps:
+[ OK] /opt/vc/bin/raspivid (needed for camera)
+[ OK] /opt/vc/src/hello_pi/hello_video/hello_video.bin (needed for replay)
+
+* tmpfs for replays:
+[ OK] /dev/shm writable - use it to store replays. See replay_path in config
+
+* GPU settings:
+[ OK] GPU memory set to 128
+
+* Python deps
+[   ] Can't check python3 deps for the moment - if you have issues:
+====> Try: pip3 install -r requirements 
+```
+
 On the Raspberry Pi you can run the UI simply doing
 ```
 python3 foos.py
