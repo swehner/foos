@@ -76,7 +76,7 @@ function check_gpu {
 	neutral "vcgencmd not found, I guess you aren't running this on a RaspberryPi"
     else
 	MEM=$(vcgencmd get_mem gpu | grep -o [0-9]*)
-	REC="128"
+	REC="192"
 	if [ $MEM -ge $REC ]; then
 	    ok "GPU memory set to $MEM"
 	else
