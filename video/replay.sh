@@ -1,4 +1,5 @@
 #!/bin/sh
+
 if [ $# -lt 1 ]; then
   echo "Syntax: replay.sh file"
   exit 1

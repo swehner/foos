@@ -1,0 +1,151 @@
+#!/bin/bash
+
+REQUIRED_EXECS="play sound sox
+avconv upload libav-tools
+cec-client standby cec-utils
+python3 foos python3
+pip3 foos python3-pip
+"
+
+VC_INSTR="pushd /opt/vc/src/hello_pi; ./rebuild.sh && popd"
+
+PI_EXECS="/opt/vc/bin/raspivid camera -
+/opt/vc/src/hello_pi/hello_video/hello_video.bin replay \$VC_INSTR"
+
+GET_CONFIG="python3 -m foos.config_getter"
+
+function ok {
+    echo -e "\e[32m[ OK]\e[0m" $*
+}
+
+function err {
+    echo -e "\e[31m[ERR]\e[0m" $*
+}
+
+function warn {
+    echo -e "\e[36m[WRN]\e[0m" $*
+}
+
+function suggest {
+    echo -e "\e[33m====> Try:" $* "\e[0m"
+}
+
+function neutral {
+    echo "[   ]" $*
+}
+
+function head {
+    echo -e "\n*" $*
+}
+
+function check_execs {
+    NEEDED_DEPS=""
+    while [ $# -gt 0 ]; do
+	if ! which $1 > /dev/null; then
+	    err "$1 (needed for $2) not found!"
+	    NEEDED_DEPS="$3 $NEEDED_DEPS"
+	else
+	    ok "$1 (needed for $2) found"
+	fi
+	shift 3
+    done
+
+    [ -n "$NEEDED_DEPS" ] && suggest "sudo apt-get install $NEEDED_DEPS"
+}
+
+function check_pi_execs {
+    while [ $# -gt 0 ]; do
+	if [ ! -x $1 ]; then
+	    err "$1 (needed for $2) not found"
+	    [ "$3" != "-" ] && suggest $(eval echo $3)
+	else
+	    ok "$1 (needed for $2)"
+	fi
+	shift 3
+    done
+}
+
+function check_replay_path {
+    REPLAY_PATH=$($GET_CONFIG replay_path)
+    P="$REPLAY_PATH"
+    while [ ! -d "$P" ]; do
+	P=$(dirname "$P")
+	if [ -z "$P" ]; then
+	    err "replay_path $REPLAY_PATH is not in any existing directory"
+	    return 1
+	fi
+    done
+    FSTYPE=$(stat --format="%T" --file-system $P)
+    if [ "$FSTYPE" == "tmpfs" ]; then
+	ok "$REPLAY_PATH is on a $FSTYPE"
+    else
+	err "Replay path $REPLAY_PATH should be on a tmpfs filesystem instead of $FSTYPE"
+    fi
+    
+    if [ -w "$P" ]; then
+	ok "$REPLAY_PATH is writable"
+    else
+	err "Replay path $REPLAY_PATH is not writable"
+    fi
+}
+
+function check_gpu {
+    if ! which vcgencmd >/dev/null; then
+	neutral "vcgencmd not found, I guess you aren't running this on a RaspberryPi"
+    else
+	MEM=$(vcgencmd get_mem gpu | grep -o [0-9]*)
+	REC="192"
+	if [ $MEM -ge $REC ]; then
+	    ok "GPU memory set to $MEM"
+	else
+	    err "GPU memory too low: $MEM - we recommend $REC or more"
+	    suggest "sudo raspi-config  # and raise the split memory setting"
+	fi
+    fi
+}
+
+function check_evdev {
+    if [ -r $(find /dev/input -type c | tail -n1) ]; then
+	ok "/dev/input seems readable io_evdev_keyboard should work"
+    else
+	warn "/dev/input isn't readable - io_evdev_keyboard won't work!"
+    fi
+}
+
+function test_replays {
+    REPLAY_PATH=$($GET_CONFIG replay_path)
+    echo "Running camera..."
+    video/run-camera.sh $REPLAY_PATH &
+    sleep 5
+    kill %1
+    video/generate-replay.sh $REPLAY_PATH $($GET_CONFIG ignore_recent_chunks) $($GET_CONFIG long_chunks) $($GET_CONFIG short_chunks)
+    video/replay.sh $REPLAY_PATH/replay_short.h264
+}
+
+echo "Checking environment..."
+head "Binary deps:"
+check_execs $REQUIRED_EXECS
+
+head "RaspberryPi specific deps:"
+check_pi_execs $PI_EXECS
+
+head "Replay path:"
+check_replay_path
+
+head "GPU settings:"
+check_gpu
+
+head "evdev input:"
+check_evdev
+
+head "Python deps"
+neutral "Can't check python3 deps for the moment - if you have issues:"
+suggest "pip3 install -r requirements"
+
+head "Test Replays - press Y to test N to skip"
+read -s -n 1 ANSWER
+if [ "$ANSWER" == "y" ]; then
+    test_replays
+fi
+
+head "Finished!"
