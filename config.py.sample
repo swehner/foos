@@ -25,9 +25,11 @@ league_dir = './league'
 league_url = 'http://localhost:8888/api'
 league_apikey = 'put-your-apikey-here'
 
+video_size=(1280, 720)
+
 # config parameters for motion detector
 # MV frame size
-md_size = (82, 46)
+md_size = (video_size[0] // 16 + 1, video_size[1] // 16)
 # crop pixels on each size of the frame to avoid detecting movement outside of the table
 md_crop_x = 25
 # threshold to consider MV movement
