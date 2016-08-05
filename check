@@ -12,6 +12,8 @@ VC_INSTR="pushd /opt/vc/src/hello_pi; ./rebuild.sh && popd"
 PI_EXECS="/opt/vc/bin/raspivid camera -
 /opt/vc/src/hello_pi/hello_video/hello_video.bin replay \$VC_INSTR"
 
+GET_CONFIG="python3 -m foos.config_getter"
+
 function ok {
     echo -e "\e[32m[ OK]\e[0m" $*
 }
@@ -63,11 +65,27 @@ function check_pi_execs {
     done
 }
 
-function check_shm {
-    if [ -w /dev/shm ]; then
-	ok "/dev/shm writable - use it to store replays. See replay_path in config"
+function check_replay_path {
+    REPLAY_PATH=$($GET_CONFIG replay_path)
+    P="$REPLAY_PATH"
+    while [ ! -d "$P" ]; do
+	P=$(dirname "$P")
+	if [ -z "$P" ]; then
+	    err "replay_path $REPLAY_PATH is not in any existing directory"
+	    return 1
+	fi
+    done
+    FSTYPE=$(stat --format="%T" --file-system $P)
+    if [ "$FSTYPE" == "tmpfs" ]; then
+	ok "$REPLAY_PATH is on a $FSTYPE"
     else
-	err "/dev/shm not writable, make sure replays are stored on a tmpfs"
+	err "Replay path $REPLAY_PATH should be on a tmpfs filesystem instead of $FSTYPE"
+    fi
+    
+    if [ -w "$P" ]; then
+	ok "$REPLAY_PATH is writable"
+    else
+	err "Replay path $REPLAY_PATH is not writable"
     fi
 }
 
@@ -94,6 +112,16 @@ function check_evdev {
     fi
 }
 
+function test_replays {
+    REPLAY_PATH=$($GET_CONFIG replay_path)
+    echo "Running camera..."
+    video/run-camera.sh $REPLAY_PATH &
+    sleep 5
+    kill %1
+    video/generate-replay.sh $REPLAY_PATH $($GET_CONFIG ignore_recent_chunks) $($GET_CONFIG long_chunks) $($GET_CONFIG short_chunks)
+    video/replay.sh $REPLAY_PATH/replay_short.h264
+}
+
 echo "Checking environment..."
 head "Binary deps:"
 check_execs $REQUIRED_EXECS
@@ -101,8 +129,8 @@ check_execs $REQUIRED_EXECS
 head "RaspberryPi specific deps:"
 check_pi_execs $PI_EXECS
 
-head "tmpfs for replays:"
-check_shm
+head "Replay path:"
+check_replay_path
 
 head "GPU settings:"
 check_gpu
@@ -113,3 +141,11 @@ check_evdev
 head "Python deps"
 neutral "Can't check python3 deps for the moment - if you have issues:"
 suggest "pip3 install -r requirements"
+
+head "Test Replays - press Y to test N to skip"
+read -s -n 1 ANSWER
+if [ "$ANSWER" == "y" ]; then
+    test_replays
+fi
+
+head "Finished!"
