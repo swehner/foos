@@ -44,6 +44,7 @@ class MotionDetector:
     """Detect motion in a frame"""
     def __init__(self, size, vector_threshold, min_vectors, crop_x, min_frames_movement):
         self.size = size
+        self.frame_size_bytes = self.size[0] * self.size[1] * 4
         self.vector_threshold = vector_threshold
         self.min_vectors = min_vectors
         self.min_frames_movement = min_frames_movement
@@ -79,15 +80,25 @@ class MotionDetector:
         return runs
 
     def readFrame(self, f):
-        return f.read(self.size[0] * self.size[1] * 4)
+        d = f.read(self.frame_size_bytes)
+        ld = len(d)
+        if ld == 0:
+            return None
+        
+        if ld != self.frame_size_bytes:
+            logger.warning("Movement vector file size is off - expected a full frame of %d bytes (=%d * %d * 4) but got %d" % (self.frame_size_bytes, self.size[0], self.size[1], ld))
+            logger.warning("This probably means that md_size is misconfigured")
+            return None
+        
+        return d
 
-    def chunk_has_movement(self, d):
+    def chunk_has_movement(self, d):        
         # Skip first frame
         frame = self.readFrame(d)
         movement_in_frame = []
         while True:
             frame = self.readFrame(d)
-            if len(frame) == 0:
+            if frame is None:
                 break
 
             movement_in_frame.append(self.frame_has_movement(frame))
