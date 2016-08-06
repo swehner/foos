@@ -1,6 +1,5 @@
 import config
 import os
-from subprocess import call
 import time
 
 

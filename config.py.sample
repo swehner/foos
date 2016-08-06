@@ -47,8 +47,11 @@ log = {
     "disable_existing_loggers": False,
     "formatters": {
         "simple": {
-            "format": "%(asctime)s %(levelname)6s %(name)s - %(message)s",
+            "format": "%(asctime)s %(levelname)7s %(name)s - %(message)s",
             "datefmt": "%H:%M:%S"
+        },
+        "console": {
+            "format": "%(levelname)7s - %(message)s"
         }
     },
 
@@ -56,6 +59,7 @@ log = {
         "console": {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
+            "formatter": "console",
             "stream": "ext://sys.stdout"
         },
 
@@ -79,6 +83,6 @@ log = {
     },
     "root": {
         "level": "INFO",
-        "handlers": ["console"]
+        "handlers": ["console", "file_handler"]
     }
 }
