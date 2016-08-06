@@ -5,11 +5,12 @@ logger = logging.getLogger(__name__)
 
 def call_and_log(*args, **kwargs):
     """Run process, gather output and write to log"""
-    p = subprocess.run(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
-    if len(p.stdout) > 0:
-        logger.info(p.stdout.decode("utf-8").strip())
-    if len(p.stderr) > 0:
-        logger.error(p.stderr.decode("utf-8").strip())
+    p = subprocess.Popen(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+    stdout, stderr = p.communicate()
+    if len(stdout) > 0:
+        logger.info(stdout.decode("utf-8").strip())
+    if len(stderr) > 0:
+        logger.error(stderr.decode("utf-8").strip())
     if p.returncode != 0:
         logger.error("{} returned {}".format(p.args, p.returncode))
 
