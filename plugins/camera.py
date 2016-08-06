@@ -1,7 +1,7 @@
 from subprocess import call
 from threading import Thread
 import time
-import config
+import foos.config as config
 
 
 class Plugin:

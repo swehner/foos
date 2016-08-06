@@ -9,7 +9,7 @@ import glob
 import shutil
 
 from foos.ui.ui import registerMenu
-import config
+import foos.config as config
 
 logger = logging.getLogger(__name__)
 

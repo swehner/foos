@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 import logging
-import config
+import foos.config as config
 
 from foos.clock import Clock
 

@@ -1,6 +1,6 @@
 *.swp
 *.pyc
 .status
-config.py
+/config.py
 client_secrets.json
 league
