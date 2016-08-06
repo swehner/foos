@@ -73,7 +73,7 @@ python3 foos.py -s 3
 
 If you want to use a keyboard on the Raspberry PI you can enable the io_evdev_keyboard plugin.
 This will read directly from the evdev input device (make sure pi user is in the input group and has access to /dev/input/*)
-Remember this will only work n physical keyboards attached to the PI - not if you're pressing keys in a ssh session!
+Remember this will only work on physical keyboards attached to the PI - not if you're pressing keys in a ssh session!
 
 Keys in X11 and Raspberry PI:
  * Increment goal counter: `q, KP7, e, KP9`
@@ -81,6 +81,10 @@ Keys in X11 and Raspberry PI:
  * Ok: `s, KP5`
  * Simulate goal: `a, KP4, d, KP6`
  * Exit: `.`
+
+## Troubleshooting
+
+Please check the [Troubleshooting](doc/Troubleshooting.md) section for some common issues.
 
 ## Acknowledgments
 
