@@ -18,20 +18,21 @@ import fractions
 from functools import partial
 from pi3d import opengles
 
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline, Flashing
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Flashing
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
+from .bg import BGRotater
+from .monkey_patch import monkey_patch
 import foos.config as config
 import itertools
 
 media_path = ""
 logger = logging.getLogger(__name__)
 menuGenerators = []
-flash_yellow = (0.2, 0.15, -0.3)
-flash_red = (0.2, -0.3, -0.3)
-flash_black = (-0.2, -0.2, -0.2)
-
+flash_yellow = (10, 7.5, 0)
+flash_red = (10, 0, 0)
+flash_black = None
 
 def registerMenu(f):
     menuGenerators.append(f)
@@ -188,13 +189,12 @@ class WinnerString:
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
+    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300):
         self.state = GuiState()
         self.overlay_mode = False
         self.bus = bus
         self.bus.subscribe_map(self.__event_map())
         self.bg_change_interval = bg_change_interval
-        self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
         self.game_mode = None
         self.draw_menu = False
@@ -261,7 +261,9 @@ class Gui():
 
 
     def __init_display(self, sf, fps):
-        bgcolor = (0.0, 0.0, 0.0, 0.2)
+        bgcolor = (0.0, 0.0, 0.0, 0.0)
+        # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
+        monkey_patch()
 
         if sf == 0:
             #adapt to screen size
@@ -280,6 +282,7 @@ class Gui():
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
         opengles.glBlendFuncSeparate(pi3d.constants.GL_SRC_ALPHA, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA, 1, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA)
+        self.sf = sf
 
     def __move_sprites(self):
         posz = 50
@@ -299,21 +302,17 @@ class Gui():
         self.yCounter.moveTo((-300, 0, 50), scale)
         self.bCounter.moveTo((300, 0, 50), scale)
 
-    def __get_bg_textures(self):
-        bgs = glob.glob(img("bg/*.jpg"))
-        random.shuffle(bgs)
-        bgs = bgs[0:self.bg_amount]
-
-        logger.debug("Loading %d bgs %s", len(bgs), bgs)
-        return [load_bg(f) for f in bgs]
-
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
 
-        bg = pi3d.Sprite(w=1920, h=1080, z=100)
-        bg.set_shader(flat)
-        self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
+        bg = pi3d.Sprite(w=int(self.DISPLAY.width * self.sf), h=int(self.DISPLAY.height * self.sf), z=100)
+        bg.set_alpha(0)
+        self.bg = Flashing(bg)
 
+        if self.is_pi():
+            self.bgr = BGRotater(960, 540, -1, img("bg"), self.bg_change_interval) 
+            self.bgr.change()
+        
         logger.debug("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
@@ -402,7 +401,8 @@ class Gui():
         if start:
             self.feedback.setIcon(None)
         else:
-            self.bg.encourage_change()
+            if self.is_pi():
+                self.bgr.encourageChange()
 
     def __get_mode_string(self, mode=None):
         l = 20

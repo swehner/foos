@@ -4,7 +4,6 @@ plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league'
 onscreen_leds_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
-bg_amount = 100
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 

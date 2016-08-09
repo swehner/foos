@@ -39,8 +39,7 @@ ui.media_path = root + "/img"
 
 bus = Bus()
 gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
-             bg_change_interval=config.bg_change_secs,
-             bg_amount=config.bg_amount)
+             bg_change_interval=config.bg_change_secs)
 
 if gui.is_x11():
     logger.info("Running Keyboard")
