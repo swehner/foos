@@ -117,26 +117,6 @@ void *video_decode_test(void* arg)
    FILE *in;
    int status = 0;
    unsigned int data_len = 0;
-
-   while (1) {
-     //printf("waiting for filename: %s\n", filename);
-     if (strlen(filename) == 0){
-       usleep(100000);
-       continue;
-     }
-     if (strcmp(filename, "quit")==0) {
-       break;
-     }
-     printf("playing: %s\n", filename);
-
-     if((in = fopen(filename, "rb")) == NULL) {
-       printf("No such file %s\n", filename);
-       filename[0]='\0';
-       continue;
-     }
-       filename[0]='\0';
-
-   
    memset(list, 0, sizeof(list));
    memset(tunnel, 0, sizeof(tunnel));
 
@@ -173,14 +153,8 @@ void *video_decode_test(void* arg)
       status = -14;
    list[2] = clock;
 
-   memset(&cstate, 0, sizeof(cstate));
-   cstate.nSize = sizeof(cstate);
-   cstate.nVersion.nVersion = OMX_VERSION;
-   cstate.eState = OMX_TIME_ClockStateWaitingForStartTime;
-   cstate.nWaitMask = 1;
-   if(clock != NULL && OMX_SetParameter(ILC_GET_HANDLE(clock), OMX_IndexConfigTimeClockState, &cstate) != OMX_ErrorNone)
-      status = -13;
-
+   // ***** clock set
+   
    // create video_scheduler
    if(status == 0 && ilclient_create_component(client, &video_scheduler, "video_scheduler", ILCLIENT_DISABLE_ALL_PORTS) != 0)
       status = -14;
@@ -191,8 +165,9 @@ void *video_decode_test(void* arg)
    set_tunnel(tunnel, video_decode, 131, video_scheduler, 10);
    set_tunnel(tunnel+1, video_scheduler, 11, egl_render, 220);
    set_tunnel(tunnel+2, clock, 80, video_scheduler, 12);
+       
 
-   // setup clock tunnel first
+      // setup clock tunnel first
    if(status == 0 && ilclient_setup_tunnel(tunnel+2, 0, 0) != 0)
       status = -15;
    else
@@ -207,7 +182,36 @@ void *video_decode_test(void* arg)
    format.nPortIndex = 130;
    format.eCompressionFormat = OMX_VIDEO_CodingAVC;
 
-   
+   while (1) {
+     
+     printf("waiting for filename: %s\n", filename);
+     if (strlen(filename) == 0){
+       sleep(1);
+       continue;
+     }
+     if (strcmp(filename, "quit")==0) {
+       break;
+     }
+     printf("playing: %s\n", filename);
+
+     if((in = fopen(filename, "rb")) == NULL) {
+       printf("No such file %s\n", filename);
+       filename[0]='\0';
+       continue;
+     }
+       filename[0]='\0';
+
+
+       
+   memset(&cstate, 0, sizeof(cstate));
+   cstate.nSize = sizeof(cstate);
+   cstate.nVersion.nVersion = OMX_VERSION;
+   cstate.eState = OMX_TIME_ClockStateWaitingForStartTime;
+   cstate.nWaitMask = 1;
+   if(clock != NULL && OMX_SetParameter(ILC_GET_HANDLE(clock), OMX_IndexConfigTimeClockState, &cstate) != OMX_ErrorNone)
+      status = -13;
+
+    
    if(status == 0 &&
       OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
       ilclient_enable_port_buffers(video_decode, 130, NULL, NULL, NULL) == 0)
@@ -306,8 +310,9 @@ void *video_decode_test(void* arg)
             buf->nFlags = OMX_BUFFERFLAG_STARTTIME;
             first_packet = 0;
          }
-         else
+         else {
             buf->nFlags = OMX_BUFFERFLAG_TIME_UNKNOWN;
+	 }
 
 	 //printf("* empty buffer in loop\n");
 
@@ -324,8 +329,10 @@ void *video_decode_test(void* arg)
       buf->nFlags = OMX_BUFFERFLAG_TIME_UNKNOWN | OMX_BUFFERFLAG_EOS;
 
       printf("* empty buffer\n");
-      if(OMX_EmptyThisBuffer(ILC_GET_HANDLE(video_decode), buf) != OMX_ErrorNone)
+      if(OMX_EmptyThisBuffer(ILC_GET_HANDLE(video_decode), buf) != OMX_ErrorNone) {
          status = -20;
+	 printf("* error emptying last buffer\n");
+      }
 
 /// added
       printf("* wait for eos\n");
@@ -339,11 +346,36 @@ void *video_decode_test(void* arg)
       // need to flush the renderer to allow video_decode to disable its input port
       printf("* flush tunnels\n");
       //orig
-      //ilclient_flush_tunnels(tunnel, 0);
-      ilclient_flush_tunnels(tunnel, 1);
+      ilclient_flush_tunnels(tunnel, 0);
 
       printf("* disable port buffers\n");
       ilclient_disable_port_buffers(video_decode, 130, NULL, NULL, NULL);
+
+
+
+      /// ******* stop clock
+      printf("Stopping clock\n");
+   memset(&cstate, 0, sizeof(cstate));
+   cstate.nSize = sizeof(cstate);
+   cstate.nVersion.nVersion = OMX_VERSION;
+   cstate.eState = OMX_TIME_ClockStateStopped;
+   cstate.nWaitMask = 1;
+   if(clock != NULL && OMX_SetParameter(ILC_GET_HANDLE(clock), OMX_IndexConfigTimeClockState, &cstate) != OMX_ErrorNone) {
+     printf("ERROR Stopping clock\n");
+     status = -13;
+
+   }
+
+      
+      printf("Close file\n");
+      fclose(in);
+      if (callback!=NULL) {
+	printf("Calling callbacki %p\n", callback);
+	callback();
+      }
+      printf("After callback\n");
+   }
+   
    }
    
 
@@ -367,15 +399,6 @@ void *video_decode_test(void* arg)
    OMX_Deinit();
 
    ilclient_destroy(client);
-
-      printf("Close file\n");
-   fclose(in);
-   if (callback!=NULL) {
-     printf("Calling callbacki %p\n", callback);
-     callback();
-   }
-   printf("After callback\n");
-   }
 
    return (void *)status;
 }
