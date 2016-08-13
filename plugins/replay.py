@@ -1,7 +1,7 @@
 import foos.config as config
 import os
 from foos.process import call_and_log
-
+import time
 
 class Plugin:
     def __init__(self, bus):
@@ -17,5 +17,6 @@ class Plugin:
               str(config.ignore_recent_chunks),
               str(config.long_chunks), str(config.short_chunks)])
         self.bus.notify('replay_start', extra)
-        call_and_log(["video/replay.sh", os.path.join(config.replay_path, "replay_{}.h264".format(replay_type))])
+        #call_and_log(["video/replay.sh", os.path.join(config.replay_path, "replay_{}.h264".format(replay_type))])
+        time.sleep(4)
         self.bus.notify('replay_end')

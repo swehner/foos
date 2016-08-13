@@ -24,6 +24,7 @@ from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
 import foos.config as config
 import itertools
+import foos.ui.opengl_replay as orep
 
 media_path = ""
 logger = logging.getLogger(__name__)
@@ -314,6 +315,10 @@ class Gui():
         bg.set_shader(flat)
         self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
 
+        videoTex = orep.init(self.DISPLAY, config.video_size)
+        self.video = pi3d.Sprite(w=480, h=270.0, z=5)
+        self.video.set_draw_details(flat, [videoTex])
+
         logger.debug("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
@@ -397,6 +402,9 @@ class Gui():
         self.bus.notify("menu_visible" if show else "menu_hidden", {})
 
     def _handle_replay(self, start):
+        if start:
+            orep.playVideo("/dev/shm/replay/replay_short.h264", None)
+
         self.overlay_mode = start
         self.__move_sprites()
         if start:
@@ -450,6 +458,7 @@ class Gui():
     def run(self):
         try:
             while self.DISPLAY.loop_running():
+                self.video.draw()
                 self.checkSchedules()
 
                 if not self.overlay_mode:
