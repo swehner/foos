@@ -411,8 +411,6 @@ class Gui():
     def _handle_replay(self, start):
         if start:
             orep.playVideo("/dev/shm/replay/replay_short.h264", self.replay_start_callback, self.replay_callback)
-
-        if start:
             self.feedback.setIcon(None)
         else:
             self.bg.encourage_change()
