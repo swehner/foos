@@ -18,5 +18,5 @@ class Plugin:
               str(config.long_chunks), str(config.short_chunks)])
         self.bus.notify('replay_start', extra)
         #call_and_log(["video/replay.sh", os.path.join(config.replay_path, "replay_{}.h264".format(replay_type))])
-        time.sleep(4)
-        self.bus.notify('replay_end')
+        #time.sleep(4)
+        #self.bus.notify('replay_end')

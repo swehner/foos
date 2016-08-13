@@ -117,6 +117,25 @@ void *video_decode_test(void* arg)
    int status = 0;
    unsigned int data_len = 0;
 
+   while (1) {
+     printf("waiting for filename: %s\n", filename);
+     if (strlen(filename) == 0){
+       sleep(1);
+       continue;
+     }
+     if (strcmp(filename, "quit")==0) {
+       break;
+     }
+     printf("playing: %s\n", filename);
+
+     if((in = fopen(filename, "rb")) == NULL) {
+       printf("No such file %s\n", filename);
+       filename[0]='\0';
+       continue;
+     }
+       filename[0]='\0';
+
+   
    memset(list, 0, sizeof(list));
    memset(tunnel, 0, sizeof(tunnel));
 
@@ -187,23 +206,6 @@ void *video_decode_test(void* arg)
    format.nPortIndex = 130;
    format.eCompressionFormat = OMX_VIDEO_CodingAVC;
 
-   while (1) {
-     printf("waiting for filename: %s\n", filename);
-     if (strlen(filename) == 0){
-       sleep(1);
-       continue;
-     }
-     if (strcmp(filename, "quit")==0) {
-       break;
-     }
-     printf("playing: %s\n", filename);
-
-     if((in = fopen(filename, "rb")) == NULL) {
-       printf("No such file %s\n", filename);
-       filename[0]='\0';
-       continue;
-     }
-       filename[0]='\0';
    
    if(status == 0 &&
       OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
@@ -321,11 +323,13 @@ void *video_decode_test(void* arg)
          status = -20;
 
 /// added
-      /*printf("* wait for eos\n");
+      printf("* wait for eos\n");
       // wait for EOS from render
-      ilclient_wait_for_event(egl_render, OMX_EventBufferFlag, 90, 0, OMX_BUFFERFLAG_EOS, 0,
-	ILCLIENT_BUFFER_FLAG_EOS, -1);*/
-/// end added
+      ilclient_wait_for_event(video_scheduler, OMX_EventBufferFlag, 11, 0, OMX_BUFFERFLAG_EOS, 0,
+	ILCLIENT_BUFFER_FLAG_EOS, 3000);
+
+      ilclient_remove_event(video_scheduler, OMX_EventBufferFlag, 11, 0, OMX_BUFFERFLAG_EOS, 1);      
+      /// end added
 
       // need to flush the renderer to allow video_decode to disable its input port
       printf("* flush tunnels\n");
@@ -337,14 +341,6 @@ void *video_decode_test(void* arg)
       ilclient_disable_port_buffers(video_decode, 130, NULL, NULL, NULL);
    }
    
-     printf("Close file\n");
-   fclose(in);
-   if (callback!=NULL) {
-     printf("Calling callbacki %p\n", callback);
-     callback();
-   }
-   printf("After callback\n");
-   }
 
    printf("CLosing tunnels 0\n");
    ilclient_disable_tunnel(tunnel);
@@ -358,7 +354,7 @@ void *video_decode_test(void* arg)
    printf("set all idle\n");
    ilclient_state_transition(list, OMX_StateIdle);
    printf("set all loaded\n");
-   ilclient_state_transition(list, OMX_StateLoaded);
+   //ilclient_state_transition(list, OMX_StateLoaded);
 
    printf("cleanup components\n");
    ilclient_cleanup_components(list);
@@ -366,6 +362,16 @@ void *video_decode_test(void* arg)
    OMX_Deinit();
 
    ilclient_destroy(client);
+
+      printf("Close file\n");
+   fclose(in);
+   if (callback!=NULL) {
+     printf("Calling callbacki %p\n", callback);
+     callback();
+   }
+   printf("After callback\n");
+   }
+
    return (void *)status;
 }
 

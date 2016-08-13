@@ -316,7 +316,7 @@ class Gui():
         self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
 
         videoTex = orep.init(self.DISPLAY, config.video_size)
-        self.video = pi3d.Sprite(w=480, h=270.0, z=5)
+        self.video = pi3d.Sprite(w=1920, h=1080.0, z=70)
         self.video.set_draw_details(flat, [videoTex])
 
         logger.debug("Loading other images")
@@ -401,9 +401,12 @@ class Gui():
             self.resetMenu()
         self.bus.notify("menu_visible" if show else "menu_hidden", {})
 
+    def replay_callback(self):
+        self.bus.notify('replay_end')
+        
     def _handle_replay(self, start):
         if start:
-            orep.playVideo("/dev/shm/replay/replay_short.h264", None)
+            orep.playVideo("/dev/shm/replay/replay_short.h264", self.replay_callback)
 
         self.overlay_mode = start
         self.__move_sprites()
@@ -458,7 +461,6 @@ class Gui():
     def run(self):
         try:
             while self.DISPLAY.loop_running():
-                self.video.draw()
                 self.checkSchedules()
 
                 if not self.overlay_mode:
@@ -468,6 +470,8 @@ class Gui():
                     self.goal_time.quick_change(self.__get_time_since_last_goal())
                     self.goal_time.draw()
                     self.feedback.draw()
+                else:
+                    self.video.draw()
 
                 self.logo.draw()
                 self.people.draw()
