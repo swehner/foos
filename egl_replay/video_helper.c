@@ -49,6 +49,7 @@ static void* eglImage = 0;
 static char filename[1024]; //"/opt/vc/src/hello_pi/hello_video/test.h264";
 typedef void (*fini_callback)();
 static fini_callback callback=NULL;
+static fini_callback start_callback=NULL;
 
 void init_video();
 
@@ -118,9 +119,9 @@ void *video_decode_test(void* arg)
    unsigned int data_len = 0;
 
    while (1) {
-     printf("waiting for filename: %s\n", filename);
+     //printf("waiting for filename: %s\n", filename);
      if (strlen(filename) == 0){
-       sleep(1);
+       usleep(100000);
        continue;
      }
      if (strcmp(filename, "quit")==0) {
@@ -278,9 +279,13 @@ void *video_decode_test(void* arg)
 
 	    printf("* egl exec\n");
 
+	    if (start_callback!=NULL) {
+	      printf("Calling start callback %p\n", start_callback);
+	      start_callback();
+	    }
+
             // Set egl_render to executing
             ilclient_change_component_state(egl_render, OMX_StateExecuting);
-
 
             // Request egl_render to write data to the texture buffer
             if(OMX_FillThisBuffer(ILC_GET_HANDLE(egl_render), eglBuffer) != OMX_ErrorNone)
@@ -376,10 +381,11 @@ void *video_decode_test(void* arg)
 }
 
 
-void run_video(char* f, fini_callback cb) {
+void run_video(char* f, fini_callback startcb, fini_callback cb) {
   printf("Setting filename to %s\n", f);
   strncpy(filename, f, sizeof(filename));
   callback = cb;
+  start_callback = startcb;
 }
 
 

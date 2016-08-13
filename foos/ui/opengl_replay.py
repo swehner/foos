@@ -10,6 +10,7 @@ vh = ctypes.CDLL("video_helper.so")
 FINIFUNC = ctypes.CFUNCTYPE(None)
 # keep a global reference to the callback
 callback = None
+start_callback = None
 
 class EGLTexture():
     def __init__(self, t):
@@ -28,14 +29,19 @@ def init(display, size):
     vh.init_textures(display.opengl.display, display.opengl.context, size[0], size[1], ctypes.byref(tex))
     return EGLTexture(tex)
 
-def playVideo(filename, cb):
-    global callback
+def playVideo(filename, start_cb, cb):
+    global callback, start_callback
     if cb:
         callback = FINIFUNC(cb)
     else:
         callback = None
-        
-    vh.run_video(filename.encode("ascii"), callback)
+
+    if start_cb:
+        start_callback = FINIFUNC(start_cb)
+    else:
+        start_callback = None
+
+    vh.run_video(filename.encode("ascii"), start_callback, callback)
 
 def stop():
     vh.run_video("quit", None)

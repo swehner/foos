@@ -403,17 +403,21 @@ class Gui():
 
     def replay_callback(self):
         self.bus.notify('replay_end')
-        
+
+    def replay_start_callback(self):
+        self.overlay_mode = True
+        self.__move_sprites()
+
     def _handle_replay(self, start):
         if start:
-            orep.playVideo("/dev/shm/replay/replay_short.h264", self.replay_callback)
+            orep.playVideo("/dev/shm/replay/replay_short.h264", self.replay_start_callback, self.replay_callback)
 
-        self.overlay_mode = start
-        self.__move_sprites()
         if start:
             self.feedback.setIcon(None)
         else:
             self.bg.encourage_change()
+            self.overlay_mode = start
+            self.__move_sprites()
 
     def __get_mode_string(self, mode=None):
         l = 20
