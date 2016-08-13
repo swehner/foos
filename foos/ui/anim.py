@@ -51,17 +51,21 @@ class Wiggle(Delegate):
         self.maxAngle = maxAngle
         self.duration = duration
         self.anim_start = None
+        self.angle = 0
 
     def draw(self):
         now = time.time()
 
-        angle = 0
+        oldangle = self.angle
         if self.anim_start and (now - self.anim_start) <= self.duration:
-            angle = self.__animValue(now) * self.maxAngle
+            self.angle = self.__animValue(now) * self.maxAngle
         else:
+            self.angle = 0
             self.anim_start = None
 
-        self.delegate.rotateToZ(angle)
+        if self.angle != oldangle:
+            self.delegate.rotateToZ(self.angle)
+
         self.delegate.draw()
 
     def __animValue(self, now):
@@ -149,19 +153,24 @@ class Move(Delegate):
         self.opos, self.oscale = self.pos, self.scale
 
     def draw(self):
+        #TODO: improve perf 
         now = time.time()
         tdiff = now - self.tstart
         tdiff /= self.duration
-        tdiff = math.pow(tdiff, 2)
+        oldpos, oldscale = self.pos, self.scale
         if tdiff > 1:
             self.tstart = 0
             self.pos, self.scale = self.tpos, self.tscale
         else:
-            self.pos = numpy.add(self.opos, numpy.multiply(tdiff, numpy.subtract(self.tpos, self.opos)))
-            self.scale = numpy.add(self.oscale, numpy.multiply(tdiff, numpy.subtract(self.tscale, self.oscale)))
+            tdiff = math.pow(tdiff, 2)
+            self.pos = tuple(numpy.add(self.opos, numpy.multiply(tdiff, numpy.subtract(self.tpos, self.opos))))
+            self.scale = tuple(numpy.add(self.oscale, numpy.multiply(tdiff, numpy.subtract(self.tscale, self.oscale))))
 
-        self.shape.position(*self.pos)
-        self.shape.scale(*self.scale)
+        if self.pos != oldpos:
+            self.shape.position(*self.pos)
+        if self.scale != oldscale:
+            self.shape.scale(*self.scale)
+
         self.shape.draw()
 
     def moveTo(self, tpos, tscale):
