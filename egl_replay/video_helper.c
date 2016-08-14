@@ -171,7 +171,9 @@ void *video_decode_test(void* arg) {
   format.nVersion.nVersion = OMX_VERSION;
   format.nPortIndex = 130;
   format.eCompressionFormat = OMX_VIDEO_CodingAVC;
-  
+  // set framerate to 25 - if not it seems to use 30 as default
+  format.xFramerate = 25 << 16;
+
   while (1) {
     if (strlen(filename) == 0) {
       usleep(100000);
