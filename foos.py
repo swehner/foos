@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+__version__ = 20160814
 
 import foos.config as config
 
@@ -15,6 +16,7 @@ from foos.plugin_handler import PluginHandler
 
 logging.config.dictConfig(config.log)
 logger = logging.getLogger(__name__)
+logger.info("Foos v%s starting", __version__)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "s:f:")
