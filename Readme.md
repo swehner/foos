@@ -66,7 +66,7 @@ On the Raspberry Pi you can run the UI simply doing
 python3 foos.py
 ```
 
-When running in X11 it's often usefule to change the window size changing the scaling factor (-s 3 runs at 1/3 of the size)
+When running in X11 it's often useful to change the window size changing the scaling factor (-s 3 runs at 1/3 of the size)
 ```
 python3 foos.py -s 3
 ```
