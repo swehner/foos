@@ -8,6 +8,7 @@ import sys
 import getopt
 import os
 
+from foos.platform import is_x11
 from foos.ui import ui
 import plugins.io_keyboard
 from foos.bus import Bus
@@ -41,7 +42,7 @@ bus = Bus()
 gui = ui.Gui(sf, frames, bus, show_leds=config.onscreen_leds_enabled,
              bg_change_interval=config.bg_change_secs)
 
-if gui.is_x11():
+if is_x11():
     logger.info("Running Keyboard")
     plugins.io_keyboard.Plugin(bus)
 

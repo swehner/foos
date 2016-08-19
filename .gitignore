@@ -4,3 +4,7 @@
 /config.py
 client_secrets.json
 league
+*.o
+*.so
+*~
+/video/player/player

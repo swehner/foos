@@ -26,6 +26,7 @@ from .bg import BGRotater
 from .monkey_patch import monkey_patch
 import foos.config as config
 import itertools
+from foos.platform import is_x11, is_pi
 
 media_path = ""
 logger = logging.getLogger(__name__)
@@ -270,7 +271,7 @@ class Gui():
             self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
             aspect = fractions.Fraction(self.DISPLAY.width, self.DISPLAY.height)
             if aspect != fractions.Fraction(16, 9):
-                logger.warn("Your display aspect ratio is %s instead of 16/9 expect some black bars", aspect)
+                logger.warn("Your display aspect ratio is %s instead of 16/9 expect scaled background and a bad layout", aspect)
             sf = 1920 / self.DISPLAY.width
         else:
             logger.debug("Forcing size")
@@ -302,16 +303,25 @@ class Gui():
         self.yCounter.moveTo((-300, 0, 50), scale)
         self.bCounter.moveTo((300, 0, 50), scale)
 
+    def __choose_random_bg(self):
+        return random.choice(glob.glob(img("bg/*.jpg")))
+        
     def __setup_sprites(self):
         flat = pi3d.Shader("uv_flat")
+        if is_x11():
+            # load an image as bg
+            self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=1920, h=1080, z=101)
+        else:
+            self.bg_img = None
+            
+        if is_pi():
+            self.bgr = BGRotater(960, 540, -1, img("bg"), self.bg_change_interval) 
+            self.bgr.change()
 
         bg = pi3d.Sprite(w=int(self.DISPLAY.width * self.sf), h=int(self.DISPLAY.height * self.sf), z=100)
         bg.set_alpha(0)
         self.bg = Flashing(bg)
-
-        if self.is_pi():
-            self.bgr = BGRotater(960, 540, -1, img("bg"), self.bg_change_interval) 
-            self.bgr.change()
+        
         
         logger.debug("Loading other images")
         logo_d = (80, 80)
@@ -401,7 +411,7 @@ class Gui():
         if start:
             self.feedback.setIcon(None)
         else:
-            if self.is_pi():
+            if is_pi():
                 self.bgr.encourageChange()
 
     def __get_mode_string(self, mode=None):
@@ -453,6 +463,9 @@ class Gui():
                 self.checkSchedules()
 
                 if not self.overlay_mode:
+                    if self.bg_img:
+                        self.bg_img.draw()
+                        
                     self.bg.draw()
                     self.instructions.draw()
 
@@ -533,12 +546,6 @@ class Gui():
 
     def stop(self):
         self.DISPLAY.stop()
-
-    def is_x11(self):
-        return pi3d.PLATFORM != pi3d.PLATFORM_PI and pi3d.PLATFORM != pi3d.PLATFORM_ANDROID
-
-    def is_pi(self):
-        return pi3d.PLATFORM == pi3d.PLATFORM_PI
 
 
 class RandomScore(threading.Thread):

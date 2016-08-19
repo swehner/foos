@@ -16,6 +16,7 @@ show_instructions = True
 game_modes = [(None, None), (3, None), (5, None), (3, 120)]
 
 replay_path = '/dev/shm/replay'
+replay_fps = 25
 ignore_recent_chunks = 1
 short_chunks = 10
 long_chunks = 25

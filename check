@@ -7,10 +7,10 @@ python3 foos python3
 pip3 foos python3-pip
 "
 
-VC_INSTR="pushd /opt/vc/src/hello_pi; ./rebuild.sh && popd"
+VC_INSTR="pushd video/player; make && popd"
 
 PI_EXECS="/opt/vc/bin/raspivid camera -
-/opt/vc/src/hello_pi/hello_video/hello_video.bin replay \$VC_INSTR"
+video/player/player replay \$VC_INSTR"
 
 GET_CONFIG="python3 -m foos.config_getter"
 
@@ -113,12 +113,13 @@ function check_evdev {
 }
 
 function test_replays {
+    REPLAY_FPS=$($GET_CONFIG replay_fps)
     echo "Running camera..."
     video/run-camera.sh &
     sleep 4
     kill %1
     video/generate-replay.sh $REPLAY_PATH $($GET_CONFIG ignore_recent_chunks) $($GET_CONFIG long_chunks) $($GET_CONFIG short_chunks)
-    video/replay.sh $REPLAY_PATH/replay_short.h264
+    video/replay.sh $REPLAY_PATH/replay_short.h264 $REPLAY_FPS
 }
 
 echo "Checking environment..."
