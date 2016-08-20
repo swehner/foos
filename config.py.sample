@@ -7,6 +7,9 @@ from config_base import *
 # -- Enable camera, replays and video motiondetector
 #plugins.update(set(['replay', 'camera', 'motiondetector']))
 
+# -- Modify this to tune your camera settings - see raspivid --help for more info
+#camera_extra_params = "--ev 7"
+
 # -- Enable league sync with server
 #plugins.add('league_sync')
 

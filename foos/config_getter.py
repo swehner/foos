@@ -9,6 +9,5 @@ def toString(value):
         return str(value)
 
 if __name__ == "__main__":
-    value = getattr(config, sys.argv[1])
-
-    print(toString(value))
+    values = [toString(getattr(config, x)) for x in sys.argv[1:]]
+    print(" ".join(values))

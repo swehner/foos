@@ -1,15 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 <replay_base_path> <w> <h>"
-    exit 1;
-fi
+function runcam {
+    base_path=$1
+    fragments_path=$base_path/fragments
+    w=$2
+    h=$3
+    fps=$4
 
-base_path=$1
-fragments_path=$1/fragments
+    shift 4
+    mkdir -p $fragments_path
+
+    exec /opt/vc/bin/raspivid -o $fragments_path/out%04d.h264 -x $fragments_path/mv%04d.txt -w $w -h $h -fps $fps -t 0 $@
+}
 
 pkill raspivid 2>/dev/null
 
-mkdir -p $fragments_path
+export PYTHONPATH=$(dirname $(dirname $0))
 
-exec /opt/vc/bin/raspivid -w $2 -h $3 -fps 49 -t 0 -sg 100 -wr 100 -g 10 --ev 7 -o $fragments_path/out%04d.h264 -p 0,0,128,72 -x $fragments_path/mv%04d.txt
+GET_CONFIG="python3 -m foos.config_getter"
+
+runcam $($GET_CONFIG replay_path video_size video_fps camera_preview camera_chunk_settings camera_extra_params)
+

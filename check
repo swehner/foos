@@ -113,10 +113,8 @@ function check_evdev {
 }
 
 function test_replays {
-    REPLAY_PATH=$($GET_CONFIG replay_path)
-    VIDEO_SIZE=$($GET_CONFIG video_size)
     echo "Running camera..."
-    video/run-camera.sh $REPLAY_PATH $VIDEO_SIZE &
+    video/run-camera.sh &
     sleep 4
     kill %1
     video/generate-replay.sh $REPLAY_PATH $($GET_CONFIG ignore_recent_chunks) $($GET_CONFIG long_chunks) $($GET_CONFIG short_chunks)

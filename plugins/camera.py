@@ -11,8 +11,6 @@ class Plugin:
     # Run camera
     def runCamera(self):
         while True:
-            long_running(["video/run-camera.sh",
-                              config.replay_path,
-                              str(config.video_size[0]),
-                              str(config.video_size[1])])
+            long_running(["video/run-camera.sh"])
+                              
             time.sleep(30)

@@ -23,6 +23,11 @@ league_url = 'http://localhost:8888/api'
 league_apikey = 'put-your-apikey-here'
 
 video_size=(1280, 720)
+video_fps = 49
+camera_preview = "-p 0,0,128,72"
+camera_chunk_settings = "-sg 100 -wr 100 -g 10"
+camera_extra_params = "--ev 7"
+
 
 # config parameters for motion detector
 # MV frame size
