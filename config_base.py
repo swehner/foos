@@ -13,6 +13,9 @@ plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league'
 
 show_instructions = True
 
+# game modes: tuples of (winning score, timeout in minutes)
+game_modes = [(None, None), (3, None), (5, None), (3, 120)]
+
 replay_path = '/dev/shm/replay'
 ignore_recent_chunks = 1
 short_chunks = 10

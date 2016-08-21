@@ -3,7 +3,7 @@
 from threading import Thread
 import time
 import logging
-
+from foos import config
 from foos.ui.ui import registerMenu
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class Plugin:
         self.timeout_close_time = None
         self.sudden_death = False
         self.timeout_close_secs = 15
-        self.modes = [(None, None), (3, None), (5, None), (3, 120)]
+        self.modes = config.game_modes
 
         # Turn off party mode after this time in sudden death
         self.party_mode_auto_off = 600
