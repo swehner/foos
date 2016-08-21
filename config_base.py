@@ -1,3 +1,6 @@
+# basic set of plugins
+plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'leds', 'io_evdev_keyboard'])
+
 onscreen_leds_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
@@ -7,9 +10,6 @@ hipchat_room = 'your_room_id'
 
 min_goal_usecs = 1000
 min_secs_between_goals = 3
-
-# basic set of plugins
-plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'leds', 'io_evdev_keyboard'])
 
 show_instructions = True
 
