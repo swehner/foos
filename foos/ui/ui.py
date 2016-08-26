@@ -18,7 +18,7 @@ import fractions
 from functools import partial
 from pi3d import opengles
 
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Flashing
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Flashing, Shader
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
@@ -31,8 +31,8 @@ from foos.platform import is_x11, is_pi
 media_path = ""
 logger = logging.getLogger(__name__)
 menuGenerators = []
-flash_yellow = (10, 7.5, 0)
-flash_red = (10, 0, 0)
+flash_yellow = (1, 0.75, 0, 0.5)
+flash_red = (1, 0, 0, 0.5)
 flash_black = None
 
 def registerMenu(f):
@@ -61,6 +61,11 @@ def load_icon(filename, fallback=None):
     return load_texture(filename, i_format=GL_LUMINANCE_ALPHA, fallback=fallback)
 
 
+class FlatDisk(pi3d.shape.Disk.Disk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_shader(Shader("mat_flat"))
+
 class GuiState():
     def __init__(self, yScore=0, bScore=0, lastGoal=None):
         self.yScore = yScore
@@ -77,7 +82,7 @@ class Counter(Delegate):
             Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
-        self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
+        self.disk = FlatDisk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
         self.disk.set_material(color)
         self.number = Wiggle(pi3d.ImageSprite(Counter.textures[value], shader, **kwargs),
                              5, 10, 0.8)
@@ -229,7 +234,7 @@ class Gui():
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
                 "sudden_death": self.__sudden_death,
-                "timeout_close": lambda x: self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)}
+                "timeout_close": lambda d: self.__flash_once_yellow()}
 
         if config.show_instructions:
             evnt["increment_score"] = lambda d: self.instructions.show()
@@ -237,9 +242,18 @@ class Gui():
 
         return evnt
 
+    def __flash_once_yellow(self):
+        self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)
+
+    def __flash_once_red(self):
+        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
+
+    def __flash_multiple_red(self):
+        self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
+
     def __sudden_death(self, d):
         self.countdown = '» Sudden death «'
-        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
+        self.__flash_once_red()
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -307,7 +321,8 @@ class Gui():
         return random.choice(glob.glob(img("bg/*.jpg")))
         
     def __setup_sprites(self):
-        flat = pi3d.Shader("uv_flat")
+        flat = Shader("uv_flat")
+        matflat = Shader("mat_flat")
         if is_x11():
             # load an image as bg
             self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=1920, h=1080, z=101)
@@ -319,6 +334,7 @@ class Gui():
             self.bgr.change()
 
         bg = pi3d.Sprite(w=int(self.DISPLAY.width * self.sf), h=int(self.DISPLAY.height * self.sf), z=100)
+        bg.set_shader(matflat)
         bg.set_alpha(0)
         self.bg = Flashing(bg)
         
@@ -350,7 +366,7 @@ class Gui():
         self.feedback = KeysFeedback(flat)
 
         s = 512
-        self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
+        self.yCounter = Move(Counter(0, flat, (1, 0.7, 0), w=s, h=s, z=50))
         self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
         playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
                                  codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
@@ -366,14 +382,14 @@ class Gui():
         self.menu = MenuTree(self.main_menu, menu, rootTitle="Game mode")
 
         self.ledShapes = {
-            "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
-            "YI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
-            "OK": pi3d.shape.Disk.Disk(radius=50, sides=12, x=0, y=-400, z=0, rx=90),
-            "BD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
-            "BI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
+            "YD": FlatDisk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
+            "YI": FlatDisk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
+            "OK": FlatDisk(radius=50, sides=12, x=0, y=-400, z=0, rx=90),
+            "BD": FlatDisk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
+            "BI": FlatDisk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
         }
-        red = (10, 0, 0, 0)
-        green = (0, 10, 0, 0)
+        red = (1, 0, 0, 0)
+        green = (0, 1, 0, 0)
         self.blackColor = (0, 0, 0, 0)
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
@@ -390,7 +406,7 @@ class Gui():
         self.__move_winner()
 
         if self.countdown:
-            self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
+            self.__flash_multiple_red()
 
         logger.info("Wins: {team} {yellow}-{black}".format(**data))
 

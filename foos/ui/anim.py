@@ -3,6 +3,13 @@ import time
 import numpy
 import pi3d
 
+shaders={}
+
+def Shader(name):
+    if name not in shaders:
+        shaders[name] = pi3d.Shader(name)
+
+    return shaders[name]
 
 class Delegate:
     def __init__(self, delegate):
@@ -18,7 +25,7 @@ class Flashing(Delegate):
         self.start = None
         self.end = None
 
-    def flash(self, speed=3, times=3, color=(1, 0, 0), color2=(-0.5, -0.5, -0.5)):
+    def flash(self, speed=3, times=3, color=(1, 0, 0, 0.5), color2=(-0.5, -0.5, -0.5, 0.5)):
         self.color = color
         self.color2 = color2
         self.start = time.time()
@@ -31,19 +38,18 @@ class Flashing(Delegate):
             if now > self.end:
                 self.start = None
                 self.end = None
-                self.set_material((0.5, 0.5, 0.5))
+                self.set_material((0, 0, 0))
                 self.set_alpha(0)
             else:
                 d = (now - self.start) * self.speed
                 r = math.sin(d)
-                # use color when making image lighter
-                # use gray when it gets darker
+
                 color = self.color if r > 0 else self.color2
                 if color is None:
                     self.set_alpha(0)
                 else:
-                    self.set_material(color)
-                    self.set_alpha(abs(r) * 0.5)
+                    self.set_material((color[0], color[1], color[2]))
+                    self.set_alpha(abs(r) * color[3])
 
         self.delegate.draw()
 
