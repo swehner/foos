@@ -4,7 +4,6 @@ plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league'
 onscreen_leds_enabled = False
 standby_timeout_secs = 600
 bg_change_secs = 300
-bg_amount = 100
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 
@@ -13,10 +12,14 @@ min_secs_between_goals = 3
 
 show_instructions = True
 
+team_names = {"yellow": "yellow", "black": "black"}
+team_colors = {"yellow": (1, 0.7, 0), "black": (0, 0, 0)}
+
 # game modes: tuples of (winning score, timeout in minutes)
 game_modes = [(None, None), (3, None), (5, None), (3, 120)]
 
 replay_path = '/dev/shm/replay'
+replay_fps = 25
 ignore_recent_chunks = 1
 short_chunks = 10
 long_chunks = 25

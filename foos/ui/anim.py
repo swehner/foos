@@ -3,6 +3,13 @@ import time
 import numpy
 import pi3d
 
+shaders={}
+
+def Shader(name):
+    if name not in shaders:
+        shaders[name] = pi3d.Shader(name)
+
+    return shaders[name]
 
 class Delegate:
     def __init__(self, delegate):
@@ -18,7 +25,7 @@ class Flashing(Delegate):
         self.start = None
         self.end = None
 
-    def flash(self, speed=3, times=3, color=(1, 0, 0), color2=(-0.5, -0.5, -0.5)):
+    def flash(self, speed=3, times=3, color=(1, 0, 0, 0.5), color2=(-0.5, -0.5, -0.5, 0.5)):
         self.color = color
         self.color2 = color2
         self.start = time.time()
@@ -31,15 +38,18 @@ class Flashing(Delegate):
             if now > self.end:
                 self.start = None
                 self.end = None
-                self.set_material((0.5, 0.5, 0.5))
+                self.set_material((0, 0, 0))
+                self.set_alpha(0)
             else:
                 d = (now - self.start) * self.speed
                 r = math.sin(d)
-                # use color when making image lighter
-                # use gray when it gets darker
+
                 color = self.color if r > 0 else self.color2
-                l = [x * abs(r) + 0.5 for x in color]
-                self.set_material(tuple(l))
+                if color is None:
+                    self.set_alpha(0)
+                else:
+                    self.set_material((color[0], color[1], color[2]))
+                    self.set_alpha(abs(r) * color[3])
 
         self.delegate.draw()
 
@@ -179,38 +189,6 @@ class Move(Delegate):
         self.oscale = (u[6], u[7], u[8])  # self.scale
         self.tpos, self.tscale = tpos, tscale
         self.tstart = time.time()
-
-
-class ChangingTextures(Delegate):
-    def __init__(self, shape, textures, interval):
-        super().__init__(shape)
-        self.idx = 0
-        self.shape = shape
-        self.shape.set_textures([textures[0]])
-        self.textures = textures
-        self.last_change = time.time()
-        self.interval = interval
-        self.do_change = False
-
-    def draw(self):
-        if self.interval > 0:
-            self.__change_texture()
-
-        self.shape.draw()
-
-    def __change_texture(self):
-        """Changes the bg if forced, or if the double interval time has passed"""
-        now = time.time()
-        if self.do_change or now > (self.last_change + self.interval * 2):
-            self.do_change = False
-            self.last_change = now
-            self.idx = (self.idx + 1) % len(self.textures)
-            self.shape.set_textures([self.textures[self.idx]])
-
-    def encourage_change(self):
-        """Call this at a good time to do the bg change"""
-        if self.interval > 0 and time.time() > (self.last_change + self.interval):
-            self.do_change = True
 
 
 class ChangingText(Delegate):

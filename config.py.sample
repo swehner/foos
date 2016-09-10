@@ -26,6 +26,10 @@ from config_base import *
 #plugins.add('standby')
 
 
+""" Configure team names and colors """
+#team_names = {"yellow": "blue", "black": "red"}
+#team_colors = {"yellow": (0.1, 0.1, 0.4), "black": (0.7, 0, 0)}
+
 """ Configure paths """
 
 # -- replay path

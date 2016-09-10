@@ -1,6 +1,7 @@
 import foos.config as config
 import hipchat
 import logging
+from foos import utils
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class Plugin(object):
         else:
             p = ""
 
-        return team.capitalize() + p
+        return utils.teamName(team).capitalize() + p
 
     def process_event(self, ev):
         msg = None
@@ -52,7 +53,7 @@ class Plugin(object):
             msg = "Official game ends, points: " + text
         elif ev.name == "win_game":
             s = "%s wins! %s %d-%d %s!"
-            msg = (s % (ev.data.get('team', "").capitalize(),
+            msg = (s % (utils.teamName(ev.data.get('team', "")).capitalize(),
                         self.get_team_name('yellow'), ev.data.get('yellow', 0),
                         ev.data.get('black', 0), self.get_team_name('black')))
         elif ev.name == "cancel_competition":

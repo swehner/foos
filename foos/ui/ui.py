@@ -18,20 +18,23 @@ import fractions
 from functools import partial
 from pi3d import opengles
 
-from .anim import Move, Disappear, Wiggle, Delegate, ChangingTextures, ChangingText, Multiline, Flashing
+from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Flashing, Shader
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
+from .bg import BGRotater
+from .monkey_patch import monkey_patch
+from .. import utils
 import foos.config as config
 import itertools
+from foos.platform import is_x11, is_pi
 
 media_path = ""
 logger = logging.getLogger(__name__)
 menuGenerators = []
-flash_yellow = (0.2, 0.15, -0.3)
-flash_red = (0.2, -0.3, -0.3)
-flash_black = (-0.2, -0.2, -0.2)
-
+flash_yellow = (1, 0.75, 0, 0.5)
+flash_red = (1, 0, 0, 0.5)
+flash_black = None
 
 def registerMenu(f):
     menuGenerators.append(f)
@@ -59,6 +62,11 @@ def load_icon(filename, fallback=None):
     return load_texture(filename, i_format=GL_LUMINANCE_ALPHA, fallback=fallback)
 
 
+class FlatDisk(pi3d.shape.Disk.Disk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_shader(Shader("mat_flat"))
+
 class GuiState():
     def __init__(self, yScore=0, bScore=0, lastGoal=None):
         self.yScore = yScore
@@ -75,7 +83,7 @@ class Counter(Delegate):
             Counter.textures = [load_icon("numbers/%d.png" % (i))
                                 for i in range(0, 10)]
         self.value = value
-        self.disk = pi3d.shape.Disk.Disk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
+        self.disk = FlatDisk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
         self.disk.set_material(color)
         self.number = Wiggle(pi3d.ImageSprite(Counter.textures[value], shader, **kwargs),
                              5, 10, 0.8)
@@ -169,7 +177,7 @@ class WinnerString:
         drop_duration = 0.2
         self.shapes = {}
         for team in teams:
-            s = FixedOutlineString(font, "{} wins!".format(team.capitalize()), outline_size=2, font_size=180, shader=shader)
+            s = FixedOutlineString(font, "{} wins!".format(utils.teamName(team).capitalize()), outline_size=2, font_size=180, shader=shader)
             s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
             self.shapes[team] = s
 
@@ -188,13 +196,12 @@ class WinnerString:
 
 
 class Gui():
-    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300, bg_amount=3):
+    def __init__(self, scaling_factor, fps, bus, show_leds=False, bg_change_interval=300):
         self.state = GuiState()
         self.overlay_mode = False
         self.bus = bus
         self.bus.subscribe_map(self.__event_map())
         self.bg_change_interval = bg_change_interval
-        self.bg_amount = 1 if bg_change_interval == 0 else bg_amount
         self.show_leds = show_leds
         self.game_mode = None
         self.draw_menu = False
@@ -228,7 +235,7 @@ class Gui():
                 "win_game": self._win_game,
                 "countdown": lambda d: setattr(self, 'countdown', d['end_time']),
                 "sudden_death": self.__sudden_death,
-                "timeout_close": lambda x: self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)}
+                "timeout_close": lambda d: self.__flash_once_yellow()}
 
         if config.show_instructions:
             evnt["increment_score"] = lambda d: self.instructions.show()
@@ -236,9 +243,18 @@ class Gui():
 
         return evnt
 
+    def __flash_once_yellow(self):
+        self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)
+
+    def __flash_once_red(self):
+        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
+
+    def __flash_multiple_red(self):
+        self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
+
     def __sudden_death(self, d):
         self.countdown = '» Sudden death «'
-        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
+        self.__flash_once_red()
 
     def __set_game_mode(self, d):
         self.game_mode = d["mode"]
@@ -261,14 +277,16 @@ class Gui():
 
 
     def __init_display(self, sf, fps):
-        bgcolor = (0.0, 0.0, 0.0, 0.2)
+        bgcolor = (0.0, 0.0, 0.0, 0.0)
+        # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
+        monkey_patch()
 
         if sf == 0:
             #adapt to screen size
             self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
             aspect = fractions.Fraction(self.DISPLAY.width, self.DISPLAY.height)
             if aspect != fractions.Fraction(16, 9):
-                logger.warn("Your display aspect ratio is %s instead of 16/9 expect some black bars", aspect)
+                logger.warn("Your display aspect ratio is %s instead of 16/9 expect scaled background and a bad layout", aspect)
             sf = 1920 / self.DISPLAY.width
         else:
             logger.debug("Forcing size")
@@ -280,6 +298,7 @@ class Gui():
 
         self.CAMERA = pi3d.Camera(is_3d=False, scale=1 / sf)
         opengles.glBlendFuncSeparate(pi3d.constants.GL_SRC_ALPHA, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA, 1, pi3d.constants.GL_ONE_MINUS_SRC_ALPHA)
+        self.sf = sf
 
     def __move_sprites(self):
         posz = 50
@@ -299,21 +318,28 @@ class Gui():
         self.yCounter.moveTo((-300, 0, 50), scale)
         self.bCounter.moveTo((300, 0, 50), scale)
 
-    def __get_bg_textures(self):
-        bgs = glob.glob(img("bg/*.jpg"))
-        random.shuffle(bgs)
-        bgs = bgs[0:self.bg_amount]
-
-        logger.debug("Loading %d bgs %s", len(bgs), bgs)
-        return [load_bg(f) for f in bgs]
-
+    def __choose_random_bg(self):
+        return random.choice(glob.glob(img("bg/*.jpg")))
+        
     def __setup_sprites(self):
-        flat = pi3d.Shader("uv_flat")
+        flat = Shader("uv_flat")
+        matflat = Shader("mat_flat")
+        if is_x11():
+            # load an image as bg
+            self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=1920, h=1080, z=101)
+        else:
+            self.bg_img = None
+            
+        if is_pi():
+            self.bgr = BGRotater(960, 540, -1, img("bg"), self.bg_change_interval) 
+            self.bgr.change()
 
-        bg = pi3d.Sprite(w=1920, h=1080, z=100)
-        bg.set_shader(flat)
-        self.bg = Flashing(ChangingTextures(bg, self.__get_bg_textures(), self.bg_change_interval))
-
+        bg = pi3d.Sprite(w=int(self.DISPLAY.width * self.sf), h=int(self.DISPLAY.height * self.sf), z=100)
+        bg.set_shader(matflat)
+        bg.set_alpha(0)
+        self.bg = Flashing(bg)
+        
+        
         logger.debug("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
@@ -341,8 +367,8 @@ class Gui():
         self.feedback = KeysFeedback(flat)
 
         s = 512
-        self.yCounter = Move(Counter(0, flat, (10, 7, 0), w=s, h=s, z=50))
-        self.bCounter = Move(Counter(0, flat, (0, 0, 0), w=s, h=s, z=50))
+        self.yCounter = Move(Counter(0, flat, config.team_colors['yellow'], w=s, h=s, z=50))
+        self.bCounter = Move(Counter(0, flat, config.team_colors['black'], w=s, h=s, z=50))
         playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
                                  codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
@@ -357,14 +383,14 @@ class Gui():
         self.menu = MenuTree(self.main_menu, menu, rootTitle="Game mode")
 
         self.ledShapes = {
-            "YD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
-            "YI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
-            "OK": pi3d.shape.Disk.Disk(radius=50, sides=12, x=0, y=-400, z=0, rx=90),
-            "BD": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
-            "BI": pi3d.shape.Disk.Disk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
+            "YD": FlatDisk(radius=20, sides=12, x=-100, y=-430, z=0, rx=90),
+            "YI": FlatDisk(radius=20, sides=12, x=-100, y=-370, z=0, rx=90),
+            "OK": FlatDisk(radius=50, sides=12, x=0, y=-400, z=0, rx=90),
+            "BD": FlatDisk(radius=20, sides=12, x=100, y=-430, z=0, rx=90),
+            "BI": FlatDisk(radius=20, sides=12, x=100, y=-370, z=0, rx=90),
         }
-        red = (10, 0, 0, 0)
-        green = (0, 10, 0, 0)
+        red = (1, 0, 0, 0)
+        green = (0, 1, 0, 0)
         self.blackColor = (0, 0, 0, 0)
         self.ledColors = {"YD": red, "YI": green, "OK": green, "BD": red, "BI": green}
         self.leds = []
@@ -381,7 +407,7 @@ class Gui():
         self.__move_winner()
 
         if self.countdown:
-            self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
+            self.__flash_multiple_red()
 
         logger.info("Wins: {team} {yellow}-{black}".format(**data))
 
@@ -402,7 +428,8 @@ class Gui():
         if start:
             self.feedback.setIcon(None)
         else:
-            self.bg.encourage_change()
+            if is_pi():
+                self.bgr.encourageChange()
 
     def __get_mode_string(self, mode=None):
         l = 20
@@ -435,7 +462,7 @@ class Gui():
 
     def schedule(self, when, fun, unique=False):
         if unique:
-            self.schedules = list(filter(lambda x: x[1]!=fun, self.schedules))
+            self.schedules = list(filter(lambda x: x[1] != fun, self.schedules))
 
         self.schedules.append((when, fun))
 
@@ -453,6 +480,9 @@ class Gui():
                 self.checkSchedules()
 
                 if not self.overlay_mode:
+                    if self.bg_img:
+                        self.bg_img.draw()
+                        
                     self.bg.draw()
                     self.instructions.draw()
 
@@ -533,12 +563,6 @@ class Gui():
 
     def stop(self):
         self.DISPLAY.stop()
-
-    def is_x11(self):
-        return pi3d.PLATFORM != pi3d.PLATFORM_PI and pi3d.PLATFORM != pi3d.PLATFORM_ANDROID
-
-    def is_pi(self):
-        return pi3d.PLATFORM == pi3d.PLATFORM_PI
 
 
 class RandomScore(threading.Thread):
