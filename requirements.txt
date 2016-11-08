@@ -8,3 +8,4 @@ six==1.10.0
 inotify_simple
 requests
 evdev
+RPi.GPIO

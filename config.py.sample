@@ -25,6 +25,19 @@ from config_base import *
 # -- Enable auto-TV standby
 #plugins.add('standby')
 
+# -- Enable IO using Raspberry Pi. Change pin numbers according to your setup.
+#plugins.add('io_raspberry')
+#io_raspberry_pins = {
+#    "irbarrier_pwm": 18,            # PWM for IR LED - Broadcom pin 18, RPi pin 12
+#    "irbarrier_team_black": 8,      # Physical pin 8
+#    "irbarrier_team_yellow": 26,    # Physical pin 26
+#    "yellow_plus" : 10,             # Physical pin 10
+#    "yellow_minus": 16,             # Physical pin 16
+#    "black_plus": 3,                # Physical pin 3
+#    "black_minus": 22,              # Physical pin 22
+#    "ok_button": 24,                # Physical pin 24
+#}
+
 
 """ Configure team names and colors """
 #team_names = {"yellow": "blue", "black": "red"}

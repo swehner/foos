@@ -81,7 +81,7 @@ class Counter(Delegate):
         if Counter.textures is None:
             logger.debug("Loading numbers")
             Counter.textures = [load_icon("numbers/%d.png" % (i))
-                                for i in range(0, 10)]
+                                for i in range(0, 11)]
         self.value = value
         self.disk = FlatDisk(radius=(kwargs['w'] - 10) / 2, sides=6, rx=90)
         self.disk.set_material(color)
@@ -95,7 +95,8 @@ class Counter(Delegate):
         v = self.getFaceValue()
         if v != self.last_shown:
             self.last_shown = v
-            self.number.set_textures([Counter.textures[v % 10]])
+            self.number.set_textures([Counter.textures[v % 11]])
+            
             self.wiggle()
 
         self.disk.draw()
