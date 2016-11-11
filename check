@@ -140,7 +140,7 @@ check_evdev
 
 head "Python deps"
 neutral "Can't check python3 deps for the moment - if you have issues:"
-suggest "pip3 install -r requirements"
+suggest "pip3 install -r requirements.txt"
 
 head "Test Replays - press Y to test N to skip"
 read -s -n 1 ANSWER
