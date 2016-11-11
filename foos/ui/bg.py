@@ -58,7 +58,8 @@ class UpdatingBGDisplay():
             assert (self.img_resource != 0)
 
             src_rect = c_ints((0 << 16, 0 << 16, self.imgw << 16, self.imgh << 16))
-            dst_rect = c_ints((0, 0, self.w, self.h))
+            dstw = int(self.h.value * self.imgw / self.imgh)
+            dst_rect = c_ints((0, 0, dstw, self.h))
 
             alpha = c_ints((DISPMANX_FLAGS_ALPHA_FROM_SOURCE, 255, 0))
 

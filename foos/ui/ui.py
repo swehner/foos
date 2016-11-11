@@ -35,6 +35,8 @@ menuGenerators = []
 flash_yellow = (1, 0.75, 0, 0.5)
 flash_red = (1, 0, 0, 0.5)
 flash_black = None
+bg_w = 960
+bg_h = 540
 
 def registerMenu(f):
     menuGenerators.append(f)
@@ -244,6 +246,18 @@ class Gui():
 
         return evnt
 
+    def _ftop(self, offset):
+        return self.height / 2 - offset
+
+    def _fbottom(self, offset):
+        return -self._ftop(offset)
+
+    def _fright(self, offset):
+        return self.width / 2 - offset
+
+    def _fleft(self, offset):
+        return -self._fright(offset)
+
     def __flash_once_yellow(self):
         self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)
 
@@ -282,16 +296,16 @@ class Gui():
         # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
         monkey_patch()
 
+        self.width = 1920
         if sf == 0:
             #adapt to screen size
             self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
-            aspect = fractions.Fraction(self.DISPLAY.width, self.DISPLAY.height)
-            if aspect != fractions.Fraction(16, 9):
-                logger.warn("Your display aspect ratio is %s instead of 16/9 expect scaled background and a bad layout", aspect)
-            sf = 1920 / self.DISPLAY.width
+            sf = self.width / self.DISPLAY.width
+            self.height = self.DISPLAY.height * sf
         else:
             logger.debug("Forcing size")
-            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(1920 / sf), h=int(1080 / sf),
+            self.height = 1080
+            self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(self.width / sf), h=int(self.height / sf),
                                                background=bgcolor, layer=1)
 
         self.DISPLAY.frames_per_second = fps
@@ -304,8 +318,8 @@ class Gui():
     def __move_sprites(self):
         posz = 50
         if self.overlay_mode:
-            posx = 800
-            posy = 450
+            posx = self._fright(160)
+            posy = self._ftop(90)
             scale = (0.2, 0.2, 1.0)
             self.yCounter.moveTo((posx - 65, posy, posz), scale)
             self.bCounter.moveTo((posx + 65, posy, posz), scale)
@@ -327,15 +341,15 @@ class Gui():
         matflat = Shader("mat_flat")
         if is_x11():
             # load an image as bg
-            self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=1920, h=1080, z=101)
+            self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=int(self.height * bg_w / bg_h), h=self.height, z=101)
         else:
             self.bg_img = None
             
         if is_pi():
-            self.bgr = BGRotater(960, 540, -1, img("bg"), self.bg_change_interval) 
+            self.bgr = BGRotater(bg_w, bg_h, -1, img("bg"), self.bg_change_interval) 
             self.bgr.change()
 
-        bg = pi3d.Sprite(w=int(self.DISPLAY.width * self.sf), h=int(self.DISPLAY.height * self.sf), z=100)
+        bg = pi3d.Sprite(w=self.width, h=self.height, z=100)
         bg.set_shader(matflat)
         bg.set_alpha(0)
         self.bg = Flashing(bg)
@@ -344,14 +358,14 @@ class Gui():
         logger.debug("Loading other images")
         logo_d = (80, 80)
         self.logo = pi3d.ImageSprite(load_icon("icons/logo.png", fallback="icons/logo_fallback.png"), flat, w=logo_d[0], h=logo_d[1],
-                                     x=(1920 - logo_d[0]) / 2 - 40, y=(-1080 + logo_d[1]) / 2 + 40, z=50)
+                                     x=self._fright(logo_d[0] / 2 + 40), y=self._fbottom(logo_d[1] / 2 + 40), z=50)
         self.people = Disappear(pi3d.ImageSprite(load_icon("icons/people.png"), flat, w=logo_d[0], h=logo_d[1],
-                                                 x=(1920 - logo_d[0]) / 2 - 40 - logo_d[0] - 20, y=(-1080 + logo_d[1]) / 2 + 40, z=50),
+                                x=self._fright(logo_d[0] * 3 / 2 + 40 + 20), y=self._fbottom(logo_d[1] / 2 + 40), z=50),
                                 duration=config.md_ev_interval + 1, fade=0.5)
 
         in_d = (512 * 0.75, 185 * 0.75)
         self.instructions = pi3d.ImageSprite(load_icon("icons/instructions.png"), flat, w=in_d[0], h=in_d[1],
-                                             x=(-1920 + in_d[0]) / 2 + 40, y=(-1080 + in_d[1]) / 2 + 40, z=50)
+                                             x=self._fleft(in_d[0] / 2 + 40), y=self._fbottom(in_d[1] / 2 + 40), z=50)
         self.instructions = LazyTrigger(Disappear(self.instructions, duration=5))
 
         logger.debug("Loading font")
@@ -360,10 +374,10 @@ class Gui():
         font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
                            codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, justify='C', x=0, y=-450, z=50)
+                                      is_3d=False, justify='C', x=0, y=self._fbottom(90), z=50)
 
         self.game_mode_ui = ChangingText(flat, font=font, string=self.__get_mode_string(None),
-                                         is_3d=False, justify='R', x=920, y=480, z=50)
+                                         is_3d=False, justify='R', x=self._fright(40), y=self._ftop(60), z=50)
 
         self.feedback = KeysFeedback(flat)
 
