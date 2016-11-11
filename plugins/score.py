@@ -43,7 +43,7 @@ class Plugin:
 
     def increment(self, team):
         s = self.scores.get(team, 0)
-        self.scores[team] = (s + 1) % 10
+        self.scores[team] = (s + 1) % 11
         self.pushState()
 
     def decrement(self, team):

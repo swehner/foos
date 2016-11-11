@@ -3,7 +3,7 @@
 These are the following hardware elements needed for the replay setup:
  * Raspberry Pi
  * Raspberry Pi camera module
- * Arduino (Nano) w/ push buttons and IR barrier
+ * Optional: Arduino (Nano) w/ push buttons and IR barrier
  * TV
 
 ![table]
@@ -91,6 +91,14 @@ The button LEDS are connected to the analog pins.
 ![schematic]
 (foos_arduino_schem.png)
 
+## Setup without an Arduino
+
+You can also run the whole setup without and Arduino and use the RaspberryPI to generate the 38Khz signal for the IR Leds, and read the IR receivers/buttons directly from the RPIs GPIO.
+
+You only have to connect everything directly to the RaspberryPi GPIO and enable the io_raspberry plugin (see config.py.sample for config options).
+Verify the pin numbers in the config, and you're good to go!
+For now you'll need to run with sudo to give access to the GPIO pins.
+Thanks to Adam Bartha for this!
 
 ## BOM
 

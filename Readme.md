@@ -20,7 +20,7 @@ To build it you'll need
  * A TV
  * A Raspberry Pi to run the UI
  * The Raspberry Pi camera module to record video
- * An arduino and some electronic components for the goal detection
+ * Some electronic components for the goal detection (and maybe an Arduino)
 
 You can find more info on how to build its components in the [doc folder](doc/HWSetup.md)
 
@@ -48,17 +48,31 @@ Checking environment...
 
 * RaspberryPi specific deps:
 [ OK] /opt/vc/bin/raspivid (needed for camera)
-[ OK] /opt/vc/src/hello_pi/hello_video/hello_video.bin (needed for replay)
+[ OK] video/player/player (needed for replay)
 
-* tmpfs for replays:
-[ OK] /dev/shm writable - use it to store replays. See replay_path in config
+* Replay path:
+[ OK] /dev/shm/replay is on a tmpfs
+[ OK] /dev/shm/replay is writable
 
 * GPU settings:
-[ OK] GPU memory set to 128
+[ OK] GPU memory set to 192
+
+* evdev input:
+[ OK] /dev/input seems readable io_evdev_keyboard should work
 
 * Python deps
 [   ] Can't check python3 deps for the moment - if you have issues:
-====> Try: pip3 install -r requirements 
+====> Try: pip3 install -r requirements.txt 
+
+* Test Replays - press Y to test N to skip
+
+* Finished!
+```
+
+Make sure you have compiled the player:
+
+```
+pi@raspberrypi:~/foos $ pushd video/player; make && popd
 ```
 
 On the Raspberry Pi you can run the UI simply doing
@@ -88,12 +102,15 @@ Please check the [Troubleshooting](doc/Troubleshooting.md) section for some comm
 
 ## Acknowledgments
 
-Big thanks to [Tuenti](http://www.tuenti.com), where this project started as a HackMeUp and to Laura Andina for the UI design!
-
 Team:
  * Jesús Bravo
  * Daniel Pañeda
  * Stefan Wehner
+
+Big thanks to:
+ * [Tuenti](http://www.tuenti.com), where this project started as a HackMeUp
+ * Laura Andina for the UI design
+ * [Adam Bartha](https://github.com/bartha-adam) for the Pi-only version
 
 Made with Pi3d
 
