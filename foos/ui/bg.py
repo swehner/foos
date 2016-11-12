@@ -41,23 +41,26 @@ class UpdatingBGDisplay():
         yield dispman_update
         result = bcm.vc_dispmanx_update_submit_sync(dispman_update);
         assert result == 0
-        
+
+    def _alignUp(self, n, alignTo):
+        add = 0 if n % alignTo == 0 else 1
+        return ((n // alignTo) + add) * alignTo
+
     def createBuffer(self):
         vc_image_ptr = ctypes.c_uint()
-
-        self.pitch = self.imgw // 16 * 16 * 3;
-        alignedHeight = self.imgh // 16 * 16 
+        alignedWidth = self._alignUp(self.imgw, 16)
+        self.pitch = alignedWidth * 3;
+        alignedHeight = self._alignUp(self.imgh, 16)
         self.imgtype = VC_IMAGE_RGB888
 
         with self.bcmUpdate() as dispman_update:
             self.img_resource = bcm.vc_dispmanx_resource_create(
                 self.imgtype,
-                self.imgw | (self.pitch << 16),
-                self.imgh | (alignedHeight << 16),
+                self.imgw,
+                self.imgh,
                 ctypes.byref(vc_image_ptr))
             assert (self.img_resource != 0)
-
-            src_rect = c_ints((0 << 16, 0 << 16, self.imgw << 16, self.imgh << 16))
+            src_rect = c_ints((0, 0, self.imgw << 16, self.imgh << 16))
             dstw = int(self.h.value * self.imgw / self.imgh)
             dst_rect = c_ints((0, 0, dstw, self.h))
 
