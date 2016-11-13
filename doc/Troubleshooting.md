@@ -25,3 +25,12 @@ Or enabling offline compositing in dispmanx in /boo/config.txt (reboot required!
 dispmanx_offline=1
 ```
 
+### Replay video doesn't cover full screen
+
+Probably your screen doesn't have a 16/9 aspect ratio.
+You can configure the recording size in config.py. This is the config I use for a 16/10 monitor:
+
+```
+video_size=(1152, 720)
+camera_preview="-p 0,0,115,72"
+```
