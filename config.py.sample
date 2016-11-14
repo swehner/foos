@@ -26,9 +26,9 @@ from config_base import *
 #plugins.add('standby')
 
 # -- Enable IO using Raspberry Pi. Change pin numbers according to your setup.
+# -- PWM output for the IR led is BCM18 (hardware PWM pin)
 #plugins.add('io_raspberry')
 #io_raspberry_pins = {
-#    "irbarrier_pwm": 18,            # PWM for IR LED - Broadcom pin 18, RPi pin 12
 #    "irbarrier_team_black": 8,      # Physical pin 8
 #    "irbarrier_team_yellow": 26,    # Physical pin 26
 #    "yellow_plus" : 10,             # Physical pin 10
