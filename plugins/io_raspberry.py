@@ -5,6 +5,7 @@ import time
 import RPi.GPIO as GPIO
 from .io_base import IOBase
 import foos.config as config
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -55,30 +56,31 @@ class GoalDetector:
         self.bus.notify('goal_event', {'source': 'rpi', 'team': self.team})
 
 class IRBarrierPwmGenerator:
-    def __init__(self, pwm_pin):
-        self.pin = pwm_pin
-        self.wpi = ctypes.CDLL("libwiringPi.so")
+    def __init__(self):
         
-        self.wpi.wiringPiSetupGpio() # Initialize wiringPi -- using Broadcom pin numbers
+        # https://sites.google.com/site/semilleroadt/raspberry-pi-tutorials/gpio:
+        # "According to it, configure GPIO18 (WiringPi Pin 1)..."
 
-        PWM_OUTPUT=2
-        PWM_MODE_MS=0
-
-        self.wpi.pinMode(self.pin, PWM_OUTPUT) # Set PWM LED as PWM output
-            
         # Raspberry base PWM frequency: 19,200,000 Hz
         # Resulted frequency: base freq / 101 / 5 = 38.019 kHz
         # Signal duty cycle = 3/5 = ~60%
-        self.wpi.pwmSetMode(PWM_MODE_MS)
-        self.wpi.pwmSetClock(101)
-        self.wpi.pwmSetRange(5)
-        self.wpi.pwmWrite(self.pin, 2)
-        logger.info("IR PWM started")
+        p = subprocess.Popen(['gpio mode 1 pwm && gpio pwm-ms && gpio pwmr 5 && gpio pwmc 101 && gpio pwm 1 2'],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, err = p.communicate()
+        if p.returncode != 0:
+            logger.error("Failed to start PWM, error code={}:\nstdout={}\nstderr={}".format(p.returncode, output, err))
+        else:
+            logger.info("IR PWM started")
         
     def __del__(self):
-        self.wpi.pwmWrite(self.pin, 0);
-        logger.info("IR PWM stopped")
-        
+        p = subprocess.Popen(['gpio pwm 1 0'],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, err = p.communicate()
+        if p.returncode != 0:
+            logger.error("Failed to stop PWM, error code={}:\nstdout={}\nstderr={}".format(p.returncode, output, err))
+        else:
+            logger.info("IR PWM stopped")
+  
 class Plugin(IOBase):
     def __init__(self, bus):
         GPIO.setmode(GPIO.BOARD)
@@ -87,15 +89,14 @@ class Plugin(IOBase):
         self.goal_pin_yellow = config.io_raspberry_pins["irbarrier_team_yellow"]
 
         self.ok_button_pin = config.io_raspberry_pins["ok_button"]
-        self.ir_barrier_pwm_pin = config.io_raspberry_pins["irbarrier_pwm"]
-
+ 
         self.yellow_plus_pin = config.io_raspberry_pins["yellow_plus"]
         self.yellow_minus_pin = config.io_raspberry_pins["yellow_minus"]
 
         self.black_plus_pin = config.io_raspberry_pins["black_plus"]
         self.black_minus_pin = config.io_raspberry_pins["black_minus"]
         
-        self.ir_barrier_pwm = IRBarrierPwmGenerator(self.ir_barrier_pwm_pin)
+        self.ir_barrier_pwm = IRBarrierPwmGenerator()
 
         time.sleep(0.5)   # let the PWM really start before starting detectors
             
