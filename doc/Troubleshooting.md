@@ -16,11 +16,24 @@ This is most likely because you don't have enoguh RAM assigned to your GPU. We r
 ### The player blacks out after a few seconds or video shows tearing
 
 This could be related to issues with dispmanx compositing.
-Try disabling the camera preview in config.py:
+A solution to this problem is reducing the dispmanx layers - you have several options for that:
+
+You can turn off the framebuffer doing the following before launching foos.py
+```
+tvservice -o && tvserice -p
+```
+
+To get the frame buffer back you can do:
+```
+fbset -depth 16
+```
+
+Another option is to disable the camera preview in config.py:
 ```
 camera_preview="-n"
 ```
-Or enabling offline compositing in dispmanx in /boo/config.txt (reboot required!):
+
+If nonw of these work you can try enabling offline compositing in dispmanx in /boot/config.txt (reboot required!):
 ```
 dispmanx_offline=1
 ```
