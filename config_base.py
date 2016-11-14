@@ -2,6 +2,7 @@
 plugins = set(['score', 'game', 'sound', 'io_debug', 'menu', 'control', 'league', 'leds', 'io_evdev_keyboard'])
 
 onscreen_leds_enabled = False
+blank_console = True
 standby_timeout_secs = 600
 bg_change_secs = 300
 hipchat_token = 'your_token'

@@ -25,6 +25,7 @@ from .FixedOutlineString import FixedOutlineString
 from .bg import BGRotater
 from .monkey_patch import monkey_patch
 from .. import utils
+from foos.process import call_and_log
 import foos.config as config
 import itertools
 from foos.platform import is_x11, is_pi
@@ -292,6 +293,9 @@ class Gui():
 
 
     def __init_display(self, sf, fps):
+        if is_pi() and config.blank_console:
+            call_and_log("setterm -blank force", shell=True)
+
         bgcolor = (0.0, 0.0, 0.0, 0.0)
         # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
         monkey_patch()
@@ -524,6 +528,9 @@ class Gui():
 
         except:
             traceback.print_exc()
+
+        if is_pi() and config.blank_console:
+            call_and_log("setterm -blank poke", shell=True)
 
     def __draw_leds(self):
         for name, s in self.ledShapes.items():

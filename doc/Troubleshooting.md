@@ -18,14 +18,14 @@ This is most likely because you don't have enoguh RAM assigned to your GPU. We r
 This could be related to issues with dispmanx compositing.
 A solution to this problem is reducing the dispmanx layers - you have several options for that:
 
-You can turn off the framebuffer doing the following before launching foos.py
+You can turn off the framebuffer doing the following before launching foos.py. This is done automatically when starting it from the console, but if you've started if through ssh you need root permissions to do this:
 ```
-tvservice -o && tvserice -p
+sudo sh -c "setterm -term linux -blank force >/dev/tty0 </dev/tty0"
 ```
 
-To get the frame buffer back you can do:
+To get the console back you can run:
 ```
-fbset -depth 16
+sudo sh -c "setterm -term linux -blank poke >/dev/tty0 </dev/tty0"
 ```
 
 Another option is to disable the camera preview in config.py:
@@ -33,7 +33,7 @@ Another option is to disable the camera preview in config.py:
 camera_preview="-n"
 ```
 
-If nonw of these work you can try enabling offline compositing in dispmanx in /boot/config.txt (reboot required!):
+If none of these work you can try enabling offline compositing in dispmanx in /boot/config.txt (reboot required!):
 ```
 dispmanx_offline=1
 ```
