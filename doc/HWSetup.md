@@ -112,5 +112,5 @@ Thanks to Adam Bartha for this!
  * Breadboard
  * 7x 330 Ohm resistors
  * 1x 10k Ohm resistors
- * NPN transistor
+ * PNP transistor
  * Box for buttons
