@@ -8,10 +8,7 @@ import sys
 if sys.version_info[0] == 3:
   unichr = chr
 
-try:
-  from PIL import Image, ImageDraw, ImageFont
-except:
-  print('Unable to import libraries from PIL')
+from PIL import Image, ImageDraw, ImageFont
 
 from pi3d.constants import *
 from pi3d.Texture import *
@@ -134,10 +131,8 @@ class FixedOutlineString(Texture):
       elif f_type == 'SMOOTH':
         self.im = self.im.filter(ImageFilter.SMOOTH_MORE)
 
-    #self.image = self.im.convert('RGBA').tostring('raw', 'RGBA')
-    self.im = self.im.convert('RGBA')
     self.image = np.array(self.im)
-    self._tex = ctypes.c_int()
+    self._tex = ctypes.c_uint()
 
     bmedge = nlines * height + 2.0 * margin
     self.sprite = Sprite(camera=camera, w=maxwid, h=bmedge)
