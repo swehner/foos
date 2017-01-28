@@ -89,7 +89,13 @@ log = {
             "level": "DEBUG",
             "handlers": ["file_handler"],
             "propagate": "no",
+        },
+        "pi3d": {
+            "level": "WARN",
+            "handlers": ["console", "file_handler"],
+            "propagate": "no",
         }
+
     },
     "root": {
         "level": "INFO",
