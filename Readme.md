@@ -24,6 +24,8 @@ To build it you'll need
 
 You can find more info on how to build its components in the [doc folder](doc/HWSetup.md)
 
+Take a closer look at the UI and the different game modes in the [ui folder](doc/ui/ui.md)
+
 ## Run it!
 
 To run the UI you'll need to install a few dependencies - you can find a list of the python packages in requirements.txt.
