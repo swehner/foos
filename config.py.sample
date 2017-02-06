@@ -59,3 +59,5 @@ from config_base import *
 
 #league_url = 'http://localhost:8888/api'
 #league_apikey = 'put-your-apikey-here'
+
+slack_webhook = 'https://hooks.slack.com/services/BLAW/BLAW'
