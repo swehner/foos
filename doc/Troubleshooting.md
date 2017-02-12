@@ -15,7 +15,13 @@ This is most likely because you don't have enoguh RAM assigned to your GPU. We r
 
 ### The player blacks out after a few seconds or video shows tearing
 
-This could be related to issues with dispmanx compositing.
+This could be related to issues with dispmanx compositing:
+Check if you have enabled drawing the background as a dispmanx layer in the config:
+```
+draw_bg_with_dispmanx = True
+```
+
+You can disable it in config (it is False by default) - if you still want to do it as a dispmanx layer there are several options to fixing this problem.
 A solution to this problem is reducing the dispmanx layers - you have several options for that:
 
 You can turn off the framebuffer doing the following before launching foos.py. This is done automatically when starting it from the console, but if you've started if through ssh you need root permissions to do this:

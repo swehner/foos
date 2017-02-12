@@ -22,7 +22,7 @@ from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Fl
 from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
-from .bg import BGRotater
+from .bg import BGRotater, DispmanxBG, OpenglBG
 from .monkey_patch import monkey_patch
 from .. import utils
 from foos.process import call_and_log
@@ -260,13 +260,13 @@ class Gui():
         return -self._fright(offset)
 
     def __flash_once_yellow(self):
-        self.bg.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)
+        self.flash.flash(speed=1, times=0.5, color=flash_yellow, color2=flash_black)
 
     def __flash_once_red(self):
-        self.bg.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
+        self.flash.flash(speed=1, times=0.5, color=flash_red, color2=flash_black)
 
     def __flash_multiple_red(self):
-        self.bg.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
+        self.flash.flash(speed=3, times=2.5, color=flash_red, color2=flash_black)
 
     def __sudden_death(self, d):
         self.countdown = '» Sudden death «'
@@ -343,20 +343,20 @@ class Gui():
     def __setup_sprites(self):
         flat = Shader("uv_flat")
         matflat = Shader("mat_flat")
-        if is_x11():
-            # load an image as bg
-            self.bg_img = pi3d.ImageSprite(load_texture(self.__choose_random_bg()), flat, w=int(self.height * bg_w / bg_h), h=self.height, z=101)
+        if is_pi() and config.draw_bg_with_dispmanx:
+            dsp = DispmanxBG(bg_w, bg_h, -1)
         else:
-            self.bg_img = None
-            
-        if is_pi():
-            self.bgr = BGRotater(bg_w, bg_h, -1, img("bg"), self.bg_change_interval) 
-            self.bgr.change()
+            sprite = pi3d.Sprite(w=int(self.height * bg_w / bg_h), h=self.height, z=101)
+            sprite.set_shader(flat)
+            dsp = OpenglBG(sprite)
 
-        bg = pi3d.Sprite(w=self.width, h=self.height, z=100)
-        bg.set_shader(matflat)
-        bg.set_alpha(0)
-        self.bg = Flashing(bg)
+        self.bgr = BGRotater(img("bg"), self.bg_change_interval, dsp, self.bus) 
+        self.bgr.change()
+
+        flash = pi3d.Sprite(w=self.width, h=self.height, z=100)
+        flash.set_shader(matflat)
+        flash.set_alpha(0)
+        self.flash = Flashing(flash)
         
         
         logger.debug("Loading other images")
@@ -446,9 +446,6 @@ class Gui():
         self.__move_sprites()
         if start:
             self.feedback.setIcon(None)
-        else:
-            if is_pi():
-                self.bgr.encourageChange()
 
     def __get_mode_string(self, mode=None):
         l = 20
@@ -499,10 +496,8 @@ class Gui():
                 self.checkSchedules()
 
                 if not self.overlay_mode:
-                    if self.bg_img:
-                        self.bg_img.draw()
-                        
-                    self.bg.draw()
+                    self.bgr.draw()
+                    self.flash.draw()
                     self.instructions.draw()
 
                     self.goal_time.quick_change(self.__get_time_since_last_goal())

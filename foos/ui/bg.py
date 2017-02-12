@@ -1,5 +1,6 @@
 import ctypes
 import numpy
+from pi3d import Texture
 from pi3d.constants import *
 from pi3d.util.Ctypes import c_ints
 from PIL import Image
@@ -11,7 +12,7 @@ DISPMANX_FLAGS_ALPHA_FROM_SOURCE = 0
 DISPMANX_NO_ROTATE = 0
 VC_IMAGE_RGB888 = 5
 
-class UpdatingBGDisplay():
+class DispmanxBG():
     def __init__(self, imgw, imgh, layer):
         self.layer = layer
         self.w, self.h = ctypes.c_int(), ctypes.c_int()
@@ -110,13 +111,34 @@ class UpdatingBGDisplay():
         with self.bcmUpdate() as dispman_update:
             bcm.vc_dispmanx_element_modified(dispman_update, self.img_element, ctypes.byref(self.dst_rect));
 
+    def draw(self):
+        pass
+
+    
+class OpenglBG():
+    def __init__(self, shape):
+        self.idx = 0
+        self.shape = shape
+        self.scheduledTexture = None
+        
+    def draw(self):
+        if self.scheduledTexture:
+            self.shape.set_textures([self.scheduledTexture])
+            self.scheduledTexture = None
+
+        self.shape.draw()
+
+    def setImg(self, filename):
+        self.scheduledTexture = Texture(filename, free_after_load=True, mipmap=False, filter=GL_LINEAR)
+        
 
 class BGRotater:
-    def __init__(self, w, h, layer, imgdir, interval):
-        self.dsp = UpdatingBGDisplay(w, h, layer)
+    def __init__(self, imgdir, interval, dsp, bus):
+        self.dsp = dsp
         self.allFiles = self.getFiles(imgdir)
         self.interval = interval
         self.last_change = 0
+        bus.subscribe(lambda x: self.encourageChange(), thread=True, subscribed_events=["replay_start"])
         
     def getFiles(self, imgdir):
         while True:
@@ -131,9 +153,13 @@ class BGRotater:
     def encourageChange(self):
         """Call this at a good time to do the bg change"""
         if self.interval > 0 and time.time() > (self.last_change + self.interval):
+            # wait a bit before changing background so it occurs during replay
+            time.sleep(0.3)
             self.change()
             
         
     def close(self):
         self.dsp.close()
 
+    def draw(self):
+        self.dsp.draw()
