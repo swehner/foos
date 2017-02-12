@@ -9,4 +9,6 @@ inotify_simple
 requests
 evdev
 RPi.GPIO
-pygame
+
+# Only required for running in X11
+#pygame
