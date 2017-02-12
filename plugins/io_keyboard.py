@@ -1,5 +1,6 @@
 import time
 from .io_base import IOBase
+import pygame
 
 
 class Plugin(IOBase):
@@ -26,33 +27,27 @@ class Plugin(IOBase):
     }
 
     def reader_thread(self):
-        from pi3d.Display import Display
-        from pyxlib import x
-        display = Display.INSTANCE
-        last_event = None
+        # Only allow keyboard events
+        pygame.event.set_allowed(None)
+        pygame.event.set_allowed([pygame.KEYDOWN, pygame.KEYUP])
 
         while True:
-            time.sleep(0.01)
-            while len(display.event_list) > 0:
-                e = display.event_list.pop()
-                if last_event == (e.type, e.xkey.keycode):
-                    continue
+            e = pygame.event.wait()
+            code = e.scancode
 
-                last_event = (e.type, e.xkey.keycode)
-                if e.type == x.KeyPress or e.type == x.KeyRelease:
-                    code = e.xkey.keycode
-                    if code in self.key_map:
-                        btn = self.key_map[code]
-                        state = "down" if e.type == x.KeyPress else "up"
-                        event_data = {'source': 'keyboard', 'btn': btn, 'state': state}
-                        self.bus.notify('button_event', event_data)
+            if code in self.key_map:
+                btn = self.key_map[code]
+                state = "down" if e.type == pygame.KEYDOWN else "up"
+                event_data = {'source': 'keyboard', 'btn': btn, 'state': state}
+                self.bus.notify('button_event', event_data)
 
-                    if code in self.goal_map and e.type == x.KeyPress:
-                        team = self.goal_map[code]
-                        self.bus.notify('goal_event', {'source': 'keyboard', 'team': team})
+            if code in self.goal_map and e.type == pygame.KEYDOWN:
+                team = self.goal_map[code]
+                self.bus.notify('goal_event', {'source': 'keyboard', 'team': team})
 
-                    if code == 60:  # PERIOD
-                        self.bus.notify('quit')
+            if code == 60:  # PERIOD
+                self.bus.notify('quit')
+                return
 
     def writer_thread(self):
         while True:

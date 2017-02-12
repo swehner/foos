@@ -303,14 +303,14 @@ class Gui():
         self.width = 1920
         if sf == 0:
             #adapt to screen size
-            self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1)
+            self.DISPLAY = pi3d.Display.create(background=bgcolor, layer=1, use_pygame=True)
             sf = self.width / self.DISPLAY.width
             self.height = self.DISPLAY.height * sf
         else:
             logger.debug("Forcing size")
             self.height = 1080
             self.DISPLAY = pi3d.Display.create(x=0, y=0, w=int(self.width / sf), h=int(self.height / sf),
-                                               background=bgcolor, layer=1)
+                                               background=bgcolor, layer=1, use_pygame=True)
 
         self.DISPLAY.frames_per_second = fps
         logger.info("Display %dx%d@%d", self.DISPLAY.width, self.DISPLAY.height, self.DISPLAY.frames_per_second)
