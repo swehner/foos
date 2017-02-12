@@ -22,6 +22,11 @@ You can turn off the framebuffer doing the following before launching foos.py. T
 ```
 sudo sh -c "setterm -term linux -blank force >/dev/tty0 </dev/tty0"
 ```
+Or you can use tvservice to disable and reenable HDMI output:
+
+```
+tvservice -o; tvservice -p
+```
 
 To get the console back you can run:
 ```
