@@ -38,6 +38,8 @@ from config_base import *
 #    "ok_button": 24,                # Physical pin 24
 #}
 
+# -- Modify clock format: see strftime
+#clock_format = "%-I:%M %p" # 12 hour format
 
 """ Configure team names and colors """
 #team_names = {"yellow": "blue", "black": "red"}

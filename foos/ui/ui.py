@@ -456,7 +456,7 @@ class Gui():
         if self.countdown is not None:
             mode = "Party! " + mode
 
-        timestr = time.strftime("%H:%M", time.localtime()).replace("0", "O")
+        timestr = time.strftime(config.clock_format, time.localtime()).replace("0", "O")
 
         return (mode + " " + timestr).rjust(l)
 

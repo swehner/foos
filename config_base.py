@@ -7,6 +7,9 @@ standby_timeout_secs = 600
 bg_change_secs = 300
 # use dispmanx to draw bg as a separate layer
 draw_bg_with_dispmanx = True
+
+clock_format = "%H:%M"
+
 hipchat_token = 'your_token'
 hipchat_room = 'your_room_id'
 
