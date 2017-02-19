@@ -456,7 +456,7 @@ class Gui():
         if self.countdown is not None:
             mode = "Party! " + mode
 
-        timestr = time.strftime(config.clock_format, time.localtime()).replace("0", "O")
+        timestr = time.strftime(config.clock_format, time.localtime())
 
         return (mode + " " + timestr).rjust(l)
 
@@ -541,8 +541,7 @@ class Gui():
             mins = (secs / 60) % 60
             secs = secs % 60
             frac = (secs - int(secs)) * 10
-            # replace 0 with O because of dots in 0 in the chosen font
-            return ("%.2d:%.2d.%.1d" % (mins, secs, frac)).replace("0", "O")
+            return ("%.2d:%.2d.%.1d" % (mins, secs, frac))
         else:
             return "--:--.-"
 

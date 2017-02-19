@@ -2,9 +2,7 @@ from PIL import ImageFont, ImageDraw, Image
 import sys
 
 
-def makeImage(s):
-    # most monospaced fonts have ugly zeroes use upper case O instead
-    string = s.replace("0", "O")
+def makeImage(string):
     mask = Image.open('circle_m.png')
     draw = ImageDraw.Draw(mask)
 
@@ -24,7 +22,7 @@ def makeImage(s):
     draw.text((posx, posy), string, font=font, fill=0)
 
     image.putalpha(mask)
-    image.save("%s.png" % (s))
+    image.save("%s.png" % (string))
 
 
 for number in range(0, 11):
