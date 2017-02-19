@@ -193,8 +193,10 @@ class Move(Delegate):
 
 class ChangingText(Delegate):
     def __init__(self, shader, **kwargs):
+        scale = kwargs.pop("scale", 1)
         self.s = pi3d.String(**kwargs)
         self.s.set_shader(shader)
+        self.s.scale(scale, scale, scale)
         self.newtext = None
         self.first = True
         super().__init__(self.s)

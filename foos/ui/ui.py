@@ -20,8 +20,6 @@ from pi3d import opengles
 
 from .anim import Move, Disappear, Wiggle, Delegate, ChangingText, Multiline, Flashing, Shader
 from .menu import Menu, MenuTree
-from .OutlineFont import OutlineFont
-from .FixedOutlineString import FixedOutlineString
 from .bg import BGRotater, DispmanxBG, OpenglBG
 from .monkey_patch import monkey_patch
 from .. import utils
@@ -181,7 +179,7 @@ class WinnerString:
         drop_duration = 0.2
         self.shapes = {}
         for team in teams:
-            s = FixedOutlineString(font, "{} wins!".format(utils.teamName(team).capitalize()), outline_size=2, font_size=180, shader=shader)
+            s = pi3d.FixedString(font, "{} wins!".format(utils.teamName(team).capitalize()), shadow_radius=3, font_size=180, shader=shader)
             s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
             self.shapes[team] = s
 
@@ -375,27 +373,27 @@ class Gui():
         logger.debug("Loading font")
         printable_cps = list(itertools.chain(range(ord(' '), ord('~')), range(161, 255), [ord("○"), ord("●"), ord("◌"), ord("◉"), ord('Ω')]))
         fontfile = img("UbuntuMono-B_circle.ttf")
-        font = OutlineFont(fontfile, font_size=80, image_size=1024, outline_size=2,
-                           codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
+        font = pi3d.Font(fontfile, font_size=60, image_size=1024, shadow_radius=2, spacing=1,
+                         codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.goal_time = ChangingText(flat, font=font, string=self.__get_time_since_last_goal(),
-                                      is_3d=False, justify='C', x=0, y=self._fbottom(90), z=50)
+                                      is_3d=False, justify='C', x=0, y=self._fbottom(90), z=50, scale=80./60)
 
         self.game_mode_ui = ChangingText(flat, font=font, string=self.__get_mode_string(None),
-                                         is_3d=False, justify='R', x=self._fright(40), y=self._ftop(60), z=50)
+                                         is_3d=False, justify='R', x=self._fright(40), y=self._ftop(60), z=50, scale=80./60)
 
         self.feedback = KeysFeedback(flat)
 
         s = 512
         self.yCounter = Move(Counter(0, flat, config.team_colors['yellow'], w=s, h=s, z=50))
         self.bCounter = Move(Counter(0, flat, config.team_colors['black'], w=s, h=s, z=50))
-        playerfont = OutlineFont(fontfile, font_size=50, image_size=768, outline_size=2,
-                                 codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
+        playerfont = pi3d.Font(fontfile, font_size=50, image_size=768, shadow_radius=2, spacing=1,
+                               codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         self.yPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=True),
                                   x=-380, y=-250, z=50, justify='C')
         self.bPlayers = Multiline(flat, font=playerfont, string=self.getPlayers(left=False),
                                   x=380, y=-250, z=50, justify='C')
 
-        menufont = OutlineFont(fontfile, (255, 255, 255, 255), font_size=50, image_size=768,
+        menufont = pi3d.Font(fontfile, (255, 255, 255, 255), font_size=50, image_size=768,
                                codepoints=printable_cps, mipmap=False, filter=GL_LINEAR)
         arrow = load_icon("icons/arrow.png")
         menu = Menu(menufont, arrow, wchar=60, n=12, z=10)
