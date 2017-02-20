@@ -114,3 +114,21 @@ Thanks to Adam Bartha for this!
  * 1x 10k Ohm resistors
  * PNP transistor
  * Box for buttons
+
+## Setup Youtube upload
+
+To set up Youtube upload, first you need to create OAuth2 credentials for your account.
+Please follow this guide: https://support.google.com/cloud/answer/6158849 and create credentials for application type other.
+Download the client_secrets.json file and place it into the foos root folder.
+
+Restart foos.py and upload the lates replay (long-press on 's', central button). Check the console output, it should show something like:
+
+```
+Go to the following link in your browser:
+
+    https://accounts.google.com/o/oauth2/auth?...
+
+Enter verification code:
+```
+
+Go to that URL on a browser, get and enter the verification code.
