@@ -47,7 +47,7 @@ def get_authenticated_service():
         flags = argparser.parse_args(args=['--noauth_local_webserver'])
         credentials = run_flow(flow, storage, flags)
 
-    return build('youtube', 'v3', http=credentials.authorize(httplib2.Http()))
+    return build('youtube', 'v3', http=credentials.authorize(httplib2.Http()), cache_discovery=False)
 
 
 def initialize_upload(title=None, file='/tmp/replay/replay_long.mp4'):
