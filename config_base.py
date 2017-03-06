@@ -34,6 +34,8 @@ league_dir = './league'
 league_url = 'http://localhost:8888/api'
 league_apikey = 'put-your-apikey-here'
 
+foostastic_webhook_url = 'http://localhost:8888/foostastic'
+
 video_size=(1280, 720)
 video_fps = 49
 camera_preview = "-p 0,0,128,72"
