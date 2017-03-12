@@ -294,7 +294,7 @@ class Gui():
 
     def __init_display(self, sf, fps):
         if is_pi() and config.blank_console:
-            call_and_log("setterm -blank force", shell=True)
+            call_and_log("video/blank_console.sh blank", shell=True)
 
         bgcolor = (0.0, 0.0, 0.0, 0.0)
         # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
@@ -525,7 +525,7 @@ class Gui():
             traceback.print_exc()
 
         if is_pi() and config.blank_console:
-            call_and_log("setterm -blank poke", shell=True)
+            call_and_log("video/blank_console.sh restore", shell=True)
 
     def __draw_leds(self):
         for name, s in self.ledShapes.items():
