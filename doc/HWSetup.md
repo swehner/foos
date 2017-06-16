@@ -68,7 +68,7 @@ You can find more info here: https://www.raspberrypi.org/blog/vectors-from-coars
 
 ## Arduino
 
-The arduino takes core of getting input from the push buttons, and detecting when a goal is scored (IR Barrier) and sends these events over the serial interface.
+The arduino takes care of getting input from the push buttons, and detecting when a goal is scored (IR Barrier) and sends these events over the serial interface.
 It also reads from the serial interface to turn the LEDs on the push buttons on off.
 In our setup the arduino is inside a box with the push buttons, from there we run a multiwired cable (it's actually a cat-5 ethernet cable) inside of the table to run the IR barrier under each of the goals.
 It mainly debounces all input from the buttons and the IR barriers and sends easy to read events over the serial interface.
