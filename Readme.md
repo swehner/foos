@@ -1,4 +1,4 @@
-#Foosball slow motion instant replay
+# Foosball slow motion instant replay
 
 Ever wanted to relive your best foosball shots? Now you can with this project!
 Featuring:
