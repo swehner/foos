@@ -2,8 +2,7 @@
 
 Here's a quick look at the UI and the different game modes.
 
-![to3]
-(to3.jpg)
+![to3](to3.jpg)
 
 ## Basic game mode
 
@@ -14,15 +13,13 @@ The game can either be limited to a number of goals, which when reached displays
 
 To change the game mode you can call up the menu (pressing the increment and decrement keys for a team at the same time, Q-Z or E-C on the keyboard)
 
-![menu]
-(menu.jpg)
+![menu](menu.jpg)
 
 Use the increment/decrement button to navigate and the replay button (S on the keyboard) to choose that menu item.
 
 ## Party mode
 
-![party]
-(party.jpg)
+![party](party.jpg)
 
 The party mode is a game with a time limit - you can configure the winning score and the timeout in the configuration.
 Party mode is indicated in the top right corner, when enabled.
@@ -32,8 +29,7 @@ This mode is especially useful when a lot of players are playing to keep matches
 
 ## League mode
 
-![league]
-(league.jpg)
+![league](league.jpg)
 
 The foosball game is integrated with a league system (https://github.com/netsuso/foos-tournament), it supports several leagues at the same time. Matches are assigned to groups of four people and will show up in the game menu.
 Choose the game to play from the menu and you will start an official game. Each one consists of three matches with the players rotating so that all combination of pairs are played.
