@@ -7,10 +7,10 @@ These are the following hardware elements needed for the replay setup:
  * TV
 
 ![table]
-(table.jpg)
+(/doc/table.jpg)
 
 ![stand]
-(stand.jpg)
+(/doc/stand.jpg)
 
 
 ## Goal detection
