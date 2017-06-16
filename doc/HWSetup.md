@@ -84,7 +84,7 @@ The button LEDS are connected to the analog pins.
 
 ## Setup without an Arduino
 
-You can also run the whole setup without and Arduino and use the RaspberryPI to generate the 38Khz signal for the IR Leds, and read the IR receivers/buttons directly from the RPIs GPIO.
+You can also run the whole setup without an Arduino and use the RaspberryPI to generate the 38Khz signal for the IR Leds, and read the IR receivers/buttons directly from the RPIs GPIO.
 
 You only have to connect everything directly to the RaspberryPi GPIO and enable the io_raspberry plugin (see config.py.sample for config options).
 Verify the pin numbers in the config, and you're good to go!
