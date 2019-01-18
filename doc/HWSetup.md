@@ -103,6 +103,8 @@ Thanks to Adam Bartha for this!
  * Breadboard
  * 7x 330 Ohm resistors
  * 1x 10k Ohm resistors
+ * 2x 100 Ohm resistors (optional)
+ * 2x 100nF Capacitors (optional)
  * PNP transistor
  * Box for buttons
 
