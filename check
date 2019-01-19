@@ -7,6 +7,10 @@ python3 foos python3
 pip3 foos python3-pip
 "
 
+REQUIRED_LIBS="libtiff.so libtiff5
+libf77blas.so libatlas-base-dev
+"
+
 VC_INSTR="pushd video/player; make && popd"
 
 PI_EXECS="/opt/vc/bin/raspivid camera -
@@ -52,6 +56,22 @@ function check_execs {
 
     [ -n "$NEEDED_DEPS" ] && suggest "sudo apt-get install $NEEDED_DEPS"
 }
+
+function check_libs {
+    NEEDED_DEPS=""
+    while [ $# -gt 0 ]; do
+	if ! ldconfig -p | grep $1 > /dev/null; then
+	    err "$1 not found!"
+	    NEEDED_DEPS="$2 $NEEDED_DEPS"
+	else
+	    ok "$1 found"
+	fi
+	shift 2
+    done
+
+    [ -n "$NEEDED_DEPS" ] && suggest "sudo apt-get install $NEEDED_DEPS"
+}
+
 
 function check_pi_execs {
     while [ $# -gt 0 ]; do
@@ -125,6 +145,9 @@ function test_replays {
 echo "Checking environment..."
 head "Binary deps:"
 check_execs $REQUIRED_EXECS
+
+head "Library deps:"
+check_libs $REQUIRED_LIBS
 
 head "RaspberryPi specific deps:"
 check_pi_execs $PI_EXECS

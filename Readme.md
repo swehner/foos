@@ -25,61 +25,11 @@ You can find more info on how to build its components in the [doc folder](doc/HW
 
 Take a closer look at the UI and the different game modes in the [ui folder](doc/ui/ui.md)
 
-## Run it!
+## Installation
 
-To run the UI you'll need to install a few dependencies - you can find a list of the python packages in requirements.txt.
-Other dependencies you'll need on your system (raspbian packages) are: `libav-tools sox cec-utils`
-Verify the default configuration in config_base.py and override it if necessary. To override config copy config.py.sample to config.py and edit it:
-```
-cp config.py.sample config.py
-vi config.py
-```
+To install it on a RaspberryPi please follow the [installation guide](doc/Installation.md)
 
-To verify that you have all the dependencies you can run the check script. It will check most of the dependencies for you.
-```
-pi@raspberrypi:~/foos $ ./check
-Checking environment...
-
-* Binary deps:
-[ OK] play (needed for sound) found
-[ OK] avconv (needed for upload) found
-[ OK] cec-client (needed for standby) found
-[ OK] python3 (needed for foos) found
-[ OK] pip3 (needed for foos) found
-
-* RaspberryPi specific deps:
-[ OK] /opt/vc/bin/raspivid (needed for camera)
-[ OK] video/player/player (needed for replay)
-
-* Replay path:
-[ OK] /dev/shm/replay is on a tmpfs
-[ OK] /dev/shm/replay is writable
-
-* GPU settings:
-[ OK] GPU memory set to 192
-
-* evdev input:
-[ OK] /dev/input seems readable io_evdev_keyboard should work
-
-* Python deps
-[   ] Can't check python3 deps for the moment - if you have issues:
-====> Try: pip3 install -r requirements.txt 
-
-* Test Replays - press Y to test N to skip
-
-* Finished!
-```
-
-Make sure you have compiled the player:
-
-```
-pi@raspberrypi:~/foos $ pushd video/player; make && popd
-```
-
-On the Raspberry Pi you can run the UI simply doing
-```
-python3 foos.py
-```
+## Running on a normal PC
 
 When running in X11 it's often useful to change the window size changing the scaling factor (-s 3 runs at 1/3 of the size)
 ```
