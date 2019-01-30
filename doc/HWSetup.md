@@ -88,6 +88,7 @@ You can also run the whole setup without an Arduino and use the RaspberryPI to g
 
 You only have to connect everything directly to the RaspberryPi GPIO and enable the io_raspberry plugin (see config.py.sample for config options).
 Verify the pin numbers in the config, and you're good to go!
+
 Thanks to Adam Bartha for this!
 
 ![schematic](foos_RPi_only_schema.png)

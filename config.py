@@ -51,7 +51,7 @@ team_colors = {"yellow": (0.1, 0.1, 0.4), "black": (0.7, 0, 0)}
 # game modes: tuples of (winning score, timeout in minutes)
 game_modes = [(None, None), (5, None), (7, None), (10, None), (3, 120)]
 
-# Winner strings
+# Customize winner strings
 winner_strings = ["Victoire des {}!","Des kings les {}!","Les {} déchirent!","Trop forts les {}!","Faites place aux {}!","You rock !!!"]
 
 """ Configure paths """
