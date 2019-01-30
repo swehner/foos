@@ -24,6 +24,9 @@ team_colors = {"yellow": (1, 0.7, 0), "black": (0, 0, 0)}
 # game modes: tuples of (winning score, timeout in minutes)
 game_modes = [(None, None), (3, None), (5, None), (3, 120)]
 
+# Winner strings
+winner_strings = ["{} wins!","You rock, {}!"]
+
 replay_path = '/dev/shm/replay'
 replay_fps = 25
 ignore_recent_chunks = 1
