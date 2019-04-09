@@ -6,6 +6,7 @@ from config_base import *
 
 # -- Enable camera, replays and video motiondetector
 #plugins.update(set(['replay', 'camera', 'motiondetector']))
+#camera_preview = "-p 0,0,128,72"
 
 # -- Modify this to tune your camera settings - see raspivid --help for more info
 #camera_extra_params = "--ev 7"
@@ -58,6 +59,8 @@ winner_strings = ["Victoire des {}!","Des kings les {}!","Les {} déchirent!","T
 
 # -- replay path
 replay_path = "./replay"
+replay_fps = 25
+save_replays = True
 
 # -- or the location of the file_handler
 #log["handlers"]["file_handler"]["filename"] = ""

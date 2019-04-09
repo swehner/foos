@@ -28,6 +28,7 @@ game_modes = [(None, None), (3, None), (5, None), (3, 120)]
 winner_strings = ["{} wins!","You rock, {}!"]
 
 replay_path = '/dev/shm/replay'
+save_replays = False
 replay_fps = 25
 ignore_recent_chunks = 1
 short_chunks = 10
