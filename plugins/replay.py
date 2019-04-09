@@ -22,10 +22,10 @@ class Plugin:
 
         # If we want to keep replays, make a copy of the files with a timestamp.
         if config.save_replays == True:
-            copyfile(os.path.join(config.replay_path, "replay_short.h264"),
-                     os.path.join(config.replay_path, "{}_replay_short.h264".format(int(time.time()))))
-            copyfile(os.path.join(config.replay_path, "replay_long.h264"),
-                     os.path.join(config.replay_path, "{}_replay_long.h264".format(int(time.time()))))
+            copyfile(os.path.join(config.replay_save_path, "replay_short.h264"),
+                     os.path.join(config.replay_save_path, "{}_replay_short.h264".format(int(time.time()))))
+            copyfile(os.path.join(config.replay_save_path, "replay_long.h264"),
+                     os.path.join(config.replay_save_path, "{}_replay_long.h264".format(int(time.time()))))
             
         self.bus.notify('replay_start', extra)
         if is_pi():

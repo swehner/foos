@@ -58,7 +58,7 @@ winner_strings = ["Victoire des {}!","Des kings les {}!","Les {} déchirent!","T
 """ Configure paths """
 
 # -- replay path
-replay_path = "./replay"
+replay_save_path = "./replay"
 replay_fps = 25
 save_replays = True
 
