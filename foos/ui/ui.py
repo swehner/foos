@@ -180,23 +180,28 @@ class WinnerString:
         duration = 5
         drop_duration = 0.2
         self.shapes = {}
-        for team in teams:
-            s = FixedOutlineString(font, "{} wins!".format(utils.teamName(team).capitalize()), outline_size=2, font_size=180, shader=shader)
-            s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
-            self.shapes[team] = s
+        for i, team in enumerate(teams):
+            self.shapes[team] = []
+            for j, winnerString in enumerate(config.winner_strings):
+                s = FixedOutlineString(font, winnerString.format(utils.teamName(team).capitalize()), outline_size=2, font_size=180, shader=shader)
+                s = Move(Disappear(s.sprite, duration=duration), duration=drop_duration)
+                self.shapes[team].append(s)
 
     def draw(self):
         for team, s in self.shapes.items():
-            s.draw()
+            for shape in s:
+                shape.draw()
 
     def show_winner(self, team):
         for t, s in self.shapes.items():
             if team == t:
-                s.position(0, 650, 40)
-                s.moveTo((0, 330, 40), (1, 1, 1))
-                s.show()
+                shape = random.choice(s)
+                shape.position(0, 650, 40)
+                shape.moveTo((0, 330, 40), (1, 1, 1))
+                shape.show()
             else:
-                s.hide()
+                for shape in s:
+                    shape.hide()
 
 
 class Gui():
