@@ -61,7 +61,7 @@ It is then simply replayed on a layer under the UI with a transparent background
 ## Motion detection
 
 The motion detection is done using the motion vectors that raspivid can output to a separate file for each video chunk.
-These files are read in and each frame we chck if there are enough motion vectors big enough to consider it movement.
+These files are read in and each frame we check if there are enough motion vectors big enough to consider it movement.
 To avoid false positives due to camera vibration we require a number of contiguous frames with movement.
 All config related to motion detection depends a lot on the parameters of the camera (resolution, chunk size, etc...) and might not work correctly if the config changes.
 You can find more info here: https://www.raspberrypi.org/blog/vectors-from-coarse-motion-estimation/
