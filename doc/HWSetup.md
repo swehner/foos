@@ -107,7 +107,7 @@ Thanks to Adam Bartha for this!
  * 1x 10k Ohm resistors
  * 2x 100 Ohm resistors (optional)
  * 2x 100nF Capacitors (optional)
- * PNP transistor
+ * NPN transistor (e.g. BC548, 2N2222 or similar)
  * Box for buttons
 
 ## Setup Youtube upload
