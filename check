@@ -5,10 +5,13 @@ avconv upload libav-tools
 cec-client standby cec-utils
 python3 foos python3
 pip3 foos python3-pip
+gpio io_raspberry wiringpi
 "
 
 REQUIRED_LIBS="libtiff.so libtiff5
 libf77blas.so libatlas-base-dev
+libjpeg.so libjpeg-dev
+libpng.so libpng-dev
 "
 
 VC_INSTR="pushd video/player; make && popd"

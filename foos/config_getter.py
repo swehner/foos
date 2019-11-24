@@ -1,9 +1,9 @@
 import config
 import sys
-import collections
+import collections.abc
 
 def toString(value):
-    if isinstance(value, collections.Iterable) and not isinstance(value, str):
+    if isinstance(value, collections.abc.Iterable) and not isinstance(value, str):
         return(" ".join(map(toString, value)))
     else:
         return str(value)

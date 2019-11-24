@@ -23,7 +23,6 @@ from .menu import Menu, MenuTree
 from .OutlineFont import OutlineFont
 from .FixedOutlineString import FixedOutlineString
 from .bg import BGRotater, DispmanxBG, OpenglBG
-from .monkey_patch import monkey_patch
 from .. import utils
 from foos.process import call_and_log
 import foos.config as config
@@ -297,8 +296,6 @@ class Gui():
             call_and_log("video/blank_console.sh blank", shell=True)
 
         bgcolor = (0.0, 0.0, 0.0, 0.0)
-        # fix dispmanx alpha layer https://github.com/tipam/pi3d/issues/197
-        monkey_patch()
 
         self.width = 1920
         if sf == 0:
