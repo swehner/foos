@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REQUIRED_EXECS="play sound sox
-avconv upload libav-tools
+ffmpeg upload ffmpeg
 cec-client standby cec-utils
 python3 foos python3
 pip3 foos python3-pip
