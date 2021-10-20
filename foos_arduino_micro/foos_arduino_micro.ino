@@ -84,7 +84,7 @@ inline byte getButtonState() {
 
 inline byte getGoalState() {
   byte state = 0;
-  for (int i=0; i<3; i++) {
+  for (int i=0; i<2; i++) {
     if (digitalRead(PIN_GOAL_YELLOW + i) == HIGH) {
       state = state + (1 << i);
     }
