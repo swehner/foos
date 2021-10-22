@@ -8,3 +8,4 @@ league
 *.so
 *~
 /video/player/player
+**/.DS_Store
