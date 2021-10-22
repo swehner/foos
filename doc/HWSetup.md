@@ -80,7 +80,9 @@ A 38kHz singal is required for the emitter of the IR barrier, so this signal is 
 The IR receivers are connected to Pin D2 and D3 and interrupts are attached to these pins to detect goals. The pushbuttons are connected to the digital pins following D3, and are read at a fixed interval to debounce the switches.
 The button LEDS are connected to the analog pins.
 
-![schematic](schematics/foos_arduino_schem.png)
+### Arduino Configurations
+The project now supports **three** options on **two** different models of Arduinos (Nano and Micro.)  Click to review the full list of [Models and Schematics](../arduino/Readme.md).
+
 
 ## Setup without an Arduino
 
@@ -91,7 +93,7 @@ Verify the pin numbers in the config, and you're good to go!
 
 Thanks to Adam Bartha for this!
 
-![schematic](schematics/foos_RPi_only_schema.png)
+Click here to view the schematic for the [Raspberry PI](schematics/foos_RPi_only_schema.png).
 
 ## BOM
 
