@@ -91,7 +91,7 @@ Verify the pin numbers in the config, and you're good to go!
 
 Thanks to Adam Bartha for this!
 
-![schematic](foos_RPi_only_schema.png)
+![schematic](schematics/foos_RPi_only_schema.png)
 
 ## BOM
 
