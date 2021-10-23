@@ -62,6 +62,7 @@ Big thanks to:
  * [Tuenti](http://www.tuenti.com), where this project started as a HackMeUp
  * Laura Andina for the UI design
  * [Adam Bartha](https://github.com/bartha-adam) for the Pi-only version
+ * [Steve Brockman](https://github.com/sbrockman) for the Arduino micro version
 
 Made with Pi3d
 
