@@ -17,7 +17,7 @@ See a video of it in action:
 To build it you'll need
  * A foosball table ;)
  * A TV
- * A Raspberry Pi to run the UI
+ * A Raspberry Pi (2 or 3) to run the UI - **Note - the Raspberry Pi4 is not supported**
  * The Raspberry Pi camera module to record video
  * Some electronic components for the goal detection (and maybe an Arduino)
 
@@ -62,6 +62,7 @@ Big thanks to:
  * [Tuenti](http://www.tuenti.com), where this project started as a HackMeUp
  * Laura Andina for the UI design
  * [Adam Bartha](https://github.com/bartha-adam) for the Pi-only version
+ * [Steve Brockman](https://github.com/sbrockman) for the Arduino micro version
 
 Made with Pi3d
 
